@@ -1,0 +1,336 @@
+import { useEffect, useState } from "react";
+import API from "../../services/api";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
+import {
+  Truck,
+  Package,
+  CheckCircle,
+  AlertTriangle,
+  Users,
+  DollarSign,
+  Clock,
+} from "lucide-react";
+
+const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
+
+export default function DispatcherDashboard() {
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await API.get("/dispatcher/dashboard");
+        setStats(res.data);
+      } catch (err) {
+        console.error("❌ Lỗi tải dữ liệu:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStats();
+  }, []);
+
+  if (loading)
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-600"></div>
+      </div>
+    );
+
+  if (!stats) return <p className="p-6 text-gray-500">Không có dữ liệu.</p>;
+
+  // --- TÍNH TOÁN SỐ LIỆU ---
+  const totalShipments = stats.shipments.reduce((a, b) => a + b.count, 0);
+  const activeDrivers =
+    stats.drivers.find((d) => d.status === "available")?.count || 0;
+
+  const delivering =
+    stats.shipments.find((s) => s.status === "delivering")?.count || 0;
+  const completed =
+    stats.shipments.find((s) => s.status === "completed")?.count || 0;
+  const failed = stats.shipments.find((s) => s.status === "failed")?.count || 0;
+  const pending =
+    stats.shipments.find((s) => s.status === "pending")?.count || 0;
+
+  // Dữ liệu cho Pie Chart
+  const pieData = [
+    { name: "Đang giao", value: delivering },
+    { name: "Hoàn tất", value: completed },
+    { name: "Thất bại", value: failed },
+    { name: "Chờ xử lý", value: pending },
+  ].filter((i) => i.value > 0);
+
+  return (
+    <div className="p-6 bg-gray-50 min-h-screen font-sans">
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-2xl font-bold text-[#113e48] flex items-center gap-2">
+            <Truck className="text-orange-500" /> Bảng điều khiển Điều phối
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Tổng quan hoạt động vận hành hôm nay
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <select className="bg-white border border-gray-300 text-gray-700 text-sm rounded-lg px-3 py-2 outline-none focus:border-blue-500">
+            <option>Hôm nay</option>
+            <option>Tuần này</option>
+            <option>Tháng này</option>
+          </select>
+        </div>
+      </div>
+
+      {/* 1. CARDS TỔNG QUAN (ĐẸP HƠN) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <StatCard
+          title="Tổng đơn hàng"
+          value={totalShipments}
+          icon={<Package size={24} />}
+          color="bg-blue-500"
+          sub="Đơn hàng trong hệ thống"
+        />
+        <StatCard
+          title="Tài xế sẵn sàng"
+          value={activeDrivers}
+          icon={<Users size={24} />}
+          color="bg-green-500"
+          sub="Đang trực tuyến"
+        />
+        <StatCard
+          title="Đang giao hàng"
+          value={delivering}
+          icon={<Truck size={24} />}
+          color="bg-orange-500"
+          sub="Xe đang di chuyển"
+        />
+        <StatCard
+          title="Cần xử lý gấp"
+          value={failed + pending}
+          icon={<AlertTriangle size={24} />}
+          color="bg-red-500"
+          sub="Đơn lỗi / Chờ duyệt"
+        />
+      </div>
+
+      {/* 2. BIỂU ĐỒ & TOP DRIVER */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        {/* Cột 1: Biểu đồ Tròn (Tỷ lệ đơn hàng) */}
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 lg:col-span-1">
+          <h3 className="font-bold text-gray-700 mb-4 flex items-center gap-2">
+            <CheckCircle size={18} className="text-blue-500" /> Tỷ lệ giao hàng
+          </h3>
+          <div className="h-[250px] w-full relative">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={pieData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={80}
+                  paddingAngle={5}
+                  dataKey="value"
+                >
+                  {pieData.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend verticalAlign="bottom" height={36} />
+              </PieChart>
+            </ResponsiveContainer>
+            {/* Số tổng ở giữa */}
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center -mt-4">
+              <span className="text-2xl font-bold text-gray-700">
+                {totalShipments}
+              </span>
+              <p className="text-xs text-gray-400">Tổng đơn</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Cột 2: Biểu đồ Cột (Doanh thu) */}
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 lg:col-span-2">
+          <h3 className="font-bold text-gray-700 mb-4 flex items-center gap-2">
+            <DollarSign size={18} className="text-green-500" /> Doanh thu theo
+            tháng
+          </h3>
+          <div className="h-[250px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={stats.revenue}
+                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+              >
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  vertical={false}
+                  stroke="#F3F4F6"
+                />
+                <XAxis
+                  dataKey="month"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: "#9CA3AF", fontSize: 12 }}
+                  dy={10}
+                />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: "#9CA3AF", fontSize: 12 }}
+                  tickFormatter={(val) => `${val / 1000}k`}
+                />
+                <Tooltip
+                  cursor={{ fill: "#F3F4F6" }}
+                  contentStyle={{
+                    borderRadius: "8px",
+                    border: "none",
+                    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                  }}
+                />
+                <Bar
+                  dataKey="total"
+                  fill="#3B82F6"
+                  radius={[4, 4, 0, 0]}
+                  barSize={40}
+                  name="Doanh thu"
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. BẢNG CHI TIẾT & TOP DRIVER */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Top Drivers */}
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="font-bold text-gray-700">🏆 Top Tài Xế Xuất Sắc</h3>
+            <button className="text-xs text-blue-600 font-bold hover:underline">
+              Xem tất cả
+            </button>
+          </div>
+          <div className="space-y-4">
+            {stats.topDrivers.length > 0 ? (
+              stats.topDrivers.map((d, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-xl transition-colors border border-transparent hover:border-gray-100"
+                >
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-white shadow-md ${
+                      i === 0
+                        ? "bg-yellow-400"
+                        : i === 1
+                          ? "bg-gray-400"
+                          : i === 2
+                            ? "bg-orange-400"
+                            : "bg-blue-100 text-blue-600"
+                    }`}
+                  >
+                    {i + 1}
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-bold text-gray-800 text-sm">
+                      {d.name}
+                    </h4>
+                    <div className="w-full bg-gray-100 rounded-full h-1.5 mt-2 overflow-hidden">
+                      <div
+                        className="bg-blue-500 h-1.5 rounded-full"
+                        style={{ width: `${Math.min(d.deliveries * 5, 100)}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-bold text-blue-600 text-lg">
+                      {d.deliveries}
+                    </p>
+                    <p className="text-xs text-gray-400">đơn</p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-400 text-sm text-center py-4">
+                Chưa có dữ liệu tài xế.
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Các đơn cần chú ý (Ví dụ: Đơn thất bại gần đây) */}
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="font-bold text-red-600 flex items-center gap-2">
+              <AlertTriangle size={18} /> Đơn Cần Chú Ý
+            </h3>
+          </div>
+          {/* Đây là data giả lập, bạn có thể gọi API lấy 'failed' shipments */}
+          <div className="space-y-3">
+            {[1, 2, 3].map((_, idx) => (
+              <div
+                key={idx}
+                className="p-4 border border-red-50 bg-red-50/30 rounded-xl flex justify-between items-center"
+              >
+                <div>
+                  <p className="text-xs font-bold text-red-500 uppercase mb-1">
+                    Giao thất bại
+                  </p>
+                  <p className="text-sm font-bold text-gray-700">
+                    Đơn #SP{99283 + idx}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
+                    <Clock size={10} /> 2 giờ trước
+                  </p>
+                </div>
+                <button className="px-3 py-1.5 bg-white border border-red-200 text-red-600 text-xs font-bold rounded-lg hover:bg-red-50 transition">
+                  Xử lý
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Component Card nhỏ
+function StatCard({ title, value, icon, color, sub }) {
+  return (
+    <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow relative overflow-hidden group">
+      {/* Dải màu bên trái */}
+      <div className={`absolute left-0 top-0 bottom-0 w-1 ${color}`}></div>
+
+      <div className="flex justify-between items-start">
+        <div>
+          <p className="text-gray-500 text-sm font-medium mb-1">{title}</p>
+          <h2 className="text-3xl font-bold text-gray-800">{value}</h2>
+        </div>
+        <div
+          className={`p-3 rounded-xl text-white shadow-lg ${color} bg-opacity-90 group-hover:scale-110 transition-transform`}
+        >
+          {icon}
+        </div>
+      </div>
+      <p className="text-xs text-gray-400 mt-3 font-medium bg-gray-50 inline-block px-2 py-1 rounded-md">
+        {sub}
+      </p>
+    </div>
+  );
+}
