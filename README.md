@@ -73,7 +73,7 @@
 
 ---
 
-## 💻 Yêu Cầu Hệ Thống
+## Yêu Cầu Hệ Thống
 
 Trước khi bắt đầu, hãy đảm bảo máy tính đã cài đặt:
 
@@ -269,10 +269,10 @@ Mở trình duyệt và truy cập: **[http://localhost:5173](http://localhost:5
 ## Cấu Trúc Thư Mục
 
 ```
-MyProject/
-├── 📁 backend/                  # Server-side (Node.js + Express)
-│   ├── 📁 config/               # Cấu hình database (db.js)
-│   ├── 📁 controllers/          # Xử lý logic nghiệp vụ
+KLTN_GR34_03-26/
+├──  backend/                  # Server-side (Node.js + Express)
+│   ├──  config/               # Cấu hình database (db.js)
+│   ├──  controllers/          # Xử lý logic nghiệp vụ
 │   │   ├── authController.js        # Đăng nhập, đăng ký, JWT
 │   │   ├── shipmentController.js    # Quản lý đơn hàng
 │   │   ├── driverController.js      # Quản lý tài xế
@@ -282,51 +282,47 @@ MyProject/
 │   │   ├── newsController.js        # Quản lý tin tức
 │   │   ├── shippingController.js    # Tính phí vận chuyển
 │   │   └── ...                      # Các controller khác
-│   ├── 📁 middleware/            # Middleware (xác thực JWT, phân quyền)
-│   ├── 📁 routes/                # Định tuyến API
-│   ├── 📁 socket/                # Socket.IO (chat & notification)
-│   ├── 📁 uploads/               # Thư mục lưu ảnh upload
-│   ├── 📁 utils/                 # Tiện ích dùng chung
+│   ├──  middleware/            # Middleware (xác thực JWT, phân quyền)
+│   ├──  routes/                # Định tuyến API
+│   ├──  socket/                # Socket.IO (chat & notification)
+│   ├──  uploads/               # Thư mục lưu ảnh upload
+│   ├──  utils/                 # Tiện ích dùng chung
 │   ├── .env                      # Biến môi trường
 │   ├── package.json
 │   └── server.js                 # Entry point backend
 │
-├── 📁 frontend/                  # Client-side (React + Vite)
-│   ├── 📁 public/                # File tĩnh
-│   ├── 📁 src/
-│   │   ├── 📁 assets/            # Hình ảnh, icon
-│   │   ├── 📁 components/        # Component dùng chung
+├──  frontend/                  # Client-side (React + Vite)
+│   ├──  public/                # File tĩnh
+│   ├──  src/
+│   │   ├──  assets/            # Hình ảnh, icon
+│   │   ├──  components/        # Component dùng chung
 │   │   │   ├── Navbar.jsx            # Thanh điều hướng
 │   │   │   ├── Footer.jsx            # Chân trang
 │   │   │   ├── ChatBubble.jsx        # Chat popup
 │   │   │   ├── MapPicker.jsx         # Bản đồ chọn vị trí
 │   │   │   ├── CreateOrder.jsx       # Form tạo đơn
 │   │   │   └── ...
-│   │   ├── 📁 context/           # React Context (Auth, Socket)
-│   │   ├── 📁 hooks/             # Custom hooks
-│   │   ├── 📁 layouts/           # Layout chung (Admin, Customer...)
-│   │   ├── 📁 pages/             # Các trang
+│   │   ├──  context/           # React Context (Auth, Socket)
+│   │   ├──  hooks/             # Custom hooks
+│   │   ├──  layouts/           # Layout chung (Admin, Customer...)
+│   │   ├──  pages/             # Các trang
 │   │   │   ├── Home.jsx              # Trang chủ
 │   │   │   ├── Login.jsx             # Đăng nhập
 │   │   │   ├── Register.jsx          # Đăng ký
 │   │   │   ├── Tracking.jsx          # Tra cứu đơn hàng
-│   │   │   ├── 📁 admin/             # Trang Admin
-│   │   │   ├── 📁 customer/          # Trang Khách hàng
-│   │   │   ├── 📁 dispatcher/        # Trang Điều phối viên
-│   │   │   ├── 📁 driver/            # Trang Tài xế
+│   │   │   ├──  admin/             # Trang Admin
+│   │   │   ├──  customer/          # Trang Khách hàng
+│   │   │   ├──  dispatcher/        # Trang Điều phối viên
+│   │   │   ├──  driver/            # Trang Tài xế
 │   │   │   └── ...
-│   │   ├── 📁 routes/            # Cấu hình route
-│   │   ├── 📁 services/          # API service (axios)
+│   │   ├──  routes/            # Cấu hình route
+│   │   ├──  services/          # API service (axios)
 │   │   ├── App.jsx               # Root component
 │   │   └── main.jsx              # Entry point
 │   ├── .env                      # Biến môi trường frontend
 │   ├── vite.config.js            # Cấu hình Vite
 │   ├── tailwind.config.js        # Cấu hình TailwindCSS
 │   └── package.json
-│
-├── 📁 html/                      # Bản phác thảo HTML tĩnh (tham khảo)
-├── speedyship.sql                # File SQL import database
-└── README.md                     # 📄 File này
 ```
 
 ---
@@ -396,138 +392,11 @@ Sau khi import `speedyship.sql`, có thể đăng nhập với các tài khoản
 
 ---
 
-## API Endpoints
-
-### Xác thực (Auth)
-
-| Method | Endpoint                    | Mô tả             |
-| ------ | --------------------------- | ----------------- |
-| POST   | `/api/auth/register`        | Đăng ký tài khoản |
-| POST   | `/api/auth/login`           | Đăng nhập         |
-| POST   | `/api/auth/refresh`         | Làm mới token     |
-| POST   | `/api/auth/send-otp`        | Gửi mã OTP        |
-| POST   | `/api/auth/forgot-password` | Quên mật khẩu     |
-
-### Đơn hàng (Shipments)
-
-| Method | Endpoint             | Mô tả              |
-| ------ | -------------------- | ------------------ |
-| GET    | `/api/shipments`     | Danh sách đơn hàng |
-| POST   | `/api/shipments`     | Tạo đơn mới        |
-| GET    | `/api/shipments/:id` | Chi tiết đơn hàng  |
-| PUT    | `/api/shipments/:id` | Cập nhật đơn       |
-
-### Tài xế (Drivers)
-
-| Method | Endpoint                | Mô tả            |
-| ------ | ----------------------- | ---------------- |
-| GET    | `/api/drivers`          | Danh sách tài xế |
-| POST   | `/api/drivers`          | Thêm tài xế      |
-| PUT    | `/api/drivers/:id`      | Cập nhật tài xế  |
-| PUT    | `/api/drivers/location` | Cập nhật vị trí  |
-
-### Thanh toán (Payments)
-
-| Method | Endpoint                 | Mô tả                |
-| ------ | ------------------------ | -------------------- |
-| GET    | `/api/payments`          | Danh sách thanh toán |
-| POST   | `/api/payments/momo`     | Tạo thanh toán MoMo  |
-| POST   | `/api/payments/momo/ipn` | MoMo IPN callback    |
-
-### Khác
-
-| Method   | Endpoint               | Mô tả                      |
-| -------- | ---------------------- | -------------------------- |
-| GET/POST | `/api/ai/*`            | AI Assistant               |
-| GET/POST | `/api/news/*`          | Tin tức & Blog             |
-| GET/POST | `/api/contact/*`       | Liên hệ                    |
-| GET/POST | `/api/feedbacks/*`     | Đánh giá                   |
-| GET      | `/api/notifications/*` | Thông báo                  |
-| GET/POST | `/api/vehicles/*`      | Phương tiện                |
-| GET      | `/api/addresses/*`     | Địa chỉ (Tỉnh/Quận/Phường) |
-| GET/POST | `/api/wallet/*`        | Ví điện tử                 |
-| GET      | `/api/shipping/*`      | Tính phí vận chuyển        |
-
----
-
-## 🗄 Cơ Sở Dữ Liệu
+## Cơ Sở Dữ Liệu
 
 Database sử dụng **MySQL 8.x** với charset `utf8mb4_unicode_ci`.
 
-### Sơ đồ các bảng chính:
-
-| Bảng                  | Mô tả                                            |
-| --------------------- | ------------------------------------------------ |
-| `users`               | Người dùng (admin, dispatcher, driver, customer) |
-| `roles`               | Vai trò hệ thống                                 |
-| `user_roles`          | Liên kết user ↔ role (nhiều-nhiều)               |
-| `shipments`           | Đơn hàng vận chuyển                              |
-| `assignments`         | Phân công tài xế cho đơn hàng                    |
-| `drivers`             | Thông tin tài xế                                 |
-| `driver_applications` | Đơn đăng ký tài xế                               |
-| `vehicles`            | Phương tiện vận chuyển                           |
-| `payments`            | Thanh toán (COD, MoMo, BankTransfer)             |
-| `chats`               | Phiên chat                                       |
-| `messages`            | Tin nhắn trong chat                              |
-| `notifications`       | Thông báo (driver, dispatcher)                   |
-| `contacts`            | Yêu cầu liên hệ từ khách                         |
-| `feedbacks`           | Đánh giá dịch vụ                                 |
-| `otp_codes`           | Mã OTP xác thực email                            |
-| `system_configs`      | Cấu hình hệ thống                                |
-
 ---
-
-## Xử Lý Sự Cố (Troubleshooting)
-
-### Lỗi kết nối MySQL
-
-```
-Error: connect ECONNREFUSED 127.0.0.1:3306
-```
-
-**Giải pháp**: Kiểm tra MySQL đã khởi động chưa. Nếu dùng XAMPP, mở Control Panel và Start MySQL.
-
-### Lỗi `MODULE_NOT_FOUND`
-
-```
-Error: Cannot find module 'xxx'
-```
-
-**Giải pháp**: Chạy lại `npm install` trong thư mục tương ứng (backend hoặc frontend).
-
-### Port đã bị sử dụng
-
-```
-Error: listen EADDRINUSE: address already in use :::5000
-```
-
-**Giải pháp**: Đổi `PORT` trong file `.env` backend hoặc tắt tiến trình đang dùng port đó:
-
-```bash
-# Windows
-netstat -ano | findstr :5000
-taskkill /PID <PID> /F
-```
-
-### Lỗi CORS
-
-**Giải pháp**: Đảm bảo frontend chạy đúng port `5173` (đã được whitelist trong `server.js`).
-
-### Lỗi gửi OTP Email
-
-**Giải pháp**:
-
-1. Kiểm tra `EMAIL_USER` và `EMAIL_PASS` trong `.env`
-2. `EMAIL_PASS` phải là **App Password** (không phải mật khẩu Gmail thông thường)
-3. Bật **2-Step Verification** cho tài khoản Google
-
-### Bản đồ Mapbox không hiển thị
-
-**Giải pháp**: Kiểm tra `VITE_MAPBOX_TOKEN` trong file `.env` frontend. Token phải hợp lệ và chưa hết hạn.
-
----
-
-## Ghi Chú Thêm
 
 - **MoMo Sandbox**: Dự án sử dụng môi trường test của MoMo. Các giao dịch không phải tiền thật.
 - **Socket.IO**: Chat và thông báo hoạt động realtime. Cần cả backend và frontend cùng chạy.
@@ -542,4 +411,4 @@ taskkill /PID <PID> /F
 
 ---
 
-_Nếu dự án hữu ích, hãy cho một star trên GitHub!_
+_Bản quyền thuộc về SpeedyShip KLTN DTU 03/2026 Group34 GitHub!_
