@@ -1,6 +1,7 @@
 import db from "../config/db.js";
-//Cập nhật vị trí GPS của tài xế
 
+
+// Cập nhật vị trí GPS tài xế
 export const updateDriverLocation = async (req, res) => {
   try {
     const { driver_id, latitude, longitude } = req.body;
@@ -14,7 +15,6 @@ export const updateDriverLocation = async (req, res) => {
 
     res.json({ message: "✅ Cập nhật vị trí thành công" });
   } catch (err) {
-    console.error("❌ updateDriverLocation error:", err);
     res.status(500).json({ message: "Lỗi server khi cập nhật vị trí" });
   }
 };

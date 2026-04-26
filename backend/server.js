@@ -12,7 +12,6 @@ import initSocket from "./socket/initSocket.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Import routes
 import authRoutes from "./routes/authRoutes.js";
 import passRoutes from "./routes/passRoutes.js";
 import driverRoutes from "./routes/driverRoutes.js";
@@ -34,11 +33,11 @@ import addressRoutes from "./routes/addressRoutes.js";
 import walletRoutes from "./routes/walletRoutes.js";
 import shippingRoutes from "./routes/shippingRoutes.js";
 import newsRoutes from "./routes/newsRoutes.js";
+import driverApplicationRoutes from "./routes/driverApplicationRoutes.js";
 
 dotenv.config();
 const app = express();
 
-// Middleware setup
 app.use(
   cors({
     origin: [
@@ -56,13 +55,11 @@ app.use(express.urlencoded({ limit: "50mb", extended: true }));
 app.use(cookieParser({ limit: "50mb", extended: true }));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-//  Kiểm tra kết nối MySQL
 pool
   .query("SELECT 1")
   .then(() => console.log("MySQL đã kết nối CSDL thành công!"))
   .catch(console.error);
 
-// Socket.io setup
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
@@ -71,27 +68,24 @@ const io = new Server(server, {
       "http://localhost:5174",
       "http://127.0.0.1:5173",
       "http://127.0.0.1:5174",
-      "https://do-an-cua-toi.vercel.app",
     ],
     methods: ["GET", "POST"],
     credentials: true,
   },
 });
 
-//  Khởi tạo socket và nhận các hàm gửi thông báo
 const socketService = initSocket(io, pool);
 
-//  Export các hàm thông báo để controller khác gọi được
 export const {
   sendNotificationToDriver,
   sendNotificationToDispatcher,
   sendNotificationToCustomer,
 } = socketService;
 
-// ROUTES
 app.use("/api/auth", authRoutes);
 app.use("/api/auth", passRoutes);
 app.use("/api/drivers", driverRoutes);
+app.use("/api/drivers", driverApplicationRoutes);
 app.use("/api/drivers", driverAdminRoutes);
 app.use("/api/drivers", driverLocationRoutes);
 app.use("/api/shipments", shipmentRoutes);
@@ -110,13 +104,12 @@ app.use("/api/addresses", addressRoutes);
 app.use("/api/wallet", walletRoutes);
 app.use("/api/shipping", shippingRoutes);
 app.use("/api/news", newsRoutes);
-//  Kiểm tra API
+
 app.get("/", (_req, res) =>
   res.send(" SpeedyShip API running with realtime chat & notifications"),
 );
 
-//  Khởi động server
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () =>
-  console.log(`Server đang chạy tại: http://localhost:${PORT}`),
-);
+server.listen(PORT, () => {
+  console.log(` Server đang chạy tại http://localhost:${PORT}`);
+});

@@ -1,41 +1,52 @@
-import pool from "../config/db.js"; // Sử dụng pool thay vì db
+import pool from "../config/db.js";
 import {
   sendNotificationToDriver,
   sendNotificationToDispatcher,
   sendNotificationToCustomer,
 } from "../server.js";
 
-// ==========================
-// Lấy tất cả đơn hàng (CÓ PHÂN QUYỀN VÙNG)
-// ==========================
+
+// Lấy danh sách tất cả đơn hàng
 export const getAllShipments = async (req, res) => {
   try {
-    // Lấy thông tin User từ Middleware xác thực (req.user)
     const currentUser = req.user;
-    const userRegion = currentUser?.region_id; // 'DN', 'HCM' hoặc NULL (Admin tổng)
+    const userRegion = currentUser?.region_id;
 
-    let sql = "SELECT * FROM shipments";
+    let sql = `
+      SELECT
+        s.*,
+        (
+          SELECT d.name FROM assignments a
+          JOIN drivers d ON d.id = a.driver_id
+          WHERE a.shipment_id = s.id
+          ORDER BY a.assigned_at DESC LIMIT 1
+        ) AS driver_name,
+        (
+          SELECT d.phone FROM assignments a
+          JOIN drivers d ON d.id = a.driver_id
+          WHERE a.shipment_id = s.id
+          ORDER BY a.assigned_at DESC LIMIT 1
+        ) AS driver_phone
+      FROM shipments s
+    `;
     let params = [];
 
-    // Nếu User có vùng quản lý -> Chỉ lấy đơn thuộc vùng đó
     if (userRegion) {
-      sql += " WHERE region_id = ?";
+      sql += " WHERE s.region_id = ?";
       params.push(userRegion);
     }
 
-    sql += " ORDER BY created_at DESC";
+    sql += " ORDER BY s.created_at DESC";
 
     const [rows] = await pool.query(sql, params);
     res.json(rows);
   } catch (err) {
-    console.error("❌ Lỗi khi lấy danh sách đơn hàng:", err);
     res.status(500).json({ error: "Không thể lấy danh sách đơn hàng" });
   }
 };
 
-// ==========================
-// Lấy đơn theo ID
-// ==========================
+
+// Lấy chi tiết đơn hàng theo ID
 export const getShipmentById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -46,22 +57,17 @@ export const getShipmentById = async (req, res) => {
       return res.status(404).json({ error: "Không tìm thấy đơn hàng" });
     res.json(rows[0]);
   } catch (err) {
-    console.error("❌ Lỗi khi lấy chi tiết đơn hàng:", err);
     res.status(500).json({ error: "Không thể lấy chi tiết đơn hàng" });
   }
 };
 
-// ==========================
-// Tạo đơn hàng
-// ==========================
-// 1. Hàm phụ trợ: Phân tích địa chỉ (Thêm các tỉnh lân cận nếu cần)
-// ==========================================
+
 const getRegionInfoFromAddress = (address) => {
   if (!address) return { prefix: "SP", region_id: "OTHER" };
 
   const addrLower = address.toLowerCase();
 
-  // --- MIỀN NAM ---
+
   if (
     addrLower.includes("hồ chí minh") ||
     addrLower.includes("hcm") ||
@@ -73,7 +79,7 @@ const getRegionInfoFromAddress = (address) => {
     return { prefix: "HCM", region_id: "HCM" };
   }
 
-  // --- MIỀN TRUNG ---
+
   if (
     addrLower.includes("đà nẵng") ||
     addrLower.includes("da nang") ||
@@ -83,7 +89,7 @@ const getRegionInfoFromAddress = (address) => {
     return { prefix: "DN", region_id: "DN" };
   }
 
-  // --- MIỀN BẮC ---
+
   if (
     addrLower.includes("hà nội") ||
     addrLower.includes("ha noi") ||
@@ -93,13 +99,12 @@ const getRegionInfoFromAddress = (address) => {
     return { prefix: "HN", region_id: "HN" };
   }
 
-  // Mặc định cho các tỉnh khác (Vũng Tàu, Cần Thơ, v.v.)
+
   return { prefix: "SP", region_id: "OTHER" };
 };
 
-// ==========================================
-// 2. Cập nhật Controller
-// ==========================================
+
+// Tạo đơn hàng mới
 export const createShipment = async (req, res) => {
   try {
     const {
@@ -109,7 +114,7 @@ export const createShipment = async (req, res) => {
       receiver_phone,
       pickup_address,
       pickup_lat,
-      pickup_lng, // <-- CHÚNG TA SẼ DÙNG CÁI NÀY
+      pickup_lng,
       delivery_address,
       delivery_lat,
       delivery_lng,
@@ -125,15 +130,15 @@ export const createShipment = async (req, res) => {
       customer_id,
     } = req.body;
 
-    // Dùng pickup_address (địa chỉ lấy) để xác định đơn thuộc kho nào
-    const addressToCheck = pickup_address || delivery_address; // Ưu tiên nơi lấy, nếu không có thì lấy nơi giao
+
+    const addressToCheck = pickup_address || delivery_address;
     const regionInfo = getRegionInfoFromAddress(addressToCheck);
 
-    // Tạo mã: HCM-123456
+
     const randomSuffix = Date.now().toString().slice(-6);
     const tracking_code = `${regionInfo.prefix}-${randomSuffix}`;
     const finalRegionId = regionInfo.region_id;
-    // -----------------------
+
 
     const q = `
       INSERT INTO shipments 
@@ -172,7 +177,7 @@ export const createShipment = async (req, res) => {
 
     const [result] = await pool.query(q, [values]);
 
-    // Gửi thông báo
+
     try {
       await sendNotificationToDispatcher(
         1,
@@ -180,7 +185,7 @@ export const createShipment = async (req, res) => {
         `🆕 Đơn hàng mới tại ${regionInfo.prefix}: #${tracking_code}`,
       );
 
-      // Thông báo cho khách hàng
+
       if (customer_id) {
         await sendNotificationToCustomer(
           customer_id,
@@ -189,7 +194,6 @@ export const createShipment = async (req, res) => {
         );
       }
     } catch (notifyErr) {
-      console.warn("⚠️ Không gửi được thông báo:", notifyErr.message);
     }
 
     res.status(201).json({
@@ -199,16 +203,13 @@ export const createShipment = async (req, res) => {
       region: finalRegionId,
     });
   } catch (err) {
-    console.error("❌ Lỗi tạo đơn hàng:", err);
     res
       .status(500)
       .json({ error: "Lỗi server khi tạo đơn hàng", details: err.message });
   }
 };
 
-// ==========================
-// Cập nhật đơn hàng
-// ==========================
+
 export const updateShipment = async (req, res) => {
   try {
     const { id } = req.params;
@@ -248,46 +249,41 @@ export const updateShipment = async (req, res) => {
 
     res.json({ message: "Cập nhật thành công" });
   } catch (err) {
-    console.error("❌ Lỗi cập nhật đơn:", err);
     res.status(500).json({ error: "Không thể cập nhật đơn hàng" });
   }
 };
 
-// ==========================
+
 // Xóa đơn hàng
-// ==========================
 export const deleteShipment = async (req, res) => {
   try {
     const { id } = req.params;
     await pool.query("DELETE FROM shipments WHERE id=?", [id]);
     res.json({ message: "Đã xóa đơn hàng" });
   } catch (err) {
-    console.error("❌ Lỗi xóa đơn:", err);
     res.status(500).json({ error: "Không thể xóa đơn hàng" });
   }
 };
 
-// ==========================
-// Phân công tài xế (Đơn lẻ)
-// ==========================
+
+// Phân công đơn hàng cho tài xế
 export const assignShipment = async (req, res) => {
   try {
     const { driver_id, shipment_id } = req.body;
 
-    // Cập nhật bảng shipments
+
     await pool.query(
       "UPDATE shipments SET status='assigned', updated_at=NOW() WHERE id=?",
       [shipment_id],
     );
 
-    // Thêm vào bảng assignments
-    // Sửa lại cho đúng tên cột DB: status, assigned_at
+
     await pool.query(
       "INSERT INTO assignments (shipment_id, driver_id, status, assigned_at) VALUES (?, ?, 'assigned', NOW())",
       [shipment_id, driver_id],
     );
 
-    // Gửi thông báo cho tài xế
+
     try {
       await sendNotificationToDriver(
         driver_id,
@@ -295,10 +291,9 @@ export const assignShipment = async (req, res) => {
         `Bạn được phân công đơn #${shipment_id}`,
       );
     } catch (e) {
-      console.warn("⚠️ Lỗi gửi thông báo driver");
     }
 
-    // Gửi thông báo cho khách hàng
+
     try {
       const [[shipment]] = await pool.query(
         "SELECT customer_id, tracking_code FROM shipments WHERE id = ?",
@@ -312,19 +307,15 @@ export const assignShipment = async (req, res) => {
         );
       }
     } catch (e) {
-      console.warn("⚠️ Lỗi gửi thông báo customer:", e.message);
     }
 
     res.json({ message: "Đã phân công tài xế" });
   } catch (err) {
-    console.error("❌ Lỗi phân công:", err);
     res.status(500).json({ error: "Không thể phân công" });
   }
 };
 
-// ==========================
-// CUSTOMER tracking (login)
-// ==========================
+
 export const getShipmentByCode = async (req, res) => {
   try {
     const { code } = req.params;
@@ -342,9 +333,7 @@ export const getShipmentByCode = async (req, res) => {
   }
 };
 
-// ==========================
-// ✅ GUEST tracking (PUBLIC)
-// ==========================
+
 export const getShipmentByCodePublic = async (req, res) => {
   try {
     const { code } = req.params;
@@ -363,7 +352,7 @@ export const getShipmentByCodePublic = async (req, res) => {
       return res.status(404).json({ message: "Không tìm thấy đơn hàng" });
     }
 
-    // Nếu có last4 → xác thực cho khách vãng lai
+
     if (last4) {
       const phone = shipment.receiver_phone || "";
       if (!phone.endsWith(last4)) {
@@ -373,14 +362,12 @@ export const getShipmentByCodePublic = async (req, res) => {
 
     res.json(shipment);
   } catch (err) {
-    console.error("❌ Lỗi tra cứu đơn công khai:", err);
     res.status(500).json({ message: "Lỗi server" });
   }
 };
 
-// ==========================
-// PHÂN CÔNG HÀNG LOẠT (BULK ASSIGN) - CÓ CHECK VÙNG
-// ==========================
+
+// Phân công hàng loạt đơn hàng
 export const assignShipmentsBulk = async (req, res) => {
   const { shipment_ids, driver_id } = req.body;
 
@@ -395,32 +382,33 @@ export const assignShipmentsBulk = async (req, res) => {
       .json({ message: "Dữ liệu không hợp lệ (Thiếu ID đơn hoặc Tài xế)" });
   }
 
-  // --- LOGIC CHECK QUYỀN VÙNG (New) ---
+
   const currentUser = req.user;
 
-  // Nếu User có vùng (không phải Super Admin) thì kiểm tra
   if (currentUser && currentUser.region_id) {
     try {
-      // 1. Kiểm tra tài xế có thuộc vùng này không
+
       const [driver] = await pool.query(
         "SELECT region_id FROM drivers WHERE id = ?",
-        [driver_id],
+        [driver_id]
       );
 
-      if (
-        driver.length === 0 ||
-        driver[0].region_id !== currentUser.region_id
-      ) {
-        return res
-          .status(403)
-          .json({ message: "Tài xế không thuộc khu vực quản lý của bạn!" });
+      if (driver.length === 0) {
+        return res.status(404).json({ message: "Không tìm thấy tài xế!" });
       }
 
-      // 2. Kiểm tra danh sách đơn hàng có đơn nào "lạc loài" không
-      // Đếm số lượng đơn trong list gửi lên mà region_id KHÁC vùng của user
+
+      const driverRegion = driver[0].region_id;
+      if (driverRegion && driverRegion !== currentUser.region_id) {
+        return res.status(403).json({
+          message: `Tài xế thuộc khu vực ${driverRegion}, không phải khu vực của bạn (${currentUser.region_id})!`
+        });
+      }
+
+
       const [invalidShipments] = await pool.query(
-        "SELECT count(*) as count FROM shipments WHERE id IN (?) AND region_id != ?",
-        [shipment_ids, currentUser.region_id],
+        "SELECT COUNT(*) as count FROM shipments WHERE id IN (?) AND region_id IS NOT NULL AND region_id != ?",
+        [shipment_ids, currentUser.region_id]
       );
 
       if (invalidShipments[0].count > 0) {
@@ -429,15 +417,13 @@ export const assignShipmentsBulk = async (req, res) => {
         });
       }
     } catch (error) {
-      console.error("Lỗi kiểm tra vùng:", error);
-      return res
-        .status(500)
-        .json({ message: "Lỗi kiểm tra quyền hạn khu vực" });
+      return res.status(500).json({ message: "Lỗi kiểm tra quyền hạn khu vực" });
     }
   }
-  // ------------------------------------
 
-  // Sử dụng Transaction để đảm bảo an toàn dữ liệu
+
+
+
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
@@ -460,14 +446,14 @@ export const assignShipmentsBulk = async (req, res) => {
 
     await connection.commit();
 
-    // Gửi thông báo cho tài xế
+
     sendNotificationToDriver(
       driver_id,
       null,
       `Bạn vừa được phân công ${shipment_ids.length} đơn hàng mới!`,
     ).catch(() => {});
 
-    // Gửi thông báo cho từng khách hàng
+
     try {
       const [shipments] = await connection.query(
         "SELECT id, customer_id, tracking_code FROM shipments WHERE id IN (?)",
@@ -484,7 +470,6 @@ export const assignShipmentsBulk = async (req, res) => {
         }
       }
     } catch (e) {
-      console.warn("⚠️ Lỗi gửi thông báo customer (bulk):", e.message);
     }
 
     res.json({
@@ -492,11 +477,10 @@ export const assignShipmentsBulk = async (req, res) => {
     });
   } catch (err) {
     await connection.rollback();
-    console.error("❌ Lỗi Bulk Assign:", err);
     res
       .status(500)
       .json({ message: "Lỗi hệ thống khi phân công: " + err.message });
   } finally {
-    connection.release(); // Trả kết nối về pool
+    connection.release();
   }
 };

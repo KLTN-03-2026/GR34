@@ -1,12 +1,12 @@
 import pool from "../config/db.js";
 import bcrypt from "bcryptjs";
 
-// --- 1. LẤY HỒ SƠ KHÁCH HÀNG (FULL THÔNG TIN) ---
+
 export const getCustomerProfile = async (req, res) => {
   try {
     const userId = req.params.id;
 
-    // Câu lệnh SQL: Lấy thông tin user + Số dư ví + Thống kê đơn hàng + Tổng chi tiêu
+
     const sql = `
       SELECT 
         u.id, u.name, u.email, u.phone, u.avatar, u.address,
@@ -26,7 +26,7 @@ export const getCustomerProfile = async (req, res) => {
 
     const user = rows[0];
 
-    // --- Logic tính Hạng thành viên (Rank) ---
+
     let rank = "Thành viên mới";
     const spent = Number(user.total_spent);
 
@@ -35,27 +35,25 @@ export const getCustomerProfile = async (req, res) => {
     else if (spent >= 2000000) rank = "🥈 Bạc";
     else if (spent > 0) rank = "🥉 Đồng";
 
-    // Trả về dữ liệu đã gộp
+
     res.json({
       ...user,
       rank: rank,
-      wallet_balance: Number(user.wallet_balance), // Đảm bảo là số
+      wallet_balance: Number(user.wallet_balance),
       total_spent: spent,
     });
   } catch (err) {
-    console.error("Lỗi lấy hồ sơ:", err);
     res.status(500).json({ message: "Lỗi hệ thống" });
   }
 };
 
-// --- 2. CẬP NHẬT HỒ SƠ (Bao gồm Avatar & Address) ---
+
 export const updateCustomerProfile = async (req, res) => {
   const { name, email, phone, address, avatar } = req.body;
   const userId = req.params.id;
 
   try {
-    // Chỉ cập nhật các trường được gửi lên
-    // Lưu ý: Avatar gửi lên là chuỗi Base64 rất dài, nên dùng LONGTEXT trong DB
+
     await pool.query(
       `UPDATE users 
        SET name = ?, phone = ?, address = ?, avatar = ? 
@@ -65,12 +63,12 @@ export const updateCustomerProfile = async (req, res) => {
 
     res.json({ message: "Cập nhật hồ sơ thành công!" });
   } catch (err) {
-    console.error("Lỗi cập nhật hồ sơ:", err);
     res.status(500).json({ message: "Không thể cập nhật hồ sơ" });
   }
 };
 
-//Tạo đơn hàng mới (và tự động tạo thanh toán)
+
+// Tạo đơn hàng mới
 export const createShipment = async (req, res) => {
   const {
     customer_id,
@@ -83,13 +81,13 @@ export const createShipment = async (req, res) => {
     delivery_address,
     weight_kg,
     cod_amount,
-    shipping_fee, // FE gửi
-    service_type, // standard / express / fast
+    shipping_fee,
+    service_type,
     payment_method = "COD",
   } = req.body;
 
   try {
-    // Tạo mã vận đơn
+
     const tracking = `SP${Date.now().toString().slice(-6)}`;
 
     const [result] = await pool.query(
@@ -133,7 +131,7 @@ export const createShipment = async (req, res) => {
 
     const shipment_id = result.insertId;
 
-    // Nếu thanh toán Momo -> tạo payment chờ xử lý
+
     if (payment_method === "MOMO") {
       await pool.query(
         `INSERT INTO payments (shipment_id, customer_id, amount, method, status)
@@ -148,12 +146,12 @@ export const createShipment = async (req, res) => {
       tracking_code: tracking,
     });
   } catch (err) {
-    console.error("❌ Lỗi tạo đơn hàng:", err);
     res.status(500).json({ message: err.message });
   }
 };
 
-// Lấy danh sách đơn hàng
+
+// Lấy đơn hàng của khách hàng
 export const getShipmentsByCustomer = async (req, res) => {
   try {
     const [rows] = await pool.query(
@@ -166,7 +164,8 @@ export const getShipmentsByCustomer = async (req, res) => {
   }
 };
 
-//Gửi feedback
+
+// Gửi đánh giá/phản hồi
 export const createFeedback = async (req, res) => {
   const { customer_id, shipment_id, content, rating } = req.body;
   try {
@@ -180,12 +179,12 @@ export const createFeedback = async (req, res) => {
   }
 };
 
-// Theo dõi đơn hàng theo mã (tracking_code) — chỉ cho khách hàng của chính mình
+
 export const trackShipment = async (req, res) => {
   try {
     const { code } = req.params;
     const customerId = req.query.customer_id || null;
-    const last4 = req.query.last4 || null; // 4 số cuối SĐT
+    const last4 = req.query.last4 || null;
 
     if (!code) {
       return res.status(400).json({ message: "Thiếu mã vận đơn!" });
@@ -206,12 +205,12 @@ export const trackShipment = async (req, res) => {
 `;
     const params = [code];
 
-    //  Nếu là khách hàng đã đăng nhập → chỉ xem đơn của mình
+
     if (customerId) {
       query += " AND s.customer_id = ?";
       params.push(customerId);
     }
-    //  Nếu là khách vãng lai → yêu cầu nhập 4 số cuối SĐT
+
     else if (last4) {
       query +=
         " AND RIGHT(REGEXP_REPLACE(s.receiver_phone, '[^0-9]', ''), 4) = ?";
@@ -234,11 +233,10 @@ export const trackShipment = async (req, res) => {
 
     res.json(shipment);
   } catch (err) {
-    console.error("❌ Lỗi tra cứu đơn:", err);
     res.status(500).json({ message: "Lỗi máy chủ!" });
   }
 };
-//  Xem chi tiết đơn hàng (hiển thị vị trí tài xế)
+
 export const getShipmentDetail = async (req, res) => {
   try {
     const [rows] = await pool.query(
@@ -259,18 +257,18 @@ export const getShipmentDetail = async (req, res) => {
 
     res.json(rows[0]);
   } catch (err) {
-    console.error("❌ Lỗi SQL:", err);
     res.status(500).json({ message: err.message });
   }
 };
 
-// --- ĐỔI MẬT KHẨU ---
+
+// Đổi mật khẩu
 export const changePassword = async (req, res) => {
   const { id } = req.params;
   const { currentPassword, newPassword } = req.body;
 
   try {
-    // 1. Kiểm tra dữ liệu đầu vào
+
     if (!currentPassword || !newPassword) {
       return res.status(400).json({ error: "Vui lòng nhập đầy đủ thông tin" });
     }
@@ -281,7 +279,7 @@ export const changePassword = async (req, res) => {
         .json({ error: "Mật khẩu mới phải có ít nhất 6 ký tự" });
     }
 
-    // 2. Lấy thông tin user từ DB để lấy mật khẩu đã mã hóa hiện tại
+
     const [users] = await pool.query("SELECT * FROM users WHERE id = ?", [id]);
 
     if (users.length === 0) {
@@ -290,7 +288,7 @@ export const changePassword = async (req, res) => {
 
     const user = users[0];
 
-    // 3. So sánh mật khẩu cũ (currentPassword) với mật khẩu trong DB (user.password)
+
     const isMatch = await bcrypt.compare(currentPassword, user.password);
 
     if (!isMatch) {
@@ -299,11 +297,11 @@ export const changePassword = async (req, res) => {
         .json({ error: "Mật khẩu hiện tại không chính xác!" });
     }
 
-    // 4. Mã hóa mật khẩu mới
+
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(newPassword, salt);
 
-    // 5. Cập nhật mật khẩu mới vào DB
+
     await pool.query("UPDATE users SET password = ? WHERE id = ?", [
       hashedPassword,
       id,
@@ -311,7 +309,6 @@ export const changePassword = async (req, res) => {
 
     res.status(200).json({ message: "Đổi mật khẩu thành công!" });
   } catch (err) {
-    console.error("Lỗi đổi mật khẩu:", err);
     res.status(500).json({ error: "Lỗi hệ thống, vui lòng thử lại sau." });
   }
 };
