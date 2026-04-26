@@ -7,7 +7,6 @@ export const getAllRoles = async (req, res) => {
     );
     res.json(rows);
   } catch (err) {
-    console.error("❌ Lỗi lấy roles:", err);
     res.status(500).json({ message: "Lỗi khi lấy danh sách roles" });
   }
 };

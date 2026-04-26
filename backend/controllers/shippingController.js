@@ -5,7 +5,6 @@ dotenv.config();
 
 const MAPBOX_TOKEN = process.env.VITE_MAPBOX_TOKEN;
 
-// Danh sách 63 tỉnh/thành Việt Nam để trích xuất từ text địa chỉ
 const PROVINCES = [
   "Hà Nội", "Hồ Chí Minh", "Đà Nẵng", "Hải Phòng", "Cần Thơ",
   "An Giang", "Bà Rịa - Vũng Tàu", "Bà Rịa Vũng Tàu", "Bắc Giang", "Bắc Kạn",
@@ -21,14 +20,10 @@ const PROVINCES = [
   "Vĩnh Phúc", "Yên Bái",
 ];
 
-/**
- * Trích xuất tỉnh/thành từ chuỗi địa chỉ (không cần gọi API).
- * Ưu tiên match dài hơn trước (VD: "Bà Rịa - Vũng Tàu" trước "Bà Rịa").
- */
 const extractProvinceFromText = (address) => {
   if (!address) return null;
   const lower = address.toLowerCase();
-  // Sắp xếp theo độ dài giảm dần để match chính xác hơn
+
   const sorted = [...PROVINCES].sort((a, b) => b.length - a.length);
   for (const p of sorted) {
     if (lower.includes(p.toLowerCase())) return p;
@@ -69,21 +64,18 @@ const shippingController = {
           });
       }
 
-      // 1. XÁC ĐỊNH TỌA ĐỘ
-      // Ưu tiên dùng tọa độ từ Frontend (đã geocode sẵn), nếu không có mới gọi Mapbox
       let pickupCoords, receiverCoords;
       let pickupProvince, receiverProvince;
 
       if (pickup_lat && pickup_lng && delivery_lat && delivery_lng) {
-        // ✅ Dùng tọa độ từ Frontend — chính xác hơn
+
         pickupCoords = [parseFloat(pickup_lng), parseFloat(pickup_lat)];
         receiverCoords = [parseFloat(delivery_lng), parseFloat(delivery_lat)];
 
-        // Trích xuất tỉnh/thành từ chuỗi địa chỉ (không cần gọi API)
         pickupProvince = extractProvinceFromText(pickup_address) || "Không xác định";
         receiverProvince = extractProvinceFromText(receiver_address) || "Không xác định";
       } else {
-        // Fallback: Geocode bằng Mapbox nếu FE không gửi tọa độ
+
         const getInfo = async (address) => {
           const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(address)}.json?access_token=${MAPBOX_TOKEN}&country=vn&limit=1`;
           const response = await axios.get(url);
@@ -113,7 +105,6 @@ const shippingController = {
         receiverProvince = receiver.province;
       }
 
-      // 2. Lấy khoảng cách ĐƯỜNG BỘ từ Mapbox Directions
       const routeUrl = `https://api.mapbox.com/directions/v5/mapbox/driving/${pickupCoords.join(",")};${receiverCoords.join(",")}?access_token=${MAPBOX_TOKEN}&overview=false`;
       const routeRes = await axios.get(routeUrl);
 
@@ -123,7 +114,6 @@ const shippingController = {
 
       const distanceKm = routeRes.data.routes[0].distance / 1000;
 
-      // 3. Logic Tính Phí
       const isInterProvincial =
         pickupProvince.toLowerCase() !== receiverProvince.toLowerCase();
       let baseFee = 0;
@@ -131,11 +121,10 @@ const shippingController = {
       const cod = parseFloat(cod_amount) || 0;
 
       if (isInterProvincial) {
-        // LIÊN TỈNH: Cước = Phí cơ bản + Phụ phí khoảng cách (bậc giảm dần) + Phụ phí cân nặng
+
         const basePrices = { economy: 30000, express: 40000, fast: 55000 };
         baseFee = basePrices[service_type] || 30000;
 
-        // Phụ phí khoảng cách đường bộ (bậc giảm dần)
         const ratePerKm = { economy: 500, express: 700, fast: 1200 };
         const rate = ratePerKm[service_type] || 500;
 
@@ -150,14 +139,13 @@ const shippingController = {
             (distanceKm - 500) * rate * 0.2;
         }
 
-        // Phụ phí cân nặng (mỗi 0.5kg thêm)
         if (weight > 0.5) {
           const extraSteps = Math.ceil((weight - 0.5) / 0.5);
           const stepPrices = { economy: 5000, express: 7000, fast: 10000 };
           baseFee += extraSteps * (stepPrices[service_type] || 5000);
         }
       } else {
-        // NỘI THÀNH (Tính theo Km)
+
         if (distanceKm < 5) {
           baseFee = { economy: 16500, express: 22000, fast: 35000 }[
             service_type
@@ -172,7 +160,7 @@ const shippingController = {
               ? distanceKm * 5000
               : { economy: 30000, express: 40000 }[service_type];
         } else {
-          // > 20km nội thành: phí cơ bản + mỗi km thêm
+
           const startPrice = { economy: 30000, express: 40000, fast: 50000 }[
             service_type
           ];
@@ -183,12 +171,10 @@ const shippingController = {
         }
       }
 
-      // 4. Phụ phí & VAT
       const vat = baseFee * 0.1;
       const codFee = cod > 2000000 ? cod * 0.005 : 0;
       const totalShipping = baseFee + vat + codFee;
 
-      // 5. Trả về kết quả
       res.json({
         success: true,
         distance_km: distanceKm.toFixed(1),
@@ -205,7 +191,6 @@ const shippingController = {
         },
       });
     } catch (error) {
-      console.error("Shipping Error:", error.message);
       res.status(500).json({ success: false, message: error.message });
     }
   },
