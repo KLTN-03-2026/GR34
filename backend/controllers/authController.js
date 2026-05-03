@@ -3,9 +3,8 @@ import jwt from "jsonwebtoken";
 import pool from "../config/db.js";
 import { sendMail } from "../utils/sendMail.js";
 
-// ==========================
-// ĐĂNG KÝ
-// ==========================
+
+// Đăng ký tài khoản mới
 export const register = async (req, res) => {
   const { name, email, password, phone } = req.body;
   if (!name || !email || !password)
@@ -20,13 +19,13 @@ export const register = async (req, res) => {
 
     const hash = await bcrypt.hash(password, 10);
 
-    // Insert user (mặc định region_id sẽ là NULL)
+
     const [result] = await pool.query(
       "INSERT INTO users (name,email,password,phone) VALUES (?,?,?,?)",
       [name, email, hash, phone]
     );
 
-    // Mặc định role customer
+
     const [role] = await pool.query(
       "SELECT id FROM roles WHERE code='customer'"
     );
@@ -42,17 +41,15 @@ export const register = async (req, res) => {
   }
 };
 
-// ==========================
-// ĐĂNG NHẬP (Cập nhật Logic Vùng Miền)
-// ==========================
+
+// Đăng nhập tài khoản
 export const login = async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password)
     return res.status(400).json({ message: "Vui lòng nhập đầy đủ thông tin!" });
 
   try {
-    // 1. Tìm user
-    // (Câu lệnh SELECT * đã lấy luôn cột region_id nếu bạn đã chạy lệnh ALTER TABLE)
+
     const [users] = await pool.query("SELECT * FROM users WHERE email = ?", [
       email,
     ]);
@@ -61,7 +58,7 @@ export const login = async (req, res) => {
 
     const user = users[0];
 
-    // 2. Kiểm tra trạng thái
+
     if (user.status && user.status.toLowerCase() === "inactive") {
       return res.status(403).json({
         message:
@@ -69,13 +66,13 @@ export const login = async (req, res) => {
       });
     }
 
-    // 3. Kiểm tra mật khẩu
+
     const match = await bcrypt.compare(password, user.password);
     if (!match) {
       return res.status(401).json({ message: "Sai tài khoản hoặc mật khẩu" });
     }
 
-    // 4. Lấy role
+
     const [roles] = await pool.query(
       `SELECT r.code FROM roles r JOIN user_roles ur ON ur.role_id = r.id WHERE ur.user_id = ?`,
       [user.id]
@@ -83,18 +80,18 @@ export const login = async (req, res) => {
 
     const role = roles[0]?.code || "customer";
 
-    // 5. TẠO TOKEN (QUAN TRỌNG: Thêm region_id vào đây)
+
     const token = jwt.sign(
       {
         id: user.id,
         role: role,
-        region_id: user.region_id, // <--- THÊM DÒNG NÀY (VD: 'DN', 'HCM' hoặc NULL)
+        region_id: user.region_id,
       },
-      process.env.JWT_SECRET || "secret-key", // Nên dùng biến môi trường
-      { expiresIn: "1d" } // Tăng lên 1 ngày cho tiện test
+      process.env.JWT_SECRET || "secret-key",
+      { expiresIn: "1d" }
     );
 
-    // 6. Trả về kết quả
+
     res.json({
       message: "Đăng nhập thành công",
       token,
@@ -103,24 +100,21 @@ export const login = async (req, res) => {
         name: user.name,
         email: user.email,
         role: role,
-        region_id: user.region_id, // Trả về để Frontend hiển thị "Khu vực: Đà Nẵng"
+        region_id: user.region_id,
       },
     });
   } catch (err) {
-    console.error("❌ Lỗi đăng nhập:", err);
     res.status(500).json({ message: err.message });
   }
 };
 
-// ==========================
-// GỬI OTP
-// ==========================
+
 export const sendOtp = async (req, res) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ message: "Thiếu email" });
 
   try {
-    // Kiểm tra email đã tồn tại
+
     const [exist] = await pool.query("SELECT * FROM users WHERE email = ?", [
       email,
     ]);
@@ -128,17 +122,17 @@ export const sendOtp = async (req, res) => {
       return res.status(400).json({ message: "Email này đã được sử dụng!" });
     }
 
-    // OTP random 6 số
-    const otp = Math.floor(100000 + Math.random() * 900000);
-    const expiresAt = Date.now() + 5 * 60 * 1000; // 5 phút
 
-    // Lưu DB
+    const otp = Math.floor(100000 + Math.random() * 900000);
+    const expiresAt = Date.now() + 5 * 60 * 1000;
+
+
     await pool.query(
       "INSERT INTO otp_codes (email, code, expires_at) VALUES (?, ?, ?)",
       [email, otp, expiresAt]
     );
 
-    // Gửi email (theme xanh dương)
+
     await sendMail(
       email,
       "SpeedyShip - Xác thực tài khoản",
@@ -165,14 +159,11 @@ export const sendOtp = async (req, res) => {
 
     res.json({ message: "Đã gửi mã OTP đến email của bạn." });
   } catch (err) {
-    console.error("❌ Lỗi gửi OTP:", err);
     res.status(500).json({ message: "Gửi OTP thất bại." });
   }
 };
 
-// ==========================
-// XÁC THỰC OTP
-// ==========================
+
 export const verifyOtp = async (req, res) => {
   const { email, otp } = req.body;
 
@@ -194,7 +185,6 @@ export const verifyOtp = async (req, res) => {
 
     res.json({ message: "Xác thực OTP thành công!" });
   } catch (err) {
-    console.error("❌ Lỗi verify OTP:", err);
     res.status(500).json({ message: "Lỗi xác thực OTP." });
   }
 };

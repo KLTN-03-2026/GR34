@@ -4,20 +4,6 @@
 
 ---
 
-## Mục Lục
-
-- [Giới thiệu](#-giới-thiệu)
-- [Công nghệ sử dụng](#-công-nghệ-sử-dụng)
-- [Yêu cầu hệ thống](#-yêu-cầu-hệ-thống)
-- [Cài đặt và chạy dự án](#-cài-đặt-và-chạy-dự-án)
-- [Cấu trúc thư mục](#-cấu-trúc-thư-mục)
-- [Tài khoản đăng nhập mẫu](#-tài-khoản-đăng-nhập-mẫu)
-- [Tính năng chính](#-tính-năng-chính)
-- [API Endpoints](#-api-endpoints)
-- [Cơ sở dữ liệu](#-cơ-sở-dữ-liệu)
-
----
-
 ## Giới Thiệu
 
 **SpeedyShip** là hệ thống quản lý vận chuyển logistics toàn diện, bao gồm:
@@ -73,36 +59,20 @@
 
 ---
 
-## 💻 Yêu Cầu Hệ Thống
-
-Trước khi bắt đầu, hãy đảm bảo máy tính đã cài đặt:
-
-| Phần mềm             | Phiên bản tối thiểu | Link tải                                            |
-| -------------------- | ------------------- | --------------------------------------------------- |
-| **Node.js**          | v18.x trở lên       | [nodejs.org](https://nodejs.org/)                   |
-| **npm**              | v9.x trở lên        | (đi kèm Node.js)                                    |
-| **MySQL**            | 8.x                 | [mysql.com](https://dev.mysql.com/downloads/)       |
-| **XAMPP** (tùy chọn) | 8.x                 | [apachefriends.org](https://www.apachefriends.org/) |
-| **Git**              | Bất kỳ              | [git-scm.com](https://git-scm.com/)                 |
-
-> **Gợi ý**: Nếu dùng XAMPP, MySQL và phpMyAdmin đã được tích hợp sẵn, rất thuận tiện cho việc import database.
-
----
-
 ## Cài Đặt Và Chạy Dự Án
 
 ### Bước 1: Clone dự án
 
 ```bash
 git clone <repository-url>
-cd MyProject
+cd KLTN_GR34_03-26
 ```
 
 ---
 
 ### Bước 2: Cài đặt Cơ sở dữ liệu MySQL
 
-#### Cách 1: Dùng phpMyAdmin (XAMPP)
+#### Dùng phpMyAdmin (XAMPP)
 
 1. Mở **XAMPP Control Panel**, khởi động **Apache** và **MySQL**
 2. Truy cập [http://localhost/phpmyadmin](http://localhost/phpmyadmin)
@@ -111,24 +81,6 @@ cd MyProject
 4. Chọn database `speedyship` → Tab **Import**
 5. Chọn file `speedyship.sql` trong thư mục gốc dự án
 6. Nhấn **Go** để import
-
-#### Cách 2: Dùng Command Line
-
-```bash
-# Đăng nhập MySQL
-mysql -u root -p
-
-# Tạo database
-CREATE DATABASE speedyship CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
-# Thoát MySQL
-exit
-
-# Import dữ liệu
-mysql -u root -p speedyship < speedyship.sql
-```
-
----
 
 ### Bước 3: Cấu hình Backend
 
@@ -157,7 +109,7 @@ DB_HOST=localhost
 DB_USER=root
 DB_PASS=
 DB_NAME=speedyship
-# DB_PORT=3306   (mặc định, thêm nếu MySQL chạy port khác)
+# DB_PORT=3306
 
 # ===== JWT Authentication =====
 JWT_ACCESS_SECRET=super_access_secret_please_change
@@ -266,71 +218,6 @@ Mở trình duyệt và truy cập: **[http://localhost:5173](http://localhost:5
 
 ---
 
-## Cấu Trúc Thư Mục
-
-```
-MyProject/
-├── 📁 backend/                  # Server-side (Node.js + Express)
-│   ├── 📁 config/               # Cấu hình database (db.js)
-│   ├── 📁 controllers/          # Xử lý logic nghiệp vụ
-│   │   ├── authController.js        # Đăng nhập, đăng ký, JWT
-│   │   ├── shipmentController.js    # Quản lý đơn hàng
-│   │   ├── driverController.js      # Quản lý tài xế
-│   │   ├── paymentController.js     # Thanh toán (COD, MoMo)
-│   │   ├── aiController.js          # Tích hợp AI (Groq)
-│   │   ├── chatController.js        # Chat hỗ trợ
-│   │   ├── newsController.js        # Quản lý tin tức
-│   │   ├── shippingController.js    # Tính phí vận chuyển
-│   │   └── ...                      # Các controller khác
-│   ├── 📁 middleware/            # Middleware (xác thực JWT, phân quyền)
-│   ├── 📁 routes/                # Định tuyến API
-│   ├── 📁 socket/                # Socket.IO (chat & notification)
-│   ├── 📁 uploads/               # Thư mục lưu ảnh upload
-│   ├── 📁 utils/                 # Tiện ích dùng chung
-│   ├── .env                      # Biến môi trường
-│   ├── package.json
-│   └── server.js                 # Entry point backend
-│
-├── 📁 frontend/                  # Client-side (React + Vite)
-│   ├── 📁 public/                # File tĩnh
-│   ├── 📁 src/
-│   │   ├── 📁 assets/            # Hình ảnh, icon
-│   │   ├── 📁 components/        # Component dùng chung
-│   │   │   ├── Navbar.jsx            # Thanh điều hướng
-│   │   │   ├── Footer.jsx            # Chân trang
-│   │   │   ├── ChatBubble.jsx        # Chat popup
-│   │   │   ├── MapPicker.jsx         # Bản đồ chọn vị trí
-│   │   │   ├── CreateOrder.jsx       # Form tạo đơn
-│   │   │   └── ...
-│   │   ├── 📁 context/           # React Context (Auth, Socket)
-│   │   ├── 📁 hooks/             # Custom hooks
-│   │   ├── 📁 layouts/           # Layout chung (Admin, Customer...)
-│   │   ├── 📁 pages/             # Các trang
-│   │   │   ├── Home.jsx              # Trang chủ
-│   │   │   ├── Login.jsx             # Đăng nhập
-│   │   │   ├── Register.jsx          # Đăng ký
-│   │   │   ├── Tracking.jsx          # Tra cứu đơn hàng
-│   │   │   ├── 📁 admin/             # Trang Admin
-│   │   │   ├── 📁 customer/          # Trang Khách hàng
-│   │   │   ├── 📁 dispatcher/        # Trang Điều phối viên
-│   │   │   ├── 📁 driver/            # Trang Tài xế
-│   │   │   └── ...
-│   │   ├── 📁 routes/            # Cấu hình route
-│   │   ├── 📁 services/          # API service (axios)
-│   │   ├── App.jsx               # Root component
-│   │   └── main.jsx              # Entry point
-│   ├── .env                      # Biến môi trường frontend
-│   ├── vite.config.js            # Cấu hình Vite
-│   ├── tailwind.config.js        # Cấu hình TailwindCSS
-│   └── package.json
-│
-├── 📁 html/                      # Bản phác thảo HTML tĩnh (tham khảo)
-├── speedyship.sql                # File SQL import database
-└── README.md                     # 📄 File này
-```
-
----
-
 ## Tài Khoản Đăng Nhập Mẫu
 
 Sau khi import `speedyship.sql`, có thể đăng nhập với các tài khoản sau:
@@ -346,200 +233,16 @@ Sau khi import `speedyship.sql`, có thể đăng nhập với các tài khoản
 
 ---
 
-## Tính Năng Chính
-
-### Trang Công Khai
-
-- Trang chủ giới thiệu dịch vụ với animation (AOS, Framer Motion)
-- Tra cứu đơn hàng theo mã vận đơn (tracking code)
-- Trang dịch vụ, giới thiệu, liên hệ
-- Tin tức & Blog
-- Đăng ký làm tài xế trực tuyến
-
-### Khách Hàng
-
-- Đăng ký / Đăng nhập (OTP Email)
-- Tạo đơn hàng mới với bản đồ chọn vị trí (Mapbox)
-- Chọn địa chỉ theo Tỉnh/Quận/Phường (API)
-- Theo dõi đơn hàng realtime
-- Thanh toán COD hoặc MoMo
-- Chat hỗ trợ trực tuyến (Socket.IO)
-- Quản lý sổ địa chỉ
-- Đánh giá phản hồi dịch vụ
-- Quên mật khẩu (OTP qua email)
-
-### Tài Xế
-
-- Dashboard đơn hàng được phân công
-- Cập nhật trạng thái đơn (picking → delivering → delivered)
-- Nhận thông báo realtime khi có đơn mới
-- Xem lịch sử giao hàng
-
-### Điều Phối Viên
-
-- Quản lý và phân công đơn hàng cho tài xế
-- Theo dõi vị trí tài xế trên bản đồ
-- Chat hỗ trợ khách hàng
-- Quản lý yêu cầu liên hệ
-- Nhận thông báo đơn hàng mới
-
-### Quản Trị Viên (Admin)
-
-- Dashboard thống kê (biểu đồ doanh thu, đơn hàng, tài xế)
-- Quản lý người dùng (CRUD)
-- Quản lý tài xế & đơn đăng ký tài xế
-- Quản lý phương tiện
-- Quản lý đơn hàng & thanh toán
-- Quản lý tin tức (WYSIWYG Editor)
-- Cấu hình hệ thống
-- Xuất báo cáo PDF
-
----
-
-## API Endpoints
-
-### Xác thực (Auth)
-
-| Method | Endpoint                    | Mô tả             |
-| ------ | --------------------------- | ----------------- |
-| POST   | `/api/auth/register`        | Đăng ký tài khoản |
-| POST   | `/api/auth/login`           | Đăng nhập         |
-| POST   | `/api/auth/refresh`         | Làm mới token     |
-| POST   | `/api/auth/send-otp`        | Gửi mã OTP        |
-| POST   | `/api/auth/forgot-password` | Quên mật khẩu     |
-
-### Đơn hàng (Shipments)
-
-| Method | Endpoint             | Mô tả              |
-| ------ | -------------------- | ------------------ |
-| GET    | `/api/shipments`     | Danh sách đơn hàng |
-| POST   | `/api/shipments`     | Tạo đơn mới        |
-| GET    | `/api/shipments/:id` | Chi tiết đơn hàng  |
-| PUT    | `/api/shipments/:id` | Cập nhật đơn       |
-
-### Tài xế (Drivers)
-
-| Method | Endpoint                | Mô tả            |
-| ------ | ----------------------- | ---------------- |
-| GET    | `/api/drivers`          | Danh sách tài xế |
-| POST   | `/api/drivers`          | Thêm tài xế      |
-| PUT    | `/api/drivers/:id`      | Cập nhật tài xế  |
-| PUT    | `/api/drivers/location` | Cập nhật vị trí  |
-
-### Thanh toán (Payments)
-
-| Method | Endpoint                 | Mô tả                |
-| ------ | ------------------------ | -------------------- |
-| GET    | `/api/payments`          | Danh sách thanh toán |
-| POST   | `/api/payments/momo`     | Tạo thanh toán MoMo  |
-| POST   | `/api/payments/momo/ipn` | MoMo IPN callback    |
-
-### Khác
-
-| Method   | Endpoint               | Mô tả                      |
-| -------- | ---------------------- | -------------------------- |
-| GET/POST | `/api/ai/*`            | AI Assistant               |
-| GET/POST | `/api/news/*`          | Tin tức & Blog             |
-| GET/POST | `/api/contact/*`       | Liên hệ                    |
-| GET/POST | `/api/feedbacks/*`     | Đánh giá                   |
-| GET      | `/api/notifications/*` | Thông báo                  |
-| GET/POST | `/api/vehicles/*`      | Phương tiện                |
-| GET      | `/api/addresses/*`     | Địa chỉ (Tỉnh/Quận/Phường) |
-| GET/POST | `/api/wallet/*`        | Ví điện tử                 |
-| GET      | `/api/shipping/*`      | Tính phí vận chuyển        |
-
----
-
-## 🗄 Cơ Sở Dữ Liệu
-
-Database sử dụng **MySQL 8.x** với charset `utf8mb4_unicode_ci`.
-
-### Sơ đồ các bảng chính:
-
-| Bảng                  | Mô tả                                            |
-| --------------------- | ------------------------------------------------ |
-| `users`               | Người dùng (admin, dispatcher, driver, customer) |
-| `roles`               | Vai trò hệ thống                                 |
-| `user_roles`          | Liên kết user ↔ role (nhiều-nhiều)               |
-| `shipments`           | Đơn hàng vận chuyển                              |
-| `assignments`         | Phân công tài xế cho đơn hàng                    |
-| `drivers`             | Thông tin tài xế                                 |
-| `driver_applications` | Đơn đăng ký tài xế                               |
-| `vehicles`            | Phương tiện vận chuyển                           |
-| `payments`            | Thanh toán (COD, MoMo, BankTransfer)             |
-| `chats`               | Phiên chat                                       |
-| `messages`            | Tin nhắn trong chat                              |
-| `notifications`       | Thông báo (driver, dispatcher)                   |
-| `contacts`            | Yêu cầu liên hệ từ khách                         |
-| `feedbacks`           | Đánh giá dịch vụ                                 |
-| `otp_codes`           | Mã OTP xác thực email                            |
-| `system_configs`      | Cấu hình hệ thống                                |
-
----
-
-## Xử Lý Sự Cố (Troubleshooting)
-
-### Lỗi kết nối MySQL
-
-```
-Error: connect ECONNREFUSED 127.0.0.1:3306
-```
-
-**Giải pháp**: Kiểm tra MySQL đã khởi động chưa. Nếu dùng XAMPP, mở Control Panel và Start MySQL.
-
-### Lỗi `MODULE_NOT_FOUND`
-
-```
-Error: Cannot find module 'xxx'
-```
-
-**Giải pháp**: Chạy lại `npm install` trong thư mục tương ứng (backend hoặc frontend).
-
-### Port đã bị sử dụng
-
-```
-Error: listen EADDRINUSE: address already in use :::5000
-```
-
-**Giải pháp**: Đổi `PORT` trong file `.env` backend hoặc tắt tiến trình đang dùng port đó:
-
-```bash
-# Windows
-netstat -ano | findstr :5000
-taskkill /PID <PID> /F
-```
-
-### Lỗi CORS
-
-**Giải pháp**: Đảm bảo frontend chạy đúng port `5173` (đã được whitelist trong `server.js`).
-
-### Lỗi gửi OTP Email
-
-**Giải pháp**:
-
-1. Kiểm tra `EMAIL_USER` và `EMAIL_PASS` trong `.env`
-2. `EMAIL_PASS` phải là **App Password** (không phải mật khẩu Gmail thông thường)
-3. Bật **2-Step Verification** cho tài khoản Google
-
-### Bản đồ Mapbox không hiển thị
-
-**Giải pháp**: Kiểm tra `VITE_MAPBOX_TOKEN` trong file `.env` frontend. Token phải hợp lệ và chưa hết hạn.
-
----
-
-## Ghi Chú Thêm
-
-- **MoMo Sandbox**: Dự án sử dụng môi trường test của MoMo. Các giao dịch không phải tiền thật.
-- **Socket.IO**: Chat và thông báo hoạt động realtime. Cần cả backend và frontend cùng chạy.
-- **File upload**: Ảnh được lưu tại `backend/uploads/` và serve tĩnh qua `/uploads/*`.
-- **Hot Reload**: Backend dùng `nodemon`, Frontend dùng `Vite HMR` - tự động reload khi thay đổi code.
-
----
-
 ## Tác Giả Group34_KLTN_2026
 
 **SpeedyShip Team** - Đồ án tốt nghiệp
 
+- Mang Chí Ngọc Trường
+- Nguyễn Đắc Bảo
+- Nguyễn Bảo Minh
+- Hồ Thái Tuấn Khanh
+- Hồ Quốc Khanh
+
 ---
 
-_Nếu dự án hữu ích, hãy cho một star trên GitHub!_
+_Bản quyền thuộc về SpeedyShip KLTN DTU 03/2026 Group34 GitHub!_

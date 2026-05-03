@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import pool from "../config/db.js";
 import { sendMail } from "../utils/sendMail.js";
 
+// Quên mật khẩu - gửi email reset
 export const forgotPassword = async (req, res) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ message: "Thiếu email" });
@@ -64,6 +65,7 @@ export const verifyForgotOtp = async (req, res) => {
   }
 };
 
+// Đặt lại mật khẩu
 export const resetPassword = async (req, res) => {
   const { email, newPassword, token } = req.body;
 
