@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 
+// Thanh toán thành công
 export default function PaymentSuccess() {
   const [params] = useSearchParams();
   const orderId = params.get("orderId");
@@ -45,7 +46,7 @@ export default function PaymentSuccess() {
           </>
         ) : (
           <>
-            {/* ICON */}
+            {}
             <div className="flex justify-center mb-5">
               {isSuccess ? (
                 <motion.div
@@ -66,7 +67,7 @@ export default function PaymentSuccess() {
               )}
             </div>
 
-            {/* TITLE */}
+            {}
             <h1
               className={`text-3xl font-extrabold mb-3 ${
                 isSuccess ? "text-green-600" : "text-red-600"
@@ -84,7 +85,7 @@ export default function PaymentSuccess() {
                 : "Vui lòng kiểm tra lại hoặc thử lại sau."}
             </p>
 
-            {/* BUTTONS */}
+            {}
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Link
                 to="/customer/history"

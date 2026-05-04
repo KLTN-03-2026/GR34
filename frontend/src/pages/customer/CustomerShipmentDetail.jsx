@@ -10,7 +10,7 @@ import Map, {
 } from "react-map-gl";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import bbox from "@turf/bbox"; // Cần cài: npm install @turf/bbox
+import bbox from "@turf/bbox";
 import toast from "react-hot-toast";
 import AOS from "aos";
 import "aos/dist/aos.css";
@@ -25,30 +25,27 @@ import {
   MapPin,
 } from "lucide-react";
 
-// Token Mapbox
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 
-// --- 🎨 CUSTOM MARKER COMPONENT ---
-// Thay thế cho createCustomIcon của Leaflet
 const CustomMarker = ({ icon, bgColor, ringColor, onClick }) => {
   return (
     <div
       onClick={onClick}
       className="relative w-10 h-10 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform duration-200"
     >
-      {/* Hiệu ứng Ping (Vòng tròn lan tỏa) */}
+      {}
       <div
         className={`absolute inset-0 rounded-full opacity-30 animate-ping ${ringColor}`}
       ></div>
 
-      {/* Vòng tròn chính */}
+      {}
       <div
         className={`relative z-10 w-10 h-10 flex items-center justify-center rounded-full text-white shadow-xl border-2 border-white ${bgColor}`}
       >
         {icon}
       </div>
 
-      {/* Mũi nhọn ở dưới */}
+      {}
       <div
         className={`absolute -bottom-1 w-3 h-3 transform rotate-45 ${bgColor} border-r-2 border-b-2 border-white z-0`}
       ></div>
@@ -56,7 +53,6 @@ const CustomMarker = ({ icon, bgColor, ringColor, onClick }) => {
   );
 };
 
-// --- TIMELINE COMPONENT (GIỮ NGUYÊN) ---
 function TrackingTimeline({ status }) {
   const steps = [
     { key: "pending", label: "Đã đặt hàng", icon: <Package size={18} /> },
@@ -82,7 +78,7 @@ function TrackingTimeline({ status }) {
       case "completed":
         return 3;
       case "failed":
-      case "cancelled":
+      case "canceled":
         return -1;
       default:
         return 0;
@@ -90,7 +86,7 @@ function TrackingTimeline({ status }) {
   };
 
   const currentIndex = getStatusIndex(status);
-  const isFailed = status === "failed" || status === "cancelled";
+  const isFailed = status === "failed" || status === "canceled";
 
   return (
     <div className="w-full py-4">
@@ -143,26 +139,24 @@ function TrackingTimeline({ status }) {
   );
 }
 
-// --- MAIN COMPONENT ---
+// Chi tiết đơn hàng khách hàng
 export default function CustomerShipmentDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const mapRef = useRef(null);
 
   const [shipment, setShipment] = useState(null);
-  const [routeGeoJSON, setRouteGeoJSON] = useState(null); // Lưu GeoJSON LineString
-  const [waypoints, setWaypoints] = useState([]); // [Pickup, Delivery] dạng {lat, lng}
+  const [routeGeoJSON, setRouteGeoJSON] = useState(null);
+  const [waypoints, setWaypoints] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [popupInfo, setPopupInfo] = useState(null); // State để hiển thị Popup
+  const [popupInfo, setPopupInfo] = useState(null);
 
-  // API OSRM: Lấy đường đi
   const fetchRouteOSRM = async (start, end) => {
     if (!start || !end) return null;
 
-    // OSRM dùng [Lng, Lat]
     const startStr = `${start[1]},${start[0]}`;
     const endStr = `${end[1]},${end[0]}`;
-    const midPointStr = "108.2022,16.0544"; // Neo qua Đà Nẵng
+    const midPointStr = "108.2022,16.0544";
     const latDiff = Math.abs(start[0] - end[0]);
 
     let url = "";
@@ -176,15 +170,12 @@ export default function CustomerShipmentDetail() {
       const res = await fetch(url);
       const data = await res.json();
       if (data.code === "Ok" && data.routes.length > 0) {
-        // Mapbox cần GeoJSON chuẩn: [Lng, Lat]. OSRM trả về đúng chuẩn này.
         return {
           type: "Feature",
-          geometry: data.routes[0].geometry, // Geometry từ OSRM là GeoJSON chuẩn
+          geometry: data.routes[0].geometry,
         };
       }
-    } catch (error) {
-      console.error("Lỗi OSRM:", error);
-    }
+    } catch (error) {}
     return null;
   };
 
@@ -202,16 +193,15 @@ export default function CustomerShipmentDetail() {
         let delivery = null;
 
         if (data.pickup_lat && data.pickup_lng) {
-          pickup = [Number(data.pickup_lat), Number(data.pickup_lng)]; // [Lat, Lng]
+          pickup = [Number(data.pickup_lat), Number(data.pickup_lng)];
         }
         if (data.delivery_lat && data.delivery_lng) {
-          delivery = [Number(data.delivery_lat), Number(data.delivery_lng)]; // [Lat, Lng]
+          delivery = [Number(data.delivery_lat), Number(data.delivery_lng)];
         }
 
         if (pickup && delivery) {
           setWaypoints([pickup, delivery]);
 
-          // Nếu đang giao hoặc lấy hàng thì vẽ đường
           if (data.status === "picking" || data.status === "delivering") {
             const geoJson = await fetchRouteOSRM(pickup, delivery);
             setRouteGeoJSON(geoJson);
@@ -220,7 +210,6 @@ export default function CustomerShipmentDetail() {
           }
         }
       } catch (err) {
-        console.error(err);
         toast.error("Không thể tải dữ liệu đơn hàng.");
       } finally {
         setLoading(false);
@@ -229,21 +218,18 @@ export default function CustomerShipmentDetail() {
     fetchDetail();
   }, [id]);
 
-  // Tự động Zoom (FitBounds) khi có dữ liệu
   useEffect(() => {
     if (!mapRef.current) return;
 
-    // Logic tính bound: Gom cả đường đi và các điểm marker
     let features = [];
 
     if (routeGeoJSON) {
       features.push(routeGeoJSON);
     } else if (waypoints.length > 0) {
-      // Nếu không có đường đi, tạo Point features từ waypoints
       waypoints.forEach((pt) => {
         features.push({
           type: "Feature",
-          geometry: { type: "Point", coordinates: [pt[1], pt[0]] }, // [Lng, Lat]
+          geometry: { type: "Point", coordinates: [pt[1], pt[0]] },
         });
       });
     }
@@ -253,7 +239,7 @@ export default function CustomerShipmentDetail() {
         type: "FeatureCollection",
         features: features,
       };
-      // Sử dụng turf/bbox để tính khung bao quanh
+
       const [minLng, minLat, maxLng, maxLat] = bbox(featureCollection);
 
       mapRef.current.fitBounds(
@@ -264,7 +250,7 @@ export default function CustomerShipmentDetail() {
         { padding: 80, duration: 1000 },
       );
     }
-  }, [routeGeoJSON, waypoints, shipment]); // Chạy lại khi data thay đổi
+  }, [routeGeoJSON, waypoints, shipment]);
 
   if (loading) {
     return (
@@ -282,14 +268,13 @@ export default function CustomerShipmentDetail() {
   if (!shipment)
     return <div className="p-10 text-center">Không tìm thấy đơn hàng</div>;
 
-  // Tọa độ tài xế (mặc định lấy điểm đầu nếu chưa có)
   const driverPos = shipment.driver_lat
     ? [Number(shipment.driver_lat), Number(shipment.driver_lng)]
     : waypoints[0];
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-10 font-sans animate-in fade-in duration-500">
-      {/* Header Sticky */}
+      {}
       <div className="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-[50] px-6 py-4 flex items-center gap-4">
         <button
           onClick={() => navigate(-1)}
@@ -312,7 +297,7 @@ export default function CustomerShipmentDetail() {
       </div>
 
       <div className="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* --- CỘT TRÁI (Thông tin) --- */}
+        {}
         <div className="lg:col-span-1 space-y-6">
           <div
             className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100"
@@ -329,7 +314,7 @@ export default function CustomerShipmentDetail() {
             data-aos="fade-up"
             data-aos-delay="100"
           >
-            {/* Pickup Info */}
+            {}
             <div className="flex gap-4 relative">
               <div className="flex flex-col items-center">
                 <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
@@ -354,7 +339,7 @@ export default function CustomerShipmentDetail() {
                 </div>
               </div>
             </div>
-            {/* Delivery Info */}
+            {}
             <div className="flex gap-4 relative">
               <div className="flex flex-col items-center">
                 <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
@@ -422,11 +407,8 @@ export default function CustomerShipmentDetail() {
             </div>
           </div>
 
-          {shipment.driver_name && (
-            <div
-              className="bg-[#113e48] p-5 rounded-2xl text-white shadow-lg relative overflow-hidden group"
-              data-aos="fade-up"
-            >
+          {shipment.driver_name ? (
+            <div className="bg-[#113e48] p-5 rounded-2xl text-white shadow-lg relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 group-hover:bg-white/20 transition-all"></div>
               <div className="relative z-10 flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-orange-500 flex items-center justify-center text-xl font-bold border-2 border-white/20">
@@ -437,19 +419,47 @@ export default function CustomerShipmentDetail() {
                     Tài xế phụ trách
                   </p>
                   <p className="font-bold text-lg">{shipment.driver_name}</p>
+                  <div className="flex flex-col gap-1.5 mt-2">
+                    <p className="text-sm text-blue-100 flex items-center gap-2">
+                      <Phone size={14} className="text-orange-400" />{" "}
+                      {shipment.driver_phone || "Đang cập nhật SĐT"}
+                    </p>
+                    <p className="text-sm text-blue-100 flex items-center gap-2">
+                      <Truck size={14} className="text-orange-400" /> Biển số:{" "}
+                      <span className="font-bold text-white tracking-wider">
+                        {shipment.plate_number || "Đang cập nhật"}
+                      </span>
+                    </p>
+                  </div>
                 </div>
-                <a
-                  href={`tel:${shipment.driver_phone}`}
-                  className="bg-green-500 hover:bg-green-600 p-3 rounded-full shadow-lg transition-transform hover:scale-110"
-                >
-                  <Phone size={20} className="text-white" />
-                </a>
+                {shipment.driver_phone && (
+                  <a
+                    href={`tel:${shipment.driver_phone}`}
+                    className="bg-green-500 hover:bg-green-600 p-3 rounded-full shadow-lg transition-transform hover:scale-110"
+                  >
+                    <Phone size={20} className="text-white" />
+                  </a>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-gray-400">
+                <Truck size={20} />
+              </div>
+              <div className="flex-1">
+                <p className="text-xs text-gray-400 uppercase font-bold mb-0.5">
+                  Tài xế phụ trách
+                </p>
+                <p className="font-bold text-gray-400 italic text-sm">
+                  Chưa phân công tài xế
+                </p>
               </div>
             </div>
           )}
         </div>
 
-        {/* --- CỘT PHẢI: MAPBOX --- */}
+        {}
         <div
           className="lg:col-span-2 h-[600px] lg:h-auto min-h-[500px] bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden relative z-0"
           data-aos="fade-left"
@@ -465,17 +475,17 @@ export default function CustomerShipmentDetail() {
             mapStyle="mapbox://styles/mapbox/streets-v12"
             mapboxAccessToken={MAPBOX_TOKEN}
           >
-            {/* Nút điều hướng */}
+            {}
             <NavigationControl position="bottom-right" />
 
-            {/* VẼ ĐƯỜNG (POLYLINE) */}
+            {}
             {routeGeoJSON && (
               <Source id="route" type="geojson" data={routeGeoJSON}>
                 <Layer
                   id="route-line"
                   type="line"
                   paint={{
-                    "line-color": "#3B82F6", // Màu xanh blue-500
+                    "line-color": "#3B82F6",
                     "line-width": 6,
                     "line-opacity": 0.8,
                   }}
@@ -487,7 +497,7 @@ export default function CustomerShipmentDetail() {
               </Source>
             )}
 
-            {/* MARKER: PICKUP */}
+            {}
             {waypoints[0] && (
               <Marker
                 longitude={waypoints[0][1]}
@@ -512,7 +522,7 @@ export default function CustomerShipmentDetail() {
               </Marker>
             )}
 
-            {/* MARKER: DELIVERY */}
+            {}
             {waypoints[1] && (
               <Marker
                 longitude={waypoints[1][1]}
@@ -537,7 +547,7 @@ export default function CustomerShipmentDetail() {
               </Marker>
             )}
 
-            {/* MARKER: DRIVER (Chỉ hiện khi đang đi) */}
+            {}
             {(shipment.status === "picking" ||
               shipment.status === "delivering") &&
               shipment.driver_lat && (
@@ -564,7 +574,7 @@ export default function CustomerShipmentDetail() {
                 </Marker>
               )}
 
-            {/* POPUP THÔNG TIN KHI CLICK MARKER */}
+            {}
             {popupInfo && (
               <Popup
                 anchor="top"
@@ -584,7 +594,7 @@ export default function CustomerShipmentDetail() {
             )}
           </Map>
 
-          {/* Mobile Overlay */}
+          {}
           <div className="lg:hidden absolute top-4 left-4 right-4 bg-white/90 backdrop-blur p-3 rounded-xl shadow-lg border border-gray-100 z-[40]">
             <p className="text-xs font-bold text-gray-500 uppercase">
               Trạng thái hiện tại
@@ -593,7 +603,7 @@ export default function CustomerShipmentDetail() {
               {shipment.status === "delivering"
                 ? "🚚 Đang giao hàng"
                 : shipment.status === "completed"
-                  ? "✅ Giao thành công"
+                  ? "Giao thành công"
                   : "📦 " + shipment.status}
             </p>
           </div>

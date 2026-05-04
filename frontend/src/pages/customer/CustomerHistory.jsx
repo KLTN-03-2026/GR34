@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../../services/api";
 import toast, { Toaster } from "react-hot-toast";
@@ -6,18 +6,151 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 import {
   Package,
+  PackageOpen,
   Search,
   Filter,
   Eye,
   Star,
   XCircle,
-  MoreVertical,
+  Ban,
   Clock,
   CheckCircle,
   Truck,
+  ChevronDown,
+  ClipboardList,
+  AlertTriangle,
 } from "lucide-react";
-import Pagination from "../../components/Pagination"; // Dùng lại Pagination
+import Pagination from "../../components/Pagination";
 
+const STATUS_OPTIONS = [
+  {
+    value: "all",
+    label: "Tất cả trạng thái",
+    icon: Filter,
+    color: "text-gray-500",
+    bg: "bg-gray-100",
+  },
+  {
+    value: "pending",
+    label: "Chờ xử lý",
+    icon: Clock,
+    color: "text-yellow-600",
+    bg: "bg-yellow-100",
+  },
+  {
+    value: "assigned",
+    label: "Đã phân công",
+    icon: ClipboardList,
+    color: "text-gray-600",
+    bg: "bg-gray-100",
+  },
+  {
+    value: "picking",
+    label: "Đang lấy hàng",
+    icon: PackageOpen,
+    color: "text-orange-600",
+    bg: "bg-orange-100",
+  },
+  {
+    value: "delivering",
+    label: "Đang giao hàng",
+    icon: Truck,
+    color: "text-blue-600",
+    bg: "bg-blue-100",
+  },
+  {
+    value: "completed",
+    label: "Hoàn thành",
+    icon: CheckCircle,
+    color: "text-green-600",
+    bg: "bg-green-100",
+  },
+  {
+    value: "failed",
+    label: "Giao thất bại",
+    icon: AlertTriangle,
+    color: "text-red-600",
+    bg: "bg-red-100",
+  },
+  {
+    value: "canceled",
+    label: "Đã hủy",
+    icon: Ban,
+    color: "text-gray-500",
+    bg: "bg-gray-100",
+  },
+];
+
+function StatusFilterDropdown({ value, onChange }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const selected =
+    STATUS_OPTIONS.find((o) => o.value === value) || STATUS_OPTIONS[0];
+  const SelectedIcon = selected.icon;
+
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-2 px-3 py-2.5 border border-gray-200 rounded-xl bg-white hover:border-orange-400 hover:ring-2 hover:ring-orange-500/10 transition-all text-sm font-medium text-gray-700 min-w-[180px] justify-between shadow-sm"
+      >
+        <div className="flex items-center gap-2">
+          <span className={`p-1 rounded-lg ${selected.bg} ${selected.color}`}>
+            <SelectedIcon size={13} />
+          </span>
+          <span>{selected.label}</span>
+        </div>
+        <ChevronDown
+          size={14}
+          className={`text-gray-400 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-full mt-2 w-56 bg-white border border-gray-100 rounded-2xl shadow-xl z-50 overflow-hidden py-1 animate-in fade-in slide-in-from-top-2 duration-150">
+          {STATUS_OPTIONS.map((opt) => {
+            const Icon = opt.icon;
+            const isActive = opt.value === value;
+            return (
+              <button
+                key={opt.value}
+                onClick={() => {
+                  onChange(opt.value);
+                  setOpen(false);
+                }}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm transition-colors hover:bg-orange-50 ${isActive ? "bg-orange-50/60 font-semibold" : ""}`}
+              >
+                <span
+                  className={`p-1.5 rounded-lg ${opt.bg} ${opt.color} flex-shrink-0`}
+                >
+                  <Icon size={13} />
+                </span>
+                <span
+                  className={isActive ? "text-orange-700" : "text-gray-700"}
+                >
+                  {opt.label}
+                </span>
+                {isActive && (
+                  <span className="ml-auto w-1.5 h-1.5 rounded-full bg-orange-500" />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Lịch sử đơn hàng khách hàng
 export default function CustomerHistory() {
   const [shipments, setShipments] = useState([]);
   const [filtered, setFiltered] = useState([]);
@@ -25,7 +158,6 @@ export default function CustomerHistory() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
 
-  // Pagination
   const [page, setPage] = useState(1);
   const itemsPerPage = 8;
 
@@ -48,16 +180,13 @@ export default function CustomerHistory() {
       .finally(() => setLoading(false));
   }, [customerId]);
 
-  // Filter & Search Logic
   useEffect(() => {
     let result = shipments;
 
-    // Filter by Status
     if (filterStatus !== "all") {
       result = result.filter((s) => s.status === filterStatus);
     }
 
-    // Filter by Search (Tracking Code or Receiver Name)
     if (search) {
       const keyword = search.toLowerCase();
       result = result.filter(
@@ -68,10 +197,9 @@ export default function CustomerHistory() {
     }
 
     setFiltered(result);
-    setPage(1); // Reset page
+    setPage(1);
   }, [filterStatus, search, shipments]);
 
-  // Pagination Logic
   const totalPages = Math.ceil(filtered.length / itemsPerPage);
   const startIndex = (page - 1) * itemsPerPage;
   const currentShipments = filtered.slice(
@@ -79,13 +207,18 @@ export default function CustomerHistory() {
     startIndex + itemsPerPage,
   );
 
-  // Helper: Status Badge
+  // Tạo badge hiển thị trạng thái
   const getStatusBadge = (status) => {
     const config = {
       pending: {
         label: "Chờ xử lý",
         color: "bg-yellow-100 text-yellow-700 border-yellow-200",
         icon: <Clock size={12} />,
+      },
+      assigned: {
+        label: "Đã phân công",
+        color: "bg-gray-100 text-gray-600 border-gray-200",
+        icon: <Package size={12} />,
       },
       picking: {
         label: "Đang lấy hàng",
@@ -103,16 +236,16 @@ export default function CustomerHistory() {
         icon: <CheckCircle size={12} />,
       },
       completed: {
-        label: "Hoàn tất",
+        label: "Hoàn thành",
         color: "bg-green-100 text-green-700 border-green-200",
         icon: <CheckCircle size={12} />,
       },
       failed: {
-        label: "Thất bại",
+        label: "Giao thất bại",
         color: "bg-red-100 text-red-700 border-red-200",
         icon: <XCircle size={12} />,
       },
-      cancelled: {
+      canceled: {
         label: "Đã hủy",
         color: "bg-gray-100 text-gray-600 border-gray-200",
         icon: <XCircle size={12} />,
@@ -124,7 +257,7 @@ export default function CustomerHistory() {
     };
     return (
       <span
-        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold border whitespace-nowrap ${s.color}`}
+        className={`inline-flex items-center justify-center gap-1 min-w-[130px] px-2.5 py-1.5 rounded-full text-xs font-bold border whitespace-nowrap ${s.color}`}
       >
         {s.icon} {s.label}
       </span>
@@ -135,7 +268,7 @@ export default function CustomerHistory() {
     <div className="animate-in fade-in duration-500 space-y-6 pb-10">
       <Toaster position="top-right" />
 
-      {/* Header & Controls */}
+      {}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
         <div>
           <h1 className="text-xl font-extrabold text-[#113e48] flex items-center gap-2">
@@ -147,7 +280,7 @@ export default function CustomerHistory() {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-          {/* Search Box */}
+          {}
           <div className="relative group">
             <Search
               className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-orange-500 transition-colors"
@@ -162,33 +295,18 @@ export default function CustomerHistory() {
             />
           </div>
 
-          {/* Filter Select */}
-          <div className="relative">
-            <Filter
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-              size={16}
-            />
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="pl-9 pr-8 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 bg-white cursor-pointer appearance-none w-full sm:w-48 transition-all font-medium text-gray-700"
-            >
-              <option value="all">Tất cả trạng thái</option>
-              <option value="pending">⏳ Chờ xử lý</option>
-              <option value="picking">📦 Đang lấy hàng</option>
-              <option value="delivering">🚚 Đang giao hàng</option>
-              <option value="completed">✅ Hoàn tất</option>
-              <option value="failed">❌ Thất bại</option>
-              <option value="cancelled">🚫 Đã hủy</option>
-            </select>
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-[10px]">
-              ▼
-            </div>
-          </div>
+          {}
+          <StatusFilterDropdown
+            value={filterStatus}
+            onChange={(v) => {
+              setFilterStatus(v);
+              setPage(1);
+            }}
+          />
         </div>
       </div>
 
-      {/* Table */}
+      {}
       <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
@@ -247,7 +365,7 @@ export default function CustomerHistory() {
                       {new Date(s.created_at).toLocaleDateString("vi-VN")}
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <div className="flex justify-center gap-2 opacity-80 group-hover:opacity-100 transition-opacity">
+                      <div className="flex justify-start gap-2 w-[72px] mx-auto opacity-80 group-hover:opacity-100 transition-opacity">
                         <button
                           onClick={() => navigate(`/customer/history/${s.id}`)}
                           className="p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
@@ -275,7 +393,6 @@ export default function CustomerHistory() {
                             title="Hủy đơn"
                             onClick={() => {
                               if (confirm("Bạn chắc chắn muốn hủy đơn này?")) {
-                                // Gọi API hủy đơn ở đây
                                 toast.success("Đã gửi yêu cầu hủy đơn");
                               }
                             }}
@@ -292,7 +409,7 @@ export default function CustomerHistory() {
           </table>
         </div>
 
-        {/* Pagination */}
+        {}
         <Pagination
           currentPage={page}
           totalPages={totalPages}
