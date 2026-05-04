@@ -4,7 +4,6 @@ import Footer from "./components/Footer.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import ScrollToTop from "./components/ScrollToTop.jsx";
 
-// 🌍 Public pages
 import Home from "./pages/Home.jsx";
 import Tracking from "./pages/Tracking.jsx";
 import About from "./pages/About.jsx";
@@ -18,13 +17,11 @@ import Logout from "./pages/Logout.jsx";
 import Unauthorized from "./pages/Unauthorized.jsx";
 import ApplyDriver from "./pages/ApplyDriver.jsx";
 
-// 🧩 Layouts
 import AdminLayout from "./layouts/AdminLayout.jsx";
 import DispatcherLayout from "./layouts/DispatcherLayout.jsx";
 import DriverLayout from "./layouts/DriverLayout.jsx";
 import CustomerLayout from "./layouts/CustomerLayout.jsx";
 
-// 🧭 Admin pages
 import AdminDashboard from "./pages/admin/AdminDashboard.jsx";
 import AdminShipments from "./pages/admin/AdminShipments.jsx";
 import AdminDrivers from "./pages/admin/AdminDrivers.jsx";
@@ -34,23 +31,22 @@ import AdminUsers from "./pages/admin/AdminUsers.jsx";
 import AdminFeedbacks from "./pages/admin/AdminFeedbacks.jsx";
 import AdminContacts from "./pages/admin/AdminContacts";
 import AdminNews from "./pages/admin/AdminNews.jsx";
+import AdminShipmentDetail from "./pages/admin/AdminShipmentDetail.jsx";
 
-// 🚛 Dispatcher pages
 import DispatcherDashboard from "./pages/dispatcher/DispatcherDashboard.jsx";
 import DispatcherAssignments from "./pages/dispatcher/DispatcherAssignments.jsx";
 import DispatcherTracking from "./pages/dispatcher/DispatcherTracking.jsx";
 import DispatcherTrackingDetail from "./pages/dispatcher/DispatcherTrackingDetail.jsx";
 import DispatcherContacts from "./pages/dispatcher/DispatcherContacts.jsx";
 import DispatcherChat from "./pages/dispatcher/DispatcherChat.jsx";
+import FailedShipmentsPanel from "./pages/dispatcher/FailedShipmentsPanel.jsx";
 
-// 🚚 Driver pages
 import DriverDashboard from "./pages/driver/DriverDashboard.jsx";
 import DriverAssignments from "./pages/driver/DriverAssignments.jsx";
 import DriverHistory from "./pages/driver/DriverHistory.jsx";
 import DriverProfile from "./pages/driver/DriverProfile.jsx";
 import DriverShipmentDetail from "./pages/driver/DriverShipmentDetail.jsx";
 
-// 👤 Customer pages
 import CustomerDashboard from "./pages/customer/CustomerDashboard.jsx";
 import CustomerCreateShipment from "./pages/customer/CustomerCreateShipment.jsx";
 import CustomerTrack from "./pages/customer/CustomerTrack.jsx";
@@ -58,7 +54,7 @@ import CustomerHistory from "./pages/customer/CustomerHistory.jsx";
 import CustomerProfile from "./pages/customer/CustomerProfile.jsx";
 import CustomerShipmentDetail from "./pages/customer/CustomerShipmentDetail.jsx";
 import CustomerPayment from "./pages/customer/CustomerPayment.jsx";
-// import PaymentSuccess from "./pages/customer/PaymentSuccess.jsx"; // ❌ Bỏ nếu không dùng
+
 import PaymentFail from "./pages/customer/PaymentFail.jsx";
 import CustomerFeedback from "./pages/customer/CustomerFeedback.jsx";
 import PaymentResult from "./pages/customer/PaymentResult.jsx";
@@ -67,7 +63,6 @@ import CustomerWallet from "./pages/customer/CustomerWallet.jsx";
 import CustomerSupport from "./pages/customer/CustomerSupport.jsx";
 import CustomerInvoice from "./pages/customer/CustomerInvoice.jsx";
 
-// 📜 Policy & Services
 import PrivacyPolicy from "./pages/policy/PrivacyPolicy.jsx";
 import Claims from "./pages/policy/Claims.jsx";
 import Terms from "./pages/policy/Terms.jsx";
@@ -81,7 +76,6 @@ import PriceList from "./pages/service/PriceList.jsx";
 import { ChatProvider } from "./context/ChatContext";
 import ChatLayout from "./components/ChatLayout.jsx";
 
-// ✨ Layout riêng cho trang Public để tránh re-render Navbar/Footer
 const PublicLayout = () => (
   <>
     <Navbar />
@@ -104,7 +98,7 @@ export default function App() {
       <div className="bg-gray-50 text-gray-800 min-h-screen flex flex-col relative font-sans">
         <ScrollToTop />
         <Routes>
-          {/* 🌍 PUBLIC ROUTES (Được bọc bởi Navbar & Footer) */}
+          {}
           <Route element={<PublicLayout />}>
             <Route path="/" element={<Home />} />
             <Route path="/tracking" element={<Tracking />} />
@@ -121,19 +115,19 @@ export default function App() {
             <Route path="/apply-driver" element={<ApplyDriver />} />
             <Route path="/news/:id" element={<NewsDetail />} />
 
-            {/* Policy Routes */}
+            {}
             <Route path="/policy/privacy" element={<PrivacyPolicy />} />
             <Route path="/policy/claims" element={<Claims />} />
             <Route path="/policy/terms" element={<Terms />} />
             <Route path="/policy/shipping-rules" element={<ShippingRules />} />
           </Route>
 
-          {/* 🚪 Auth/Error Routes (Không cần Navbar/Footer hoặc Layout riêng) */}
+          {}
           <Route path="/logout" element={<Logout />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
 
-          {/* 🧭 ADMIN */}
+          {}
           <Route
             path="/admin"
             element={
@@ -144,6 +138,7 @@ export default function App() {
           >
             <Route index element={<AdminDashboard />} />
             <Route path="shipments" element={<AdminShipments />} />
+            <Route path="shipments/:id" element={<AdminShipmentDetail />} />
             <Route path="drivers" element={<AdminDrivers />} />
             <Route path="customers" element={<AdminCustomers />} />
             <Route path="payments" element={<AdminPayments />} />
@@ -153,7 +148,7 @@ export default function App() {
             <Route path="news" element={<AdminNews />} />
           </Route>
 
-          {/* 🧩 DISPATCHER */}
+          {}
           <Route
             path="/dispatcher"
             element={
@@ -168,9 +163,10 @@ export default function App() {
             <Route path="tracking/:id" element={<DispatcherTrackingDetail />} />
             <Route path="chat" element={<DispatcherChat />} />
             <Route path="contacts" element={<DispatcherContacts />} />
+            <Route path="failed-orders" element={<FailedShipmentsPanel />} />
           </Route>
 
-          {/* 🚚 DRIVER */}
+          {}
           <Route
             path="/driver/:id"
             element={
@@ -189,7 +185,7 @@ export default function App() {
             />
           </Route>
 
-          {/* 👤 CUSTOMER */}
+          {}
           <Route
             path="/customer"
             element={
@@ -200,14 +196,14 @@ export default function App() {
           >
             <Route index element={<CustomerDashboard />} />
 
-            {/* 👇 ĐÃ SỬA: Dùng đường dẫn tương đối (bỏ /customer/ ở đầu) */}
+            {}
             <Route path="create-order" element={<CustomerCreateShipment />} />
             <Route path="track" element={<CustomerTrack />} />
             <Route path="history" element={<CustomerHistory />} />
             <Route path="profile" element={<CustomerProfile />} />
             <Route path="history/:id" element={<CustomerShipmentDetail />} />
 
-            {/* Payment Routes */}
+            {}
             <Route path="payment" element={<CustomerPayment />} />
             <Route path="payment-success" element={<PaymentResult />} />
             <Route path="payment-fail" element={<PaymentFail />} />
@@ -219,7 +215,7 @@ export default function App() {
             <Route path="invoices" element={<CustomerInvoice />} />
           </Route>
 
-          {/* ❌ 404 Not Found */}
+          {}
           <Route
             path="*"
             element={
@@ -242,7 +238,7 @@ export default function App() {
         </Routes>
       </div>
 
-      {/* Chat Widget cho khách vãng lai và customer */}
+      {}
       {shouldShowChat && <ChatLayout />}
     </ChatProvider>
   );

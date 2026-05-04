@@ -14,33 +14,29 @@ import {
   Loader2,
 } from "lucide-react";
 
+// Quản lý ví điện tử
 export default function CustomerWallet() {
   const [searchParams] = useSearchParams();
 
-  // Dữ liệu ví & giao dịch
   const [wallet, setWallet] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // State Modal Nhập tiền
   const [showInputModal, setShowInputModal] = useState(false);
   const [amount, setAmount] = useState("");
   const [processing, setProcessing] = useState(false);
 
-  // Phân trang giao dịch
   const [txPage, setTxPage] = useState(1);
   const txPerPage = 8;
 
-  // State Popup Iframe MoMo
   const [showMomoPopup, setShowMomoPopup] = useState(false);
   const [momoUrl, setMomoUrl] = useState("");
   const checkIntervalRef = useRef(null);
 
-  // ID User
   const customerId =
     localStorage.getItem("userId") || localStorage.getItem("customer_id");
 
-  // --- 1. LOAD DỮ LIỆU ---
+  // Tải dữ liệu từ server
   const fetchData = async () => {
     try {
       const resWallet = await API.get(`/wallet/${customerId}`);
@@ -53,7 +49,6 @@ export default function CustomerWallet() {
         setTransactions(resTrans.data);
       }
     } catch (err) {
-      console.error(err);
       toast.error("Lỗi tải thông tin ví");
     } finally {
       setLoading(false);
@@ -62,10 +57,9 @@ export default function CustomerWallet() {
 
   useEffect(() => {
     if (customerId) fetchData();
-    return () => clearInterval(checkIntervalRef.current); // Cleanup interval
+    return () => clearInterval(checkIntervalRef.current);
   }, [customerId]);
 
-  // --- 2. XỬ LÝ NẠP TIỀN (GỌI API -> HIỆN POPUP) ---
   const handleDeposit = async (e) => {
     e.preventDefault();
     if (!amount || Number(amount) < 10000) {
@@ -74,52 +68,43 @@ export default function CustomerWallet() {
 
     setProcessing(true);
     try {
-      // 1. Gọi API nạp tiền
       const res = await API.post("/payments/momo-deposit", {
         wallet_id: wallet.id,
         amount: Number(amount),
       });
 
       if (res.data && res.data.payUrl) {
-        // 2. Ẩn modal nhập tiền -> Hiện popup MoMo
         setShowInputModal(false);
         setMomoUrl(res.data.payUrl);
         setShowMomoPopup(true);
 
-        // 3. Lưu lại số tiền hiện tại để so sánh
         const currentBalance = Number(wallet.balance);
 
-        // 4. Bắt đầu kiểm tra (Polling)
         startCheckingDeposit(currentBalance);
       } else {
         toast.error("Không lấy được link thanh toán MoMo");
       }
     } catch (err) {
-      console.error(err);
       toast.error("Lỗi kết nối đến cổng thanh toán");
     } finally {
       setProcessing(false);
     }
   };
 
-  // --- 3. HÀM KIỂM TRA TRẠNG THÁI NẠP TIỀN ---
   const startCheckingDeposit = (oldBalance) => {
     if (checkIntervalRef.current) clearInterval(checkIntervalRef.current);
 
     checkIntervalRef.current = setInterval(async () => {
       try {
-        // Gọi lại API ví để lấy số dư mới nhất
         const res = await API.get(`/wallet/${customerId}`);
         const newBalance = Number(res.data.balance);
         const newWalletData = res.data;
 
-        // Logic kiểm tra: Nếu số dư tăng lên so với ban đầu
         if (newBalance > oldBalance) {
           clearInterval(checkIntervalRef.current);
           setShowMomoPopup(false);
-          setWallet(newWalletData); // Cập nhật state ví
+          setWallet(newWalletData);
 
-          // Load lại lịch sử giao dịch
           const resTrans = await API.get(
             `/wallet/transactions/${newWalletData.id}`,
           );
@@ -128,22 +113,18 @@ export default function CustomerWallet() {
           toast.success(
             `🎉 Nạp thành công +${(newBalance - oldBalance).toLocaleString()}đ`,
           );
-          setAmount(""); // Reset ô nhập
+          setAmount("");
         }
-      } catch (err) {
-        console.error("Lỗi kiểm tra ví:", err);
-      }
-    }, 3000); // 3 giây check 1 lần
+      } catch (err) {}
+    }, 3000);
   };
 
-  // Đóng popup thủ công
   const closeMomoPopup = () => {
     setShowMomoPopup(false);
     if (checkIntervalRef.current) clearInterval(checkIntervalRef.current);
-    fetchData(); // Load lại lần cuối cho chắc
+    fetchData();
   };
 
-  // Tính toán thống kê
   const totalDeposit = transactions
     .filter((t) => t.type === "deposit" && t.status === "success")
     .reduce((sum, t) => sum + Number(t.amount), 0);
@@ -156,7 +137,6 @@ export default function CustomerWallet() {
     )
     .reduce((sum, t) => sum + Number(t.amount), 0);
 
-  // Phân trang giao dịch
   const txTotalPages = Math.ceil(transactions.length / txPerPage);
   const txStart = (txPage - 1) * txPerPage;
   const currentTransactions = transactions.slice(txStart, txStart + txPerPage);
@@ -171,7 +151,7 @@ export default function CustomerWallet() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500 pb-10">
-      {/* 1. Wallet Card */}
+      {}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2 bg-gradient-to-br from-[#113e48] to-[#0f2a30] p-8 rounded-3xl text-white shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl translate-x-1/2 -translate-y-1/2"></div>
@@ -201,7 +181,7 @@ export default function CustomerWallet() {
           </div>
         </div>
 
-        {/* Stats */}
+        {}
         <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col justify-center">
           <div className="flex items-center gap-3 mb-6">
             <div className="p-3 bg-green-100 text-green-600 rounded-xl">
@@ -238,7 +218,7 @@ export default function CustomerWallet() {
         </div>
       </div>
 
-      {/* 2. Transaction History */}
+      {}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="p-6 border-b border-gray-100 flex justify-between items-center">
           <h3 className="font-bold text-[#113e48] text-lg flex items-center gap-2">
@@ -331,7 +311,7 @@ export default function CustomerWallet() {
         />
       </div>
 
-      {/* --- MODAL NHẬP TIỀN --- */}
+      {}
       {showInputModal && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
           <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 animate-in zoom-in-95 duration-200 relative">
@@ -398,11 +378,11 @@ export default function CustomerWallet() {
         </div>
       )}
 
-      {/* --- POPUP IFRAME MOMO (LOGIC MỚI) --- */}
+      {}
       {showMomoPopup && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-[9999] animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl shadow-2xl p-2 w-full max-w-5xl h-[85vh] relative flex flex-col items-center">
-            {/* Header Popup */}
+            {}
             <div className="w-full flex justify-between items-center p-3 border-b border-gray-100 mb-2">
               <h3 className="text-lg font-bold text-pink-600 flex items-center gap-2">
                 <img
@@ -420,7 +400,7 @@ export default function CustomerWallet() {
               </button>
             </div>
 
-            {/* Iframe */}
+            {}
             <div className="w-full h-full bg-gray-50 rounded-xl overflow-hidden relative">
               <iframe
                 src={momoUrl}
@@ -428,7 +408,7 @@ export default function CustomerWallet() {
                 className="w-full h-full border-none"
               ></iframe>
 
-              {/* Overlay loading nhẹ */}
+              {}
               <div className="absolute top-0 left-0 w-full h-full pointer-events-none flex items-center justify-center bg-white/50 -z-10">
                 <Loader2 className="animate-spin text-pink-500" />
               </div>

@@ -13,14 +13,13 @@ import {
 import AOS from "aos";
 import "aos/dist/aos.css";
 
+// Giới thiệu về SpeedyShip
 export default function About() {
-  // useEffect(() => { AOS.init({ duration: 1000 }); }, []);
-
   return (
     <div className="bg-white font-sans overflow-hidden">
-      {/* 1. HERO SECTION: Nền xanh đậm + Ảnh mờ */}
+      {}
       <section className="relative py-32 bg-[#113e48] text-white overflow-hidden">
-        {/* Họa tiết trang trí nền */}
+        {}
         <div className="absolute inset-0 opacity-10 pointer-events-none">
           <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
             <pattern
@@ -40,7 +39,7 @@ export default function About() {
           </svg>
         </div>
 
-        {/* Nội dung chính */}
+        {}
         <div className="relative z-10 max-w-7xl mx-auto px-6 text-center">
           <span
             className="inline-block py-1.5 px-4 rounded-full bg-white/10 border border-white/20 text-orange-400 text-sm font-bold mb-6 tracking-widest uppercase backdrop-blur-sm"
@@ -69,7 +68,7 @@ export default function About() {
         </div>
       </section>
 
-      {/* 2. STATS SECTION: Box nổi đè lên Hero */}
+      {}
       <section className="py-12 -mt-20 relative z-20 px-6">
         <div className="max-w-6xl mx-auto bg-white rounded-2xl shadow-2xl shadow-[#113e48]/15 border border-gray-100 p-10">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center divide-x divide-gray-100">
@@ -108,12 +107,12 @@ export default function About() {
         </div>
       </section>
 
-      {/* 3. MISSION & VISION: Layout Zig-Zag hiện đại */}
+      {}
       <section className="py-24 max-w-7xl mx-auto px-6 space-y-32">
-        {/* Block 1: Sứ mệnh */}
+        {}
         <div className="grid md:grid-cols-2 gap-16 items-center">
           <div className="relative" data-aos="fade-right">
-            {/* Hình ảnh trang trí */}
+            {}
             <div className="absolute -top-6 -left-6 w-32 h-32 bg-orange-100 rounded-full z-0 mix-blend-multiply filter blur-xl opacity-70"></div>
             <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-blue-100 rounded-full z-0 mix-blend-multiply filter blur-xl opacity-70"></div>
 
@@ -122,15 +121,8 @@ export default function About() {
               alt="Mission"
               className="relative z-10 rounded-2xl shadow-xl w-full object-cover h-[450px]"
             />
-            {/* Quote Box nhỏ */}
-            {/* <div className="absolute bottom-8 -right-8 bg-white p-6 rounded-xl shadow-2xl z-20 max-w-xs hidden md:block border border-gray-50">
-              <p className="text-sm font-bold text-[#113e48] italic">
-                "Khách hàng là trọng tâm của mọi chuyến đi."
-              </p>
-              <div className="flex gap-1 text-orange-400 mt-3 text-xs">
-                ⭐⭐⭐⭐⭐
-              </div>
-            </div> */}
+            {}
+            {}
           </div>
 
           <div data-aos="fade-left">
@@ -164,7 +156,7 @@ export default function About() {
           </div>
         </div>
 
-        {/* Block 2: Tầm nhìn */}
+        {}
         <div className="grid md:grid-cols-2 gap-16 items-center">
           <div className="order-2 md:order-1" data-aos="fade-right">
             <h3 className="text-blue-600 font-bold uppercase tracking-widest text-sm mb-3">
@@ -198,9 +190,9 @@ export default function About() {
         </div>
       </section>
 
-      {/* 4. CORE VALUES: Thẻ Card Style Mới */}
+      {}
       <section className="bg-slate-50 py-24 relative overflow-hidden">
-        {/* Background Pattern mờ */}
+        {}
         <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-orange-50 to-transparent opacity-50 pointer-events-none"></div>
 
         <div className="max-w-7xl mx-auto px-6 relative z-10">
@@ -223,19 +215,19 @@ export default function About() {
                 t: "Tốc độ (Speed)",
                 d: "Thời gian là vàng. Chúng tôi tối ưu từng giây trong quy trình vận hành để hàng hóa đến tay khách sớm nhất.",
                 icon: <FaShippingFast />,
-                theme: "blue", // Xanh dương
+                theme: "blue",
               },
               {
                 t: "Minh bạch (Transparency)",
                 d: "Không phí ẩn, không mập mờ. Mọi hành trình đơn hàng đều được cập nhật công khai trên hệ thống.",
                 icon: <FaShieldAlt />,
-                theme: "green", // Xanh lá
+                theme: "green",
               },
               {
                 t: "Con người (People)",
                 d: "Tài xế và nhân viên là tài sản quý giá nhất. Chúng tôi xây dựng môi trường làm việc hạnh phúc để phục vụ tận tâm.",
                 icon: <FaUsers />,
-                theme: "orange", // Cam
+                theme: "orange",
               },
             ].map((v, i) => (
               <div
@@ -244,7 +236,7 @@ export default function About() {
                 data-aos="fade-up"
                 data-aos-delay={i * 100}
               >
-                {/* Icon Box */}
+                {}
                 <div
                   className={`w-16 h-16 rounded-xl flex items-center justify-center text-3xl mb-6 transition-all duration-300 
                   ${
@@ -275,9 +267,9 @@ export default function About() {
         </div>
       </section>
 
-      {/* 5. CTA BOTTOM: Đã bỏ phần Team */}
+      {}
       <section className="py-24 bg-[#113e48] text-white text-center px-6 relative overflow-hidden">
-        {/* Decor */}
+        {}
         <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
           <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
             <pattern

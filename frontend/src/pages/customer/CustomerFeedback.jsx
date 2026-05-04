@@ -13,6 +13,7 @@ import {
   ThumbsUp,
 } from "lucide-react";
 
+// Đánh giá dịch vụ
 export default function CustomerFeedback() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
@@ -21,9 +22,8 @@ export default function CustomerFeedback() {
   const customerId =
     localStorage.getItem("customer_id") || localStorage.getItem("userId");
 
-  // State
   const [rating, setRating] = useState(5);
-  const [hover, setHover] = useState(0); // State để xử lý hiệu ứng hover sao
+  const [hover, setHover] = useState(0);
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -35,6 +35,7 @@ export default function CustomerFeedback() {
     }
   }, [shipmentId, navigate]);
 
+  // Xử lý submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -53,17 +54,15 @@ export default function CustomerFeedback() {
       });
 
       toast.success("🎉 Cảm ơn bạn đã đánh giá!");
-      // Chờ xíu rồi chuyển trang
+
       setTimeout(() => navigate("/customer/history"), 1500);
     } catch (err) {
-      console.error(err);
       toast.error("❌ Lỗi khi gửi đánh giá, vui lòng thử lại!");
     } finally {
       setLoading(false);
     }
   };
 
-  // Mảng text hiển thị theo số sao
   const ratingLabels = {
     1: "Rất tệ",
     2: "Không hài lòng",
@@ -78,11 +77,11 @@ export default function CustomerFeedback() {
         className="bg-white w-full max-w-lg rounded-3xl shadow-xl border border-gray-100 overflow-hidden relative"
         data-aos="zoom-in"
       >
-        {/* Background Decor */}
+        {}
         <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-orange-400 to-orange-600"></div>
 
         <div className="p-8">
-          {/* Header */}
+          {}
           <button
             onClick={() => navigate(-1)}
             className="text-gray-400 hover:text-[#113e48] flex items-center gap-1 text-sm font-bold mb-6 transition-colors"
@@ -107,7 +106,7 @@ export default function CustomerFeedback() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* 1. Star Rating */}
+            {}
             <div className="flex flex-col items-center gap-2">
               <p className="text-sm font-bold text-gray-400 uppercase tracking-wide">
                 Mức độ hài lòng
@@ -135,7 +134,7 @@ export default function CustomerFeedback() {
                 ))}
               </div>
 
-              {/* Rating Label Animation */}
+              {}
               <div className="h-6 mt-1">
                 <span
                   className={`text-sm font-bold px-3 py-1 rounded-full transition-all duration-300 ${
@@ -151,7 +150,7 @@ export default function CustomerFeedback() {
               </div>
             </div>
 
-            {/* 2. Text Area */}
+            {}
             <div className="space-y-2">
               <label className="text-xs font-bold text-[#113e48] ml-1">
                 Nhận xét của bạn
@@ -165,7 +164,7 @@ export default function CustomerFeedback() {
               />
             </div>
 
-            {/* 3. Submit Button */}
+            {}
             <button
               type="submit"
               disabled={loading}
@@ -187,7 +186,7 @@ export default function CustomerFeedback() {
           </form>
         </div>
 
-        {/* Footer decoration */}
+        {}
         <div className="bg-gray-50 p-4 text-center border-t border-gray-100">
           <p className="text-xs text-gray-400 flex items-center justify-center gap-1">
             <ThumbsUp size={12} /> Ý kiến của bạn giúp SpeedyShip tốt hơn mỗi

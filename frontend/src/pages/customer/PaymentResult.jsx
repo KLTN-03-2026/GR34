@@ -11,24 +11,22 @@ import {
   ArrowRight,
 } from "lucide-react";
 
+// Kết quả thanh toán
 export default function PaymentResult() {
   const [params] = useSearchParams();
 
-  // 1. Lấy kết quả từ URL do MoMo trả về
   const orderId = params.get("orderId");
-  const resultCode = params.get("resultCode"); // 0 = Thành công, Khác 0 = Thất bại
-  const type = params.get("type"); // shipment hoặc wallet
+  const resultCode = params.get("resultCode");
+  const type = params.get("type");
 
   const isSuccess = resultCode === "0";
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Giả lập loading nhẹ để UX mượt hơn
     const timer = setTimeout(() => setIsLoading(false), 1000);
     return () => clearTimeout(timer);
   }, []);
 
-  // Cấu hình nút bấm quay về đâu
   const backLink = type === "wallet" ? "/customer/wallet" : "/customer/history";
   const backLabel =
     type === "wallet" ? "Về ví của tôi" : "Xem lịch sử đơn hàng";

@@ -10,7 +10,7 @@ import Map, {
 } from "react-map-gl";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import bbox from "@turf/bbox"; // npm install @turf/bbox
+import bbox from "@turf/bbox";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import {
@@ -25,10 +25,8 @@ import {
   FaClock,
 } from "react-icons/fa";
 
-// Token Mapbox
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 
-// --- CUSTOM MARKER ---
 const CustomMarker = ({ icon, bgColor, ringColor, onClick }) => {
   return (
     <div
@@ -50,6 +48,7 @@ const CustomMarker = ({ icon, bgColor, ringColor, onClick }) => {
   );
 };
 
+// Tra cứu đơn hàng công khai
 export default function Tracking() {
   const [searchParams] = useSearchParams();
   const initialCode = searchParams.get("code") || "";
@@ -62,7 +61,6 @@ export default function Tracking() {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // State bản đồ
   const [driverPos, setDriverPos] = useState(null);
   const [routeGeoJSON, setRouteGeoJSON] = useState(null);
   const [pickup, setPickup] = useState(null);
@@ -80,7 +78,6 @@ export default function Tracking() {
     if (initialCode) handleSearch();
   }, [initialCode]);
 
-  // --- HÀM XỬ LÝ TRẠNG THÁI ---
   const getStatusInfo = (status) => {
     if (!status)
       return {
@@ -141,7 +138,6 @@ export default function Tracking() {
     };
   };
 
-  // --- TÌM ĐƯỜNG OSRM (CÓ ĐIỂM NEO) ---
   const fetchRouteOSRM = async (start, end) => {
     if (!start || !end) return null;
     const startStr = `${start[1]},${start[0]}`;
@@ -152,7 +148,6 @@ export default function Tracking() {
     const latDiff = Math.abs(start[0] - end[0]);
     let url = "";
 
-    // Nếu đường dài (>2 độ vĩ) thì ép qua Đà Nẵng, Nha Trang để bám biển
     if (latDiff > 2) {
       url = `https://router.project-osrm.org/route/v1/driving/${startStr};${daNang};${nhaTrang};${endStr}?overview=full&geometries=geojson`;
     } else {
@@ -165,13 +160,11 @@ export default function Tracking() {
       if (data.code === "Ok" && data.routes.length > 0) {
         return { type: "Feature", geometry: data.routes[0].geometry };
       }
-    } catch (error) {
-      console.error("Lỗi OSRM:", error);
-    }
+    } catch (error) {}
     return null;
   };
 
-  // --- XỬ LÝ TRA CỨU ---
+  // Xử lý tìm kiếm
   const handleSearch = async () => {
     setError("");
     setSuccess("");
@@ -209,9 +202,8 @@ export default function Tracking() {
 
       const data = res.data;
       setShipment(data);
-      setSuccess("✅ Tra cứu thành công!");
+      setSuccess("Tra cứu thành công!");
 
-      // Tọa độ [Lat, Lng]
       let pk =
         data.pickup_lat && data.pickup_lng
           ? [Number(data.pickup_lat), Number(data.pickup_lng)]
@@ -224,7 +216,6 @@ export default function Tracking() {
       setPickup(pk);
       setDelivery(dl);
 
-      // --- LOGIC HIỂN THỊ XE ---
       if (data.status === "picking" || data.status === "delivering") {
         const geoJson = await fetchRouteOSRM(pk, dl);
         setRouteGeoJSON(geoJson);
@@ -233,8 +224,8 @@ export default function Tracking() {
         data.status === "delivered" ||
         data.status === "success"
       ) {
-        setDriverPos(dl); // Xe đậu tại điểm giao
-        setRouteGeoJSON(null); // Không vẽ đường
+        setDriverPos(dl);
+        setRouteGeoJSON(null);
       } else {
         setDriverPos(null);
         setRouteGeoJSON(null);
@@ -246,7 +237,6 @@ export default function Tracking() {
     }
   };
 
-  // --- MÔ PHỎNG TÀI XẾ (CHẠY CHẬM) ---
   useEffect(() => {
     if (
       !routeGeoJSON ||
@@ -259,24 +249,21 @@ export default function Tracking() {
     let index = 0;
     const totalPoints = pathCoordinates.length;
 
-    // Tăng thời gian lên 200ms (hoặc 300ms) để xe chạy chậm lại
     animationRef.current = setInterval(() => {
       if (index >= totalPoints) index = 0;
       const point = pathCoordinates[index];
       setDriverPos([point[1], point[0]]);
       index += 1;
-    }, 800); // <--- TỐC ĐỘ XE: Càng lớn càng chậm
+    }, 800);
 
     return () => clearInterval(animationRef.current);
   }, [routeGeoJSON]);
 
-  // --- AUTO ZOOM THÔNG MINH ---
   useEffect(() => {
     if (!mapRef.current) return;
 
     const features = [];
 
-    // Gom tất cả các điểm cần hiển thị
     if (pickup)
       features.push({
         type: "Feature",
@@ -287,51 +274,44 @@ export default function Tracking() {
         type: "Feature",
         geometry: { type: "Point", coordinates: [delivery[1], delivery[0]] },
       });
-    if (routeGeoJSON) features.push(routeGeoJSON); // Bao gồm cả đường đi
+    if (routeGeoJSON) features.push(routeGeoJSON);
 
     if (features.length === 0) return;
 
-    // Tính khung hình bao quanh (Bounding Box)
     const featureCollection = { type: "FeatureCollection", features: features };
 
     try {
       const [minLng, minLat, maxLng, maxLat] = bbox(featureCollection);
 
-      // Kiểm tra nếu các điểm trùng nhau (hoặc chỉ có 1 điểm)
       const isSamePoint = minLng === maxLng && minLat === maxLat;
 
       if (isSamePoint) {
-        // Nếu chỉ có 1 điểm -> Zoom mức 14
         mapRef.current.flyTo({
           center: [minLng, minLat],
           zoom: 14,
           duration: 1000,
         });
       } else {
-        // Nếu có nhiều điểm -> Zoom vừa khít
         mapRef.current.fitBounds(
           [
             [minLng, minLat],
             [maxLng, maxLat],
           ],
           {
-            padding: 80, // Cách lề 80px để không bị che
+            padding: 80,
             duration: 1500,
-            maxZoom: 14, // QUAN TRỌNG: Giới hạn zoom tối đa mức 14 để không bị dí sát sàn sạt
+            maxZoom: 14,
           },
         );
       }
-    } catch (error) {
-      console.error("Zoom error:", error);
-    }
+    } catch (error) {}
   }, [routeGeoJSON, pickup, delivery, shipment?.status]);
-  // (Lưu ý: Không bỏ driverPos vào đây để tránh map bị giật khi xe chạy)
 
   const statusInfo = shipment ? getStatusInfo(shipment.status) : null;
 
   return (
     <div className="font-sans bg-slate-50 min-h-screen text-slate-700">
-      {/* 1. HERO */}
+      {}
       <section className="relative pt-24 pb-32 bg-[#113e48] text-white overflow-hidden">
         <div
           className="absolute inset-0 opacity-10"
@@ -364,7 +344,7 @@ export default function Tracking() {
         </div>
       </section>
 
-      {/* 2. SEARCH BAR */}
+      {}
       <section className="-mt-16 relative z-20 px-6">
         <div
           className="max-w-3xl mx-auto bg-white p-6 rounded-3xl shadow-xl border border-gray-100"
@@ -433,19 +413,19 @@ export default function Tracking() {
           )}
           {success && (
             <div className="mt-4 p-3 bg-green-50 text-green-600 rounded-lg text-sm font-medium flex items-center gap-2">
-              ✅ {success}
+              {success}
             </div>
           )}
         </div>
       </section>
 
-      {/* 3. RESULT SECTION */}
+      {}
       {shipment && statusInfo && (
         <section className="py-16 px-6 max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-3 gap-8">
-            {/* Left Column */}
+            {}
             <div className="lg:col-span-1 space-y-6" data-aos="fade-right">
-              {/* Status Card */}
+              {}
               <div
                 className={`p-6 rounded-3xl shadow-lg border-l-8 ${
                   statusInfo.bg
@@ -465,7 +445,7 @@ export default function Tracking() {
                 </p>
               </div>
 
-              {/* Info Card */}
+              {}
               <div className="bg-white p-6 rounded-3xl shadow-lg border border-gray-100">
                 <h3 className="text-lg font-bold text-[#113e48] mb-4 flex items-center gap-2">
                   <FaBoxOpen className="text-orange-500" /> Thông tin kiện hàng
@@ -511,7 +491,7 @@ export default function Tracking() {
               </div>
             </div>
 
-            {/* Right Column: Map */}
+            {}
             <div className="lg:col-span-2" data-aos="fade-left">
               <div className="bg-white p-2 rounded-3xl shadow-xl border border-gray-200 h-[600px] relative z-0 overflow-hidden">
                 <Map
@@ -527,7 +507,7 @@ export default function Tracking() {
                 >
                   <NavigationControl position="bottom-right" />
 
-                  {/* ROUTE LINE (Chỉ hiện khi đang đi) */}
+                  {}
                   {routeGeoJSON && (
                     <Source id="route" type="geojson" data={routeGeoJSON}>
                       <Layer
@@ -544,7 +524,7 @@ export default function Tracking() {
                     </Source>
                   )}
 
-                  {/* PICKUP MARKER */}
+                  {}
                   {pickup && (
                     <Marker
                       longitude={pickup[1]}
@@ -571,7 +551,7 @@ export default function Tracking() {
                     </Marker>
                   )}
 
-                  {/* DELIVERY MARKER */}
+                  {}
                   {delivery && (
                     <Marker
                       longitude={delivery[1]}
@@ -598,7 +578,7 @@ export default function Tracking() {
                     </Marker>
                   )}
 
-                  {/* DRIVER MARKER */}
+                  {}
                   {driverPos && (
                     <Marker
                       longitude={driverPos[1]}
@@ -621,9 +601,7 @@ export default function Tracking() {
                         <div className="text-center font-bold text-xs p-1">
                           {shipment.status === "completed" ||
                           shipment.status === "delivered" ? (
-                            <span className="text-green-600">
-                              ✅ Đã giao hàng
-                            </span>
+                            <span className="text-green-600">Đã giao hàng</span>
                           ) : (
                             <>
                               🚚 Đang vận chuyển <br />
@@ -638,7 +616,7 @@ export default function Tracking() {
                   )}
                 </Map>
 
-                {/* Info Overlay */}
+                {}
                 <div className="absolute bottom-6 left-6 z-[1000] bg-white/90 backdrop-blur-sm p-4 rounded-2xl shadow-lg max-w-xs">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
@@ -666,7 +644,7 @@ export default function Tracking() {
         </section>
       )}
 
-      {/* 4. FOOTER */}
+      {}
       <section className="py-20 bg-white border-t border-gray-100 mt-10">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <h2 className="text-2xl font-bold text-[#113e48] mb-4">

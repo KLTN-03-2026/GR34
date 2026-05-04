@@ -22,14 +22,12 @@ import Map, {
 } from "react-map-gl";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import bbox from "@turf/bbox"; // npm install @turf/bbox
+import bbox from "@turf/bbox";
 import AOS from "aos";
 import "aos/dist/aos.css";
 
-// Token Mapbox
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 
-// --- CUSTOM MARKER COMPONENT ---
 const CustomMarker = ({ icon, bgColor, ringColor, onClick }) => {
   return (
     <div
@@ -51,14 +49,15 @@ const CustomMarker = ({ icon, bgColor, ringColor, onClick }) => {
   );
 };
 
+// Tra cứu hành trình đơn hàng
 export default function CustomerTrack() {
   const [trackingCode, setTrackingCode] = useState("");
   const [shipment, setShipment] = useState(null);
-  const [routeGeoJSON, setRouteGeoJSON] = useState(null); // Lưu GeoJSON đường đi
-  const [waypoints, setWaypoints] = useState([]); // [Pickup, Delivery]
-  const [driverPos, setDriverPos] = useState(null); // Vị trí tài xế (mô phỏng)
+  const [routeGeoJSON, setRouteGeoJSON] = useState(null);
+  const [waypoints, setWaypoints] = useState([]);
+  const [driverPos, setDriverPos] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [popupInfo, setPopupInfo] = useState(null); // Popup state
+  const [popupInfo, setPopupInfo] = useState(null);
 
   const mapRef = useRef(null);
   const animationRef = useRef(null);
@@ -67,24 +66,18 @@ export default function CustomerTrack() {
     AOS.init({ duration: 500 });
   }, []);
 
-  // API OSRM: Lấy đường đi (Logic ép đường Việt Nam)
   const fetchRouteOSRM = async (start, end) => {
     if (!start || !end) return null;
 
-    // OSRM: [Lng, Lat]
     const startStr = `${start[1]},${start[0]}`;
     const endStr = `${end[1]},${end[0]}`;
 
-    // Các điểm neo dọc bờ biển để ép đường đi ở VN
     const daNang = "108.2022,16.0544";
     const nhaTrang = "109.1967,12.2388";
 
-    // Tính khoảng cách vĩ độ
     const latDiff = Math.abs(start[0] - end[0]);
     let url = "";
 
-    // Nếu đi đường dài Bắc - Nam (chênh lệch > 2 độ vĩ tuyến)
-    // Thì ép đi qua Đà Nẵng và Nha Trang
     if (latDiff > 2) {
       url = `https://router.project-osrm.org/route/v1/driving/${startStr};${daNang};${nhaTrang};${endStr}?overview=full&geometries=geojson`;
     } else {
@@ -100,9 +93,7 @@ export default function CustomerTrack() {
           geometry: data.routes[0].geometry,
         };
       }
-    } catch (error) {
-      console.error("Lỗi OSRM:", error);
-    }
+    } catch (error) {}
     return null;
   };
 
@@ -131,7 +122,6 @@ export default function CustomerTrack() {
       let pickup = null;
       let delivery = null;
 
-      // Xử lý tọa độ [Lat, Lng]
       if (data.pickup_lat && data.pickup_lng) {
         pickup = [Number(data.pickup_lat), Number(data.pickup_lng)];
       }
@@ -139,15 +129,12 @@ export default function CustomerTrack() {
         delivery = [Number(data.delivery_lat), Number(data.delivery_lng)];
       }
 
-      // Default nếu thiếu (Demo)
       if (!pickup) pickup = [10.7769, 106.7009];
       if (!delivery) delivery = [21.0285, 105.8542];
 
       setWaypoints([pickup, delivery]);
 
-      // --- LOGIC HIỂN THỊ XE ---
       if (data.status === "picking" || data.status === "delivering") {
-        // Đang đi -> Vẽ đường & Chạy xe
         const geoJson = await fetchRouteOSRM(pickup, delivery);
         setRouteGeoJSON(geoJson);
       } else if (
@@ -155,16 +142,14 @@ export default function CustomerTrack() {
         data.status === "delivered" ||
         data.status === "success"
       ) {
-        // Đã giao -> Xe nằm ngay tại điểm giao, KHÔNG vẽ đường
-        setDriverPos(delivery); // Xe đậu tại điểm giao
+        setDriverPos(delivery);
         setRouteGeoJSON(null);
       } else {
-        // Mới tạo hoặc hủy -> Không hiện xe
         setDriverPos(null);
         setRouteGeoJSON(null);
       }
 
-      toast.success("✅ Đã tìm thấy đơn hàng!");
+      toast.success("Đã tìm thấy đơn hàng!");
     } catch (err) {
       toast.error("❌ Không tìm thấy đơn hàng hoặc bạn không có quyền xem!");
     } finally {
@@ -172,7 +157,6 @@ export default function CustomerTrack() {
     }
   };
 
-  // --- MÔ PHỎNG TÀI XẾ (CHẠY CHẬM) ---
   useEffect(() => {
     if (
       !routeGeoJSON ||
@@ -185,11 +169,10 @@ export default function CustomerTrack() {
     let index = 0;
     const totalPoints = pathCoordinates.length;
 
-    // Tốc độ xe: 200ms mỗi bước
     animationRef.current = setInterval(() => {
       if (index >= totalPoints) index = 0;
       const point = pathCoordinates[index];
-      // Mapbox: [lng, lat], DriverPos: [lat, lng]
+
       setDriverPos([point[1], point[0]]);
       index += 1;
     }, 800);
@@ -197,17 +180,15 @@ export default function CustomerTrack() {
     return () => clearInterval(animationRef.current);
   }, [routeGeoJSON]);
 
-  // --- AUTO ZOOM ---
   useEffect(() => {
     if (!mapRef.current || waypoints.length === 0) return;
 
     let features = [];
 
-    // Gom tất cả các điểm cần hiển thị
     waypoints.forEach((pt) => {
       features.push({
         type: "Feature",
-        geometry: { type: "Point", coordinates: [pt[1], pt[0]] }, // [Lng, Lat]
+        geometry: { type: "Point", coordinates: [pt[1], pt[0]] },
       });
     });
 
@@ -222,7 +203,6 @@ export default function CustomerTrack() {
       try {
         const [minLng, minLat, maxLng, maxLat] = bbox(featureCollection);
 
-        // Nếu chỉ có 1 điểm hoặc trùng nhau
         const isSamePoint = minLng === maxLng && minLat === maxLat;
 
         if (isSamePoint) {
@@ -236,13 +216,10 @@ export default function CustomerTrack() {
             { padding: 80, duration: 1500, maxZoom: 14 },
           );
         }
-      } catch (error) {
-        console.error("Zoom error:", error);
-      }
+      } catch (error) {}
     }
   }, [routeGeoJSON, waypoints, shipment]);
 
-  // Helper render status
   const getStatusColor = (status) => {
     switch (status) {
       case "pending":
@@ -263,6 +240,7 @@ export default function CustomerTrack() {
     }
   };
 
+  // Lấy nhãn tên trạng thái tiếng Việt
   const getStatusLabel = (status) => {
     const map = {
       pending: "Chờ xử lý",
@@ -279,7 +257,7 @@ export default function CustomerTrack() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-20 font-sans animate-in fade-in duration-500">
-      {/* Header Search Section */}
+      {}
       <div className="bg-[#113e48] pt-10 pb-24 px-4 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl translate-x-1/2 -translate-y-1/2"></div>
         <div className="absolute bottom-0 left-0 w-48 h-48 bg-orange-500/10 rounded-full blur-2xl -translate-x-1/2 translate-y-1/2"></div>
@@ -322,16 +300,16 @@ export default function CustomerTrack() {
         </div>
       </div>
 
-      {/* Result Section */}
+      {}
       <div className="max-w-6xl mx-auto px-4 -mt-16 relative z-20">
         {shipment ? (
           <div
             className="grid grid-cols-1 lg:grid-cols-3 gap-6"
             data-aos="fade-up"
           >
-            {/* Left Column: Info */}
+            {}
             <div className="lg:col-span-1 space-y-6">
-              {/* Status Card */}
+              {}
               <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
                 <div className="flex justify-between items-center mb-4">
                   <span className="text-sm font-bold text-gray-400">
@@ -354,7 +332,7 @@ export default function CustomerTrack() {
                 </p>
               </div>
 
-              {/* Driver Card */}
+              {}
               {shipment.driver_name ? (
                 <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 flex items-center gap-4">
                   <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center text-2xl border-2 border-white shadow-sm">
@@ -390,7 +368,7 @@ export default function CustomerTrack() {
                 </div>
               )}
 
-              {/* Route Info */}
+              {}
               <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 space-y-6">
                 <div className="flex gap-4 relative">
                   <div className="flex flex-col items-center">
@@ -428,7 +406,7 @@ export default function CustomerTrack() {
               </div>
             </div>
 
-            {/* Right Column: Map */}
+            {}
             <div className="lg:col-span-2 h-[500px] lg:h-auto bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden relative z-0">
               <Map
                 ref={mapRef}
@@ -443,7 +421,7 @@ export default function CustomerTrack() {
               >
                 <NavigationControl position="bottom-right" />
 
-                {/* ROUTE LINE (Chỉ hiện khi đang đi) */}
+                {}
                 {routeGeoJSON && (
                   <Source id="route" type="geojson" data={routeGeoJSON}>
                     <Layer
@@ -459,7 +437,7 @@ export default function CustomerTrack() {
                   </Source>
                 )}
 
-                {/* PICKUP MARKER */}
+                {}
                 {waypoints[0] && (
                   <Marker
                     longitude={waypoints[0][1]}
@@ -484,7 +462,7 @@ export default function CustomerTrack() {
                   </Marker>
                 )}
 
-                {/* DELIVERY MARKER */}
+                {}
                 {waypoints[1] && (
                   <Marker
                     longitude={waypoints[1][1]}
@@ -509,7 +487,7 @@ export default function CustomerTrack() {
                   </Marker>
                 )}
 
-                {/* DRIVER MARKER */}
+                {}
                 {driverPos && (
                   <Marker
                     longitude={driverPos[1]}
@@ -534,7 +512,7 @@ export default function CustomerTrack() {
                   </Marker>
                 )}
 
-                {/* POPUP */}
+                {}
                 {popupInfo && (
                   <Popup
                     anchor="top"
@@ -556,7 +534,7 @@ export default function CustomerTrack() {
                 )}
               </Map>
 
-              {/* Mobile Overlay */}
+              {}
               <div className="lg:hidden absolute top-4 left-4 right-4 bg-white/90 backdrop-blur p-3 rounded-xl shadow-lg border border-gray-100 z-[40]">
                 <p className="text-xs font-bold text-gray-500 uppercase">
                   Trạng thái hiện tại
@@ -568,7 +546,6 @@ export default function CustomerTrack() {
             </div>
           </div>
         ) : (
-          // Empty State
           !loading && (
             <div
               className="bg-white rounded-2xl shadow-lg p-12 text-center border border-gray-100"
