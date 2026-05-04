@@ -13,24 +13,22 @@ import {
   Wallet,
 } from "lucide-react";
 
+// Thanh toán đơn hàng
 export default function CustomerPayment() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Lấy dữ liệu từ trang trước
   const { shipment_id, amount, cod } = location.state || {};
 
   const [paymentMethod, setPaymentMethod] = useState("Wallet");
   const [loading, setLoading] = useState(false);
 
-  // State Ví & MoMo
   const [walletBalance, setWalletBalance] = useState(0);
   const [loadingWallet, setLoadingWallet] = useState(true);
   const [showMomoPopup, setShowMomoPopup] = useState(false);
   const [momoUrl, setMomoUrl] = useState("");
   const checkIntervalRef = useRef(null);
 
-  // Lấy ID User
   const getUserId = () => {
     const userStr = localStorage.getItem("user");
     if (userStr) {
@@ -44,7 +42,6 @@ export default function CustomerPayment() {
   };
   const currentUserId = getUserId();
 
-  // --- 1. KHỞI TẠO ---
   useEffect(() => {
     if (!shipment_id || !amount) {
       toast.error("Không tìm thấy thông tin đơn hàng!");
@@ -52,7 +49,6 @@ export default function CustomerPayment() {
       return;
     }
 
-    // Load số dư ví
     if (currentUserId) {
       API.get(`/wallet/${currentUserId}`)
         .then((res) => setWalletBalance(Number(res.data.balance)))
@@ -67,13 +63,12 @@ export default function CustomerPayment() {
     };
   }, []);
 
-  // --- 2. XỬ LÝ THANH TOÁN ---
+  // Xử lý thanh toán
   const handlePayment = async () => {
     if (!currentUserId) return toast.error("Vui lòng đăng nhập lại.");
     setLoading(true);
 
     try {
-      // === A. THANH TOÁN BẰNG VÍ ===
       if (paymentMethod === "Wallet") {
         if (walletBalance < Number(amount)) {
           toast.error("Số dư ví không đủ. Vui lòng nạp thêm!");
@@ -81,10 +76,9 @@ export default function CustomerPayment() {
           return;
         }
 
-        // 👇 ĐÃ SỬA: Gửi 'user_id' thay vì 'customer_id' để khớp Backend
         await API.post("/payments/wallet-pay", {
           shipment_id: shipment_id,
-          user_id: Number(currentUserId), // ✅ Dùng user_id
+          user_id: Number(currentUserId),
           amount: Number(amount),
         });
 
@@ -92,13 +86,10 @@ export default function CustomerPayment() {
         navigate(
           `/customer/payment-success?orderId=SHIP${shipment_id}&resultCode=0&type=shipment`,
         );
-      }
-
-      // === B. THANH TOÁN MOMO ===
-      else if (paymentMethod === "Momo") {
+      } else if (paymentMethod === "Momo") {
         const res = await API.post("/payments/momo", {
           shipment_id: shipment_id,
-          customer_id: Number(currentUserId), // MoMo vẫn giữ customer_id (hoặc sửa nếu cần)
+          customer_id: Number(currentUserId),
           amount: Number(amount),
         });
 
@@ -110,10 +101,7 @@ export default function CustomerPayment() {
           toast.error("Lỗi lấy link thanh toán MoMo");
           setLoading(false);
         }
-      }
-
-      // === C. TIỀN MẶT / COD ===
-      else {
+      } else {
         await API.post("/payments", {
           shipment_id: shipment_id,
           customer_id: Number(currentUserId),
@@ -125,13 +113,11 @@ export default function CustomerPayment() {
         );
       }
     } catch (err) {
-      console.error("❌ Lỗi thanh toán:", err);
       toast.error(err.response?.data?.error || "Thanh toán thất bại");
       setLoading(false);
     }
   };
 
-  // --- 3. POLLING MOMO ---
   const startCheckingPayment = () => {
     if (checkIntervalRef.current) clearInterval(checkIntervalRef.current);
 
@@ -154,9 +140,7 @@ export default function CustomerPayment() {
             }&resultCode=0&type=shipment`,
           );
         }
-      } catch (err) {
-        console.error("Check MoMo error:", err);
-      }
+      } catch (err) {}
     }, 3000);
   };
 
@@ -171,7 +155,7 @@ export default function CustomerPayment() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] py-10 px-4 flex items-center justify-center animate-in fade-in duration-500 relative">
       <div className="max-w-4xl w-full grid grid-cols-1 md:grid-cols-3 gap-8">
-        {/* CỘT TRÁI */}
+        {}
         <div className="md:col-span-2 space-y-6">
           <button
             onClick={() => navigate(-1)}
@@ -186,7 +170,7 @@ export default function CustomerPayment() {
             </h2>
 
             <div className="space-y-4">
-              {/* Option Ví */}
+              {}
               <div
                 onClick={() => setPaymentMethod("Wallet")}
                 className={`p-4 rounded-xl border-2 cursor-pointer transition-all flex items-center justify-between group ${
@@ -228,7 +212,7 @@ export default function CustomerPayment() {
                 </div>
               </div>
 
-              {/* Option MoMo */}
+              {}
               <div
                 onClick={() => setPaymentMethod("Momo")}
                 className={`p-4 rounded-xl border-2 cursor-pointer transition-all flex items-center justify-between group ${
@@ -261,7 +245,7 @@ export default function CustomerPayment() {
                 </div>
               </div>
 
-              {/* Option COD */}
+              {}
               <div
                 onClick={() => setPaymentMethod("COD")}
                 className={`p-4 rounded-xl border-2 cursor-pointer transition-all flex items-center justify-between group ${
@@ -297,7 +281,7 @@ export default function CustomerPayment() {
           </div>
         </div>
 
-        {/* CỘT PHẢI */}
+        {}
         <div className="md:col-span-1">
           <div className="bg-white p-6 rounded-2xl shadow-lg border border-blue-100 sticky top-10">
             <h3 className="text-lg font-bold text-[#113e48] mb-4 flex items-center gap-2">
@@ -325,7 +309,7 @@ export default function CustomerPayment() {
               </div>
             </div>
 
-            {/* Thông báo lỗi ví */}
+            {}
             {paymentMethod === "Wallet" && walletBalance < Number(amount) && (
               <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-lg text-xs text-red-600 font-medium text-center">
                 Số dư ví không đủ. Vui lòng nạp thêm.
@@ -364,7 +348,7 @@ export default function CustomerPayment() {
         </div>
       </div>
 
-      {/* POPUP MOMO */}
+      {}
       {showMomoPopup && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-[9999]">
           <div className="bg-white rounded-2xl shadow-2xl p-2 w-full max-w-5xl h-[85vh] relative flex flex-col items-center">

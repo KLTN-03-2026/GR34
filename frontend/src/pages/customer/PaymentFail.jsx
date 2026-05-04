@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { XCircle } from "lucide-react";
 
+// Thanh toán thất bại
 export default function PaymentFail() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-red-50 text-center px-4">

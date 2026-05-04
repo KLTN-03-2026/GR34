@@ -18,14 +18,13 @@ export default function Service() {
     window.scrollTo(0, 0);
   }, []);
 
-  // Danh sách dịch vụ từ yêu cầu của bạn
   const services = [
     {
       id: "01",
       title: "Vận chuyển hàng hóa",
       desc: "Cam kết đúng giờ, an toàn và tối ưu chi phí cho mọi doanh nghiệp. Mạng lưới phủ sóng 63 tỉnh thành.",
       icon: <FaTruckMoving />,
-      link: "/services/road", // Link đến trang Đường bộ
+      link: "/services/road",
       color: "blue",
     },
     {
@@ -33,7 +32,7 @@ export default function Service() {
       title: "Lưu trữ kho bãi",
       desc: "Hệ thống kho bãi rộng rãi, lưu trữ hàng hóa thông minh và cẩn trọng với công nghệ WMS hiện đại.",
       icon: <FaWarehouse />,
-      link: "/services/warehouse", // Link đến trang Kho bãi
+      link: "/services/warehouse",
       color: "orange",
     },
     {
@@ -41,7 +40,7 @@ export default function Service() {
       title: "Giao hàng hỏa tốc",
       desc: "Giải pháp vận chuyển nội thành siêu tốc độ. Cam kết giao nhận đúng hẹn từng phút cho đơn hàng gấp.",
       icon: <FaBolt />,
-      link: "/services/express", // Link đến trang Hỏa tốc
+      link: "/services/express",
       color: "red",
     },
     {
@@ -49,7 +48,7 @@ export default function Service() {
       title: "Bảo hiểm hàng hóa",
       desc: "Bảo vệ 100% giá trị hàng hóa trước mọi rủi ro mất mát, hư hỏng trong quá trình vận chuyển.",
       icon: <FaShieldAlt />,
-      link: "/policy/claims", // Link đến trang Khiếu nại/Bồi thường
+      link: "/policy/claims",
       color: "green",
     },
     {
@@ -57,16 +56,16 @@ export default function Service() {
       title: "Chính sách bảo mật",
       desc: "Cam kết của SpeedyShip về việc bảo vệ dữ liệu và quyền riêng tư của khách hàng tuyệt đối.",
       icon: <FaUserSecret />,
-      link: "/policy/privacy", // Link đến trang Bảo mật
+      link: "/policy/privacy",
       color: "slate",
     },
   ];
 
   return (
     <div className="font-sans bg-slate-50 text-slate-700">
-      {/* 1. HERO SECTION */}
+      {}
       <section className="relative py-24 bg-[#113e48] text-white overflow-hidden">
-        {/* Background Pattern */}
+        {}
         <div
           className="absolute inset-0 opacity-10"
           style={{
@@ -102,7 +101,7 @@ export default function Service() {
         </div>
       </section>
 
-      {/* 2. SERVICES GRID */}
+      {}
       <section className="py-20 px-6 max-w-7xl mx-auto -mt-20 relative z-20">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {services.map((item, index) => (
@@ -112,7 +111,7 @@ export default function Service() {
               data-aos="fade-up"
               data-aos-delay={index * 100}
             >
-              {/* Header Card */}
+              {}
               <div className="flex items-center justify-between mb-6">
                 <div
                   className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl transition-colors duration-300
@@ -150,7 +149,7 @@ export default function Service() {
                 </span>
               </div>
 
-              {/* Content */}
+              {}
               <h3 className="text-xl font-bold text-[#113e48] mb-3 group-hover:text-orange-600 transition-colors">
                 {item.title}
               </h3>
@@ -158,7 +157,7 @@ export default function Service() {
                 {item.desc}
               </p>
 
-              {/* Button */}
+              {}
               <Link
                 to={item.link}
                 className="inline-flex items-center gap-2 font-bold text-sm text-[#113e48] hover:text-orange-600 hover:gap-3 transition-all mt-auto"
@@ -168,7 +167,7 @@ export default function Service() {
             </div>
           ))}
 
-          {/* CTA Card (Thẻ cuối cùng kêu gọi hành động) */}
+          {}
           <div
             className="bg-gradient-to-br from-orange-500 to-red-500 rounded-3xl p-8 shadow-xl text-white flex flex-col justify-center items-center text-center group h-full"
             data-aos="fade-up"
@@ -189,7 +188,7 @@ export default function Service() {
         </div>
       </section>
 
-      {/* 3. BOTTOM BANNER */}
+      {}
       <section className="py-20 bg-white border-t border-gray-100">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <h2 className="text-3xl font-extrabold text-[#113e48] mb-6">

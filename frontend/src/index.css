@@ -7,7 +7,7 @@ body,
 #root {
   height: 100%;
 }
-/* 🔥 Popup mở */
+
 @keyframes zoomPop {
   0% {
     transform: scale(0.8);
@@ -25,7 +25,6 @@ body,
   animation: zoomPop 0.28s ease-out;
 }
 
-/* 🔥 Thu gọn */
 @keyframes collapseChat {
   0% {
     opacity: 1;
@@ -40,7 +39,6 @@ body,
   animation: collapseChat 0.25s ease-out forwards;
 }
 
-/* 🔥 Tin nhắn mới */
 @keyframes msgIn {
   0% {
     opacity: 0;
@@ -55,7 +53,6 @@ body,
   animation: msgIn 0.23s ease-out;
 }
 
-/* 🔥 Bubble hiệu ứng Glow */
 @keyframes pulseGlow {
   0% {
     box-shadow: 0 0 0px rgba(0, 0, 0, 0);
@@ -71,7 +68,6 @@ body,
   animation: pulseGlow 2s infinite;
 }
 
-/* Bubble slide */
 @keyframes slideUp {
   0% {
     opacity: 0;
@@ -86,7 +82,6 @@ body,
   animation: slideUp 0.35s ease-out;
 }
 
-/* Menu nút xoay */
 @keyframes spinBounce {
   0% {
     transform: rotate(0deg) scale(1);
@@ -191,12 +186,11 @@ body,
   padding: 0 15px;
 }
 
-/* Title Area */
 .sub-title {
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #ff6600; /* Orange accent color */
+  color: #ff6600;
   font-weight: 600;
   text-transform: uppercase;
   margin-bottom: 10px;
@@ -214,7 +208,6 @@ body,
   line-height: 1.6;
 }
 
-/* Feature List */
 .achieve-about {
   display: flex;
   gap: 20px;
@@ -224,8 +217,8 @@ body,
 .achieve-icon {
   width: 50px;
   height: 50px;
-  background-color: #e6f4f1; /* Light green bg */
-  color: #00a99d; /* Teal color */
+  background-color: #e6f4f1;
+  color: #00a99d;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -240,7 +233,6 @@ body,
   margin-bottom: 10px;
 }
 
-/* Button */
 .th-btn {
   display: inline-flex;
   align-items: center;
@@ -258,7 +250,6 @@ body,
   background-color: #e65c00;
 }
 
-/* Right Image Area */
 .img-box3 {
   position: relative;
 }
@@ -268,7 +259,6 @@ body,
   border-radius: 10px;
 }
 
-/* Floating Badge */
 .about-counter1 {
   position: absolute;
   bottom: 30px;
@@ -294,7 +284,6 @@ body,
   color: #1a1a1a;
 }
 
-/* Mobile Responsiveness */
 @media (max-width: 768px) {
   .elementor-col-50 {
     width: 100%;
@@ -304,7 +293,7 @@ body,
     margin-top: 50px;
   }
 }
-/* App.css / index.css */
+
 .radar-wrapper {
   position: relative;
   width: 30px;
@@ -316,7 +305,7 @@ body,
 .radar-core {
   width: 12px;
   height: 12px;
-  background: #f97316; /* Màu cam */
+  background: #f97316;
   border-radius: 50%;
   z-index: 2;
   box-shadow: 0 0 10px #f97316;

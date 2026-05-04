@@ -11,23 +11,22 @@ import {
   X,
   Save,
   Check,
-  Map as MapIcon, // Đổi tên để tránh trùng
+  Map as MapIcon,
 } from "lucide-react";
 
 import DiaChiSelector from "../../components/DiaChiSelector.jsx";
-import LocationMapModal from "../../components/LocationMapModal.jsx"; // Import Modal bản đồ
+import LocationMapModal from "../../components/LocationMapModal.jsx";
 
+// Quản lý địa chỉ giao nhận
 export default function CustomerAddress() {
   const [addresses, setAddresses] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Modal State
   const [showModal, setShowModal] = useState(false);
-  const [showMap, setShowMap] = useState(false); // State mở bản đồ
+  const [showMap, setShowMap] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
-  // Form Data
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -42,13 +41,12 @@ export default function CustomerAddress() {
   const customerId =
     localStorage.getItem("customer_id") || localStorage.getItem("userId");
 
-  // --- GET DATA ---
+  // Tải danh sách địa chỉ
   const fetchAddresses = async () => {
     try {
       const res = await API.get(`/addresses/${customerId}`);
       setAddresses(res.data);
     } catch (err) {
-      console.error(err);
       toast.error("Không thể tải danh sách địa chỉ");
     } finally {
       setLoading(false);
@@ -59,7 +57,6 @@ export default function CustomerAddress() {
     if (customerId) fetchAddresses();
   }, [customerId]);
 
-  // --- HANDLERS ---
   const openModal = (address = null) => {
     if (address) {
       setEditingId(address.id);
@@ -82,6 +79,7 @@ export default function CustomerAddress() {
     setShowModal(true);
   };
 
+  // Xử lý xóa dữ liệu
   const handleDelete = async (id) => {
     if (!window.confirm("Bạn có chắc chắn muốn xóa địa chỉ này?")) return;
     try {
@@ -93,6 +91,7 @@ export default function CustomerAddress() {
     }
   };
 
+  // Xử lý submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -113,7 +112,7 @@ export default function CustomerAddress() {
         ...formData,
         address: finalAddress,
         customer_id: customerId,
-        lat: geo.lat, // Gửi tọa độ lên để lưu
+        lat: geo.lat,
         lng: geo.lng,
       };
 
@@ -127,7 +126,6 @@ export default function CustomerAddress() {
       setShowModal(false);
       fetchAddresses();
     } catch (err) {
-      console.error(err);
       toast.error("Có lỗi xảy ra, vui lòng kiểm tra lại thông tin!");
     } finally {
       setSubmitting(false);
@@ -144,7 +142,7 @@ export default function CustomerAddress() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500 pb-10">
-      {/* HEADER */}
+      {}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
         <div>
           <h1 className="text-xl font-bold text-[#113e48] flex items-center gap-2">
@@ -162,7 +160,7 @@ export default function CustomerAddress() {
         </button>
       </div>
 
-      {/* LIST ADDRESSES (Giữ nguyên phần render list của bạn) */}
+      {}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {addresses.map((addr) => (
           <div
@@ -218,7 +216,7 @@ export default function CustomerAddress() {
         </div>
       </div>
 
-      {/* --- MODAL FORM --- */}
+      {}
       {showModal && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
           <div className="bg-white w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
@@ -272,14 +270,14 @@ export default function CustomerAddress() {
                 </div>
               </div>
 
-              {/* KHU VỰC VỊ TRÍ + NÚT BẢN ĐỒ */}
+              {}
               <div className="bg-blue-50/50 p-5 rounded-2xl border border-blue-100 space-y-4">
                 <div className="flex justify-between items-center">
                   <label className="text-sm font-bold text-[#113e48] flex items-center gap-2">
                     <MapPin size={18} className="text-blue-500" /> Vị trí địa
                     chỉ
                   </label>
-                  {/* NÚT CHỌN TRÊN BẢN ĐỒ MỚI THÊM */}
+                  {}
                   <button
                     type="button"
                     onClick={() => setShowMap(true)}
@@ -311,7 +309,7 @@ export default function CustomerAddress() {
                   />
                 </div>
 
-                {/* Status Tọa độ */}
+                {}
                 {geo.lat && (
                   <div className="flex items-center gap-1 text-[11px] text-green-600 font-bold px-1">
                     <Check size={14} /> Đã xác định tọa độ ({geo.lat.toFixed(4)}
@@ -384,13 +382,13 @@ export default function CustomerAddress() {
         </div>
       )}
 
-      {/* MODAL BẢN ĐỒ CHỌN VỊ TRÍ */}
+      {}
       <LocationMapModal
         isOpen={showMap}
         onClose={() => setShowMap(false)}
         onConfirm={(data) => {
-          setStreet(data.address); // Điền địa chỉ từ bản đồ vào ô "Số nhà"
-          setRegion(""); // Xóa region cũ để tránh ghép trùng
+          setStreet(data.address);
+          setRegion("");
           setGeo({ lat: data.lat, lng: data.lng });
           setShowMap(false);
           toast.success("Đã lấy vị trí từ bản đồ!");
