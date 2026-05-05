@@ -49,6 +49,7 @@ export default function DispatcherAssignmentsUIPro() {
   const [hasExpressSelected, setHasExpressSelected] = useState(false);
 
 
+  // Tải đồng thời đơn chưa phân công, đã phân công và danh sách tài xế
   const fetchAll = async () => {
     setLoading(true);
     try {
@@ -73,7 +74,7 @@ export default function DispatcherAssignmentsUIPro() {
   }, []);
 
 
-// Tìm tài xế gần vị trí giao hàng
+  // Lấy danh sách tài xế gần vị trí giao hàng của đơn được chọn
   const fetchNearbyDrivers = useCallback(async (shipmentId) => {
     setLoadingNearby(true);
     try {
@@ -87,6 +88,7 @@ export default function DispatcherAssignmentsUIPro() {
   }, []);
 
 
+  // Khi chọn đơn hàng: kiểm tra loại dịch vụ hỏa tốc và tải tài xế gần nhất
   useEffect(() => {
     if (selectedIds.length >= 1) {
       const selectedShipment = unassigned.find((s) => s.id === selectedIds[0]);
@@ -101,7 +103,7 @@ export default function DispatcherAssignmentsUIPro() {
   }, [selectedIds, unassigned, fetchNearbyDrivers]);
 
 
-// Trích xuất tên quận/huyện từ địa chỉ
+  // Trích xuất tên quận/huyện từ chuỗi địa chỉ để lọc theo khu vực
   const getDistrict = (address) => {
     if (!address) return "Khác";
     const parts = address.split(",").map((p) => p.trim());
@@ -129,6 +131,7 @@ export default function DispatcherAssignmentsUIPro() {
   };
 
 
+  // Tổng hợp danh sách quận/huyện duy nhất từ các đơn chưa phân công
   const uniqueZones = useMemo(() => {
     const districts = new Set(
       unassigned.map((item) => getDistrict(item.delivery_address))
@@ -146,6 +149,7 @@ export default function DispatcherAssignmentsUIPro() {
   };
 
 
+  // Lọc đơn chưa phân công theo từ khóa tìm kiếm và bộ lọc quận/huyện
   const filteredUnassigned = useMemo(() => {
     const searchLower = searchTerm.toLowerCase();
     return unassigned.filter((item) => {
@@ -159,6 +163,7 @@ export default function DispatcherAssignmentsUIPro() {
     });
   }, [unassigned, searchTerm, filterZone]);
 
+  // Lọc đơn đã phân công theo từ khóa tìm kiếm
   const filteredAssigned = useMemo(() => {
     const searchLower = searchTerm.toLowerCase();
     return assignments.filter((item) =>
@@ -169,6 +174,7 @@ export default function DispatcherAssignmentsUIPro() {
   }, [assignments, searchTerm]);
 
 
+  // Tính toán dữ liệu phân trang cho cả hai tab
   const PAGE_SIZE = 15;
   const totalPagesUnassigned = Math.ceil(filteredUnassigned.length / PAGE_SIZE);
   const totalPagesAssigned = Math.ceil(filteredAssigned.length / PAGE_SIZE);
@@ -184,6 +190,7 @@ export default function DispatcherAssignmentsUIPro() {
   useMemo(() => { setPageAssigned(1); }, [filteredAssigned.length, searchTerm]);
 
 
+  // Phân nhóm tài xế theo khoảng cách: cùng quận, quận khác, liên tỉnh
   const driverGroups = useMemo(() => {
     const selectedShipments = unassigned.filter((s) => selectedIds.includes(s.id));
     const orderRegions = [...new Set(selectedShipments.map((s) => s.region_id).filter(Boolean))];
@@ -211,11 +218,12 @@ export default function DispatcherAssignmentsUIPro() {
   const driversForZone = [...driverGroups.nearDistrict, ...driverGroups.farDistrict];
 
 
-// Chọn tất cả mục
+  // Chọn/bỏ chọn tất cả đơn trong danh sách hiện tại
   const handleSelectAll = (e) => {
     setSelectedIds(e.target.checked ? filteredUnassigned.map((s) => s.id) : []);
   };
 
+  // Chọn/bỏ chọn một đơn hàng theo id
   const handleSelectOne = (id) => {
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((itemId) => itemId !== id) : [...prev, id]
@@ -223,7 +231,7 @@ export default function DispatcherAssignmentsUIPro() {
   };
 
 
-// Phân công hàng loạt
+  // Phân công hàng loạt các đơn đã chọn cho một tài xế
   const handleBulkAssign = async () => {
     if (selectedIds.length === 0) return toast.error("Chưa chọn đơn hàng nào!");
     if (!selectedDriverBulk) return toast.error("Vui lòng chọn tài xế!");
@@ -252,6 +260,7 @@ export default function DispatcherAssignmentsUIPro() {
   };
 
 
+  // Component hiển thị badge trạng thái đơn hàng với màu sắc phân biệt
   const StatusPill = ({ status }) => {
     const styles = {
       assigned:   "bg-blue-50 text-blue-700 ring-blue-600/20",
@@ -298,7 +307,7 @@ export default function DispatcherAssignmentsUIPro() {
   return (
     <div className="min-h-screen bg-slate-50/50 p-6 sm:p-8 font-sans pb-40">
       <div className="max-w-[1400px] mx-auto space-y-8">
-        {}
+        {/* Header: tiêu đề trang và tab chuyển đổi */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
           <div>
             <h1 className="text-3xl font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
@@ -317,7 +326,7 @@ export default function DispatcherAssignmentsUIPro() {
             </p>
           </div>
 
-          {}
+          {/* Tab chuyển đổi: Chờ phân công / Đang vận hành */}
           <div className="bg-white/80 backdrop-blur-sm p-1.5 rounded-2xl shadow-sm ring-1 ring-slate-200/60 inline-flex">
             {[
               {
@@ -360,9 +369,9 @@ export default function DispatcherAssignmentsUIPro() {
           </div>
         </div>
 
-        {}
+        {/* Bảng dữ liệu chính */}
         <div className="bg-white rounded-[24px] shadow-xl shadow-slate-200/40 ring-1 ring-slate-100 overflow-hidden">
-          {}
+          {/* Thanh tìm kiếm và bộ lọc quận/huyện */}
           <div className="p-5 border-b border-slate-100 bg-slate-50/30 flex flex-wrap items-center gap-4 sticky top-0 z-10 backdrop-blur-md">
             <div className="relative flex-1 min-w-[280px] group">
               <Search
@@ -416,7 +425,7 @@ export default function DispatcherAssignmentsUIPro() {
             </div>
           </div>
 
-          {}
+          {/* Bảng danh sách đơn hàng */}
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
               <thead className="bg-slate-50/70 text-slate-600 font-bold uppercase text-[11px] tracking-wider leading-normal border-b border-slate-100">
@@ -442,7 +451,7 @@ export default function DispatcherAssignmentsUIPro() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
-                {}
+                {/* Dòng dữ liệu tab Chờ phân công */}
                 {activeTab === "unassigned" &&
                   pagedUnassigned.map((s) => {
                     const isSelected = selectedIds.includes(s.id);
@@ -554,7 +563,7 @@ export default function DispatcherAssignmentsUIPro() {
                     );
                   })}
 
-                {}
+                {/* Dòng dữ liệu tab Đang vận hành */}
                 {activeTab === "assigned" &&
                   pagedAssigned.map((a) => (
                     <tr
@@ -604,7 +613,7 @@ export default function DispatcherAssignmentsUIPro() {
                     </tr>
                   ))}
 
-                {}
+                {/* Thông báo khi không có dữ liệu */}
                 {((activeTab === "unassigned" &&
                   filteredUnassigned.length === 0) ||
                   (activeTab === "assigned" &&
@@ -633,7 +642,7 @@ export default function DispatcherAssignmentsUIPro() {
             </table>
           </div>
 
-          {}
+          {/* Phân trang cho từng tab */}
           {activeTab === "unassigned" && (
             <Pagination
               currentPage={pageUnassigned}
@@ -652,12 +661,12 @@ export default function DispatcherAssignmentsUIPro() {
       </div>
 
 
-      {}
+      {/* Action bar cố định dưới cùng khi có đơn được chọn */}
       {activeTab === "unassigned" && selectedIds.length > 0 && (
         <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50 w-[95%] md:w-auto animate-in slide-in-from-bottom-6 duration-300">
           <div className="bg-white rounded-2xl shadow-2xl shadow-blue-900/20 ring-1 ring-slate-200/80 p-3 backdrop-blur-xl bg-white/95">
             
-            {}
+            {/* Panel gợi ý tài xế gần nhất cho đơn hỏa tốc */}
             {hasExpressSelected && (
               <div className="mb-3 p-3 bg-gradient-to-r from-red-50 to-orange-50 rounded-xl ring-1 ring-red-200/60">
                 <div className="flex items-center gap-2 mb-3">
@@ -686,7 +695,7 @@ export default function DispatcherAssignmentsUIPro() {
                             : "bg-white/60 hover:bg-white hover:shadow-sm ring-1 ring-slate-200/60"
                         }`}
                       >
-                        {}
+                        {/* Badge thứ hạng tài xế gần nhất */}
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black shrink-0 ${
                           idx === 0 ? "bg-gradient-to-br from-yellow-400 to-orange-500 text-white shadow-sm" :
                           idx === 1 ? "bg-gradient-to-br from-slate-300 to-slate-400 text-white" :
@@ -707,7 +716,7 @@ export default function DispatcherAssignmentsUIPro() {
                           </div>
                         </div>
 
-                        {}
+                        {/* Khoảng cách tài xế đến điểm giao */}
                         <div className="flex flex-col items-end shrink-0">
                           <span className={`text-xs font-extrabold tabular-nums ${
                             d.distance_km !== null && d.distance_km <= 3 ? "text-green-600" :
@@ -723,7 +732,7 @@ export default function DispatcherAssignmentsUIPro() {
                           </span>
                         </div>
 
-                        {}
+                        {/* Icon check khi tài xế được chọn */}
                         {String(selectedDriverBulk) === String(d.id) && (
                           <CheckCircle size={18} className="text-red-500 shrink-0" />
                         )}
@@ -738,9 +747,9 @@ export default function DispatcherAssignmentsUIPro() {
               </div>
             )}
 
-            {}
+            {/* Row: số đơn đã chọn + dropdown tài xế + nút phân công */}
             <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-6">
-              {}
+              {/* Hiển thị số lượng đơn đã chọn */}
               <div className="flex items-center gap-4 pl-4 pr-6 border-r border-slate-100 py-2">
                 <div className="relative">
                   <div className={`absolute inset-0 ${hasExpressSelected ? 'bg-red-500' : 'bg-blue-500'} blur-lg opacity-20 rounded-full`}></div>
@@ -758,7 +767,7 @@ export default function DispatcherAssignmentsUIPro() {
                 </div>
               </div>
 
-              {}
+              {/* Dropdown chọn tài xế phân công */}
               <div className="flex-1 w-full sm:w-auto px-2 py-1">
                 <label className="block text-xs font-bold text-slate-500 mb-1.5 ml-1">
                   {hasExpressSelected ? "Tài xế phụ trách (chọn từ gợi ý hoặc thủ công):" : "Gán tài xế phụ trách:"}
@@ -787,12 +796,12 @@ export default function DispatcherAssignmentsUIPro() {
                       -- Chọn tài xế --
                     </option>
 
-                    {}
+                    {/* Trạng thái đang tải tài xế gần nhất */}
                     {loadingNearby && selectedIds.length > 0 && (
                       <option disabled>⏳ Đang tìm tài xế gần đơn...</option>
                     )}
 
-                    {}
+                    {/* Nhóm tài xế cùng khu vực */}
                     {!loadingNearby && driverGroups.nearDistrict.length > 0 && (
                       <optgroup label={
                         hasExpressSelected
@@ -811,7 +820,7 @@ export default function DispatcherAssignmentsUIPro() {
                       </optgroup>
                     )}
 
-                    {}
+                    {/* Nhóm tài xế quận/huyện khác */}
                     {driverGroups.farDistrict.length > 0 && (
                       <optgroup label={
                         driverGroups.nearDistrict.length > 0
@@ -826,7 +835,7 @@ export default function DispatcherAssignmentsUIPro() {
                       </optgroup>
                     )}
 
-                    {}
+                    {/* Nhóm tài xế liên tỉnh */}
                     {driverGroups.crossRegion.length > 0 && (
                       <optgroup label={`🔀 Liên tỉnh — Đơn ngoài vùng (${driverGroups.crossRegion.length})`}>
                         {driverGroups.crossRegion.map((d) => (
@@ -837,7 +846,7 @@ export default function DispatcherAssignmentsUIPro() {
                       </optgroup>
                     )}
 
-                    {}
+                    {/* Thông báo không có tài xế khả dụng */}
                     {!loadingNearby && drivers.length === 0 && (
                       <option disabled>Không có tài xế khả dụng</option>
                     )}
@@ -845,7 +854,7 @@ export default function DispatcherAssignmentsUIPro() {
                 </div>
               </div>
 
-              {}
+              {/* Nút xác nhận phân công */}
               <button
                 onClick={handleBulkAssign}
                 className={`w-full sm:w-auto text-white font-bold py-3.5 px-8 rounded-xl shadow-lg flex items-center justify-center gap-2.5 transition-all transform active:scale-[0.98] ${

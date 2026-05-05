@@ -1,12 +1,10 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import axios from "axios";
-import OrderSummarySidebar from "./OrderSummarySidebar"; // Import Sidebar của bạn
+import OrderSummarySidebar from "./OrderSummarySidebar";
 
+// Component tạo đơn hàng nhanh
 export default function CreateOrder() {
-  // ==========================================
-  // 1. STATE QUẢN LÝ DỮ LIỆU TỪ FORM BÊN TRÁI
-  // ==========================================
-  // Lưu ý: Các biến này phải được gắn vào thuộc tính value và onChange của các thẻ <input> bên form
+
   const [pickupAddress, setPickupAddress] = useState(
     "Đường Doãn Địch, Hòa Minh, Liên Chiểu, Đà Nẵng",
   );
@@ -15,19 +13,15 @@ export default function CreateOrder() {
   );
   const [weightKg, setWeightKg] = useState(2);
   const [codAmount, setCodAmount] = useState(100000);
-  const [serviceType, setServiceType] = useState("express"); // Tiết kiệm, Nhanh, Hỏa tốc
+  const [serviceType, setServiceType] = useState("express");
 
-  // ==========================================
-  // 2. STATE QUẢN LÝ DỮ LIỆU TỪ BACKEND TRẢ VỀ
-  // ==========================================
+
   const [shippingData, setShippingData] = useState(null);
   const [loadingFee, setLoadingFee] = useState(false);
 
-  // ==========================================
-  // 3. LOGIC GỌI API TỰ ĐỘNG
-  // ==========================================
+
   useEffect(() => {
-    // Nếu chưa nhập đủ địa chỉ thì không tính phí
+
     if (!pickupAddress || !receiverAddress) {
       setShippingData(null);
       return;
@@ -47,33 +41,30 @@ export default function CreateOrder() {
           },
         );
 
-        // Lưu kết quả Backend trả về vào state
+
         if (response.data.success) {
           setShippingData(response.data);
         }
       } catch (error) {
-        console.error("Lỗi tính phí:", error);
       } finally {
         setLoadingFee(false);
       }
     };
 
-    // Delay 1 giây sau khi gõ xong mới gọi API để đỡ lag server
+
     const timeoutId = setTimeout(() => {
       fetchShippingFee();
     }, 1000);
 
     return () => clearTimeout(timeoutId);
-  }, [pickupAddress, receiverAddress, weightKg, codAmount, serviceType]); // Hàm chạy lại khi 1 trong 5 biến này thay đổi
+  }, [pickupAddress, receiverAddress, weightKg, codAmount, serviceType]);
 
-  // ==========================================
-  // 4. GIAO DIỆN (UI)
-  // ==========================================
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-6">
-      {/* CỘT BÊN TRÁI: FORM NHẬP LIỆU */}
+      {/* Phần giao diện */}
       <div className="lg:col-span-2 space-y-6">
-        {/* Ví dụ về cách gắn State vào Form (Bạn áp dụng cho code form thực tế của bạn) */}
+        {/* Phần giao diện */}
         <div className="bg-white p-6 rounded-xl border border-gray-100">
           <h3 className="font-bold mb-4">Mô phỏng Input Địa Chỉ</h3>
 
@@ -81,7 +72,7 @@ export default function CreateOrder() {
           <input
             type="text"
             value={pickupAddress}
-            onChange={(e) => setPickupAddress(e.target.value)} // QUAN TRỌNG: Phải cập nhật State khi gõ
+            onChange={(e) => setPickupAddress(e.target.value)}
             className="w-full border p-2 rounded mb-4"
           />
 
@@ -89,7 +80,7 @@ export default function CreateOrder() {
           <input
             type="text"
             value={receiverAddress}
-            onChange={(e) => setReceiverAddress(e.target.value)} // QUAN TRỌNG: Phải cập nhật State khi gõ
+            onChange={(e) => setReceiverAddress(e.target.value)}
             className="w-full border p-2 rounded mb-4"
           />
 
@@ -117,17 +108,17 @@ export default function CreateOrder() {
           </div>
         </div>
 
-        {/* Chèn code các component form Thông tin người gửi, nhận, hàng hóa của bạn vào đây */}
+        {/* Phần giao diện */}
       </div>
 
-      {/* CỘT BÊN PHẢI: SIDEBAR THANH TOÁN */}
-      {/* QUAN TRỌNG NHẤT: TRUYỀN PROPS XUỐNG SIDEBAR */}
+      {/* Phần giao diện */}
+
       <OrderSummarySidebar
         serviceType={serviceType}
         setServiceType={setServiceType}
         codAmount={codAmount}
-        shippingData={shippingData} // Đẩy cục data JSON từ backend xuống đây
-        loading={loadingFee} // Trạng thái đang tải
+        shippingData={shippingData}
+        loading={loadingFee}
         creating={false}
       />
     </div>

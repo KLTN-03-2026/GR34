@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef } from "react";
 import API from "../../services/api";
 import toast from "react-hot-toast";
 import {
@@ -26,7 +26,9 @@ import bbox from "@turf/bbox";
 import AOS from "aos";
 import "aos/dist/aos.css";
 
+
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
+
 
 const CustomMarker = ({ icon, bgColor, ringColor, onClick }) => {
   return (
@@ -66,17 +68,22 @@ export default function CustomerTrack() {
     AOS.init({ duration: 500 });
   }, []);
 
+
   const fetchRouteOSRM = async (start, end) => {
     if (!start || !end) return null;
+
 
     const startStr = `${start[1]},${start[0]}`;
     const endStr = `${end[1]},${end[0]}`;
 
+
     const daNang = "108.2022,16.0544";
     const nhaTrang = "109.1967,12.2388";
 
+
     const latDiff = Math.abs(start[0] - end[0]);
     let url = "";
+
 
     if (latDiff > 2) {
       url = `https://router.project-osrm.org/route/v1/driving/${startStr};${daNang};${nhaTrang};${endStr}?overview=full&geometries=geojson`;
@@ -93,7 +100,8 @@ export default function CustomerTrack() {
           geometry: data.routes[0].geometry,
         };
       }
-    } catch (error) {}
+    } catch (error) {
+    }
     return null;
   };
 
@@ -114,13 +122,14 @@ export default function CustomerTrack() {
       const customerId =
         localStorage.getItem("customer_id") || localStorage.getItem("userId");
       const res = await API.get(
-        `/customers/track/${trackingCode}?customer_id=${customerId}`,
+        `/customers/track/${trackingCode}?customer_id=${customerId}`
       );
       const data = res.data;
       setShipment(data);
 
       let pickup = null;
       let delivery = null;
+
 
       if (data.pickup_lat && data.pickup_lng) {
         pickup = [Number(data.pickup_lat), Number(data.pickup_lng)];
@@ -129,12 +138,15 @@ export default function CustomerTrack() {
         delivery = [Number(data.delivery_lat), Number(data.delivery_lng)];
       }
 
+
       if (!pickup) pickup = [10.7769, 106.7009];
       if (!delivery) delivery = [21.0285, 105.8542];
 
       setWaypoints([pickup, delivery]);
 
+
       if (data.status === "picking" || data.status === "delivering") {
+
         const geoJson = await fetchRouteOSRM(pickup, delivery);
         setRouteGeoJSON(geoJson);
       } else if (
@@ -142,9 +154,11 @@ export default function CustomerTrack() {
         data.status === "delivered" ||
         data.status === "success"
       ) {
+
         setDriverPos(delivery);
         setRouteGeoJSON(null);
       } else {
+
         setDriverPos(null);
         setRouteGeoJSON(null);
       }
@@ -156,6 +170,7 @@ export default function CustomerTrack() {
       setLoading(false);
     }
   };
+
 
   useEffect(() => {
     if (
@@ -169,6 +184,7 @@ export default function CustomerTrack() {
     let index = 0;
     const totalPoints = pathCoordinates.length;
 
+
     animationRef.current = setInterval(() => {
       if (index >= totalPoints) index = 0;
       const point = pathCoordinates[index];
@@ -180,10 +196,12 @@ export default function CustomerTrack() {
     return () => clearInterval(animationRef.current);
   }, [routeGeoJSON]);
 
+
   useEffect(() => {
     if (!mapRef.current || waypoints.length === 0) return;
 
     let features = [];
+
 
     waypoints.forEach((pt) => {
       features.push({
@@ -203,6 +221,7 @@ export default function CustomerTrack() {
       try {
         const [minLng, minLat, maxLng, maxLat] = bbox(featureCollection);
 
+
         const isSamePoint = minLng === maxLng && minLat === maxLat;
 
         if (isSamePoint) {
@@ -213,12 +232,14 @@ export default function CustomerTrack() {
               [minLng, minLat],
               [maxLng, maxLat],
             ],
-            { padding: 80, duration: 1500, maxZoom: 14 },
+            { padding: 80, duration: 1500, maxZoom: 14 }
           );
         }
-      } catch (error) {}
+      } catch (error) {
+      }
     }
   }, [routeGeoJSON, waypoints, shipment]);
+
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -240,7 +261,7 @@ export default function CustomerTrack() {
     }
   };
 
-  // Lấy nhãn tên trạng thái tiếng Việt
+// Lấy nhãn tên trạng thái tiếng Việt
   const getStatusLabel = (status) => {
     const map = {
       pending: "Chờ xử lý",
@@ -257,7 +278,7 @@ export default function CustomerTrack() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-20 font-sans animate-in fade-in duration-500">
-      {}
+      {/* Phần giao diện */}
       <div className="bg-[#113e48] pt-10 pb-24 px-4 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl translate-x-1/2 -translate-y-1/2"></div>
         <div className="absolute bottom-0 left-0 w-48 h-48 bg-orange-500/10 rounded-full blur-2xl -translate-x-1/2 translate-y-1/2"></div>
@@ -300,16 +321,16 @@ export default function CustomerTrack() {
         </div>
       </div>
 
-      {}
+      {/* Phần giao diện */}
       <div className="max-w-6xl mx-auto px-4 -mt-16 relative z-20">
         {shipment ? (
           <div
             className="grid grid-cols-1 lg:grid-cols-3 gap-6"
             data-aos="fade-up"
           >
-            {}
+            {/* Phần giao diện */}
             <div className="lg:col-span-1 space-y-6">
-              {}
+              {/* Phần giao diện */}
               <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
                 <div className="flex justify-between items-center mb-4">
                   <span className="text-sm font-bold text-gray-400">
@@ -317,7 +338,7 @@ export default function CustomerTrack() {
                   </span>
                   <span
                     className={`px-3 py-1 rounded-full text-xs font-extrabold border ${getStatusColor(
-                      shipment.status,
+                      shipment.status
                     )}`}
                   >
                     {getStatusLabel(shipment.status)}
@@ -332,7 +353,7 @@ export default function CustomerTrack() {
                 </p>
               </div>
 
-              {}
+              {/* Phần giao diện */}
               {shipment.driver_name ? (
                 <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 flex items-center gap-4">
                   <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center text-2xl border-2 border-white shadow-sm">
@@ -368,7 +389,7 @@ export default function CustomerTrack() {
                 </div>
               )}
 
-              {}
+              {/* Phần giao diện */}
               <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 space-y-6">
                 <div className="flex gap-4 relative">
                   <div className="flex flex-col items-center">
@@ -406,7 +427,7 @@ export default function CustomerTrack() {
               </div>
             </div>
 
-            {}
+            {/* Phần giao diện */}
             <div className="lg:col-span-2 h-[500px] lg:h-auto bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden relative z-0">
               <Map
                 ref={mapRef}
@@ -421,7 +442,7 @@ export default function CustomerTrack() {
               >
                 <NavigationControl position="bottom-right" />
 
-                {}
+                {/* Render điều kiện */}
                 {routeGeoJSON && (
                   <Source id="route" type="geojson" data={routeGeoJSON}>
                     <Layer
@@ -437,7 +458,7 @@ export default function CustomerTrack() {
                   </Source>
                 )}
 
-                {}
+                {/* Render điều kiện */}
                 {waypoints[0] && (
                   <Marker
                     longitude={waypoints[0][1]}
@@ -462,7 +483,7 @@ export default function CustomerTrack() {
                   </Marker>
                 )}
 
-                {}
+                {/* Render điều kiện */}
                 {waypoints[1] && (
                   <Marker
                     longitude={waypoints[1][1]}
@@ -487,7 +508,7 @@ export default function CustomerTrack() {
                   </Marker>
                 )}
 
-                {}
+                {/* Render điều kiện */}
                 {driverPos && (
                   <Marker
                     longitude={driverPos[1]}
@@ -512,7 +533,7 @@ export default function CustomerTrack() {
                   </Marker>
                 )}
 
-                {}
+                {/* Render điều kiện */}
                 {popupInfo && (
                   <Popup
                     anchor="top"
@@ -534,7 +555,7 @@ export default function CustomerTrack() {
                 )}
               </Map>
 
-              {}
+              {/* Phần giao diện */}
               <div className="lg:hidden absolute top-4 left-4 right-4 bg-white/90 backdrop-blur p-3 rounded-xl shadow-lg border border-gray-100 z-[40]">
                 <p className="text-xs font-bold text-gray-500 uppercase">
                   Trạng thái hiện tại
@@ -546,6 +567,7 @@ export default function CustomerTrack() {
             </div>
           </div>
         ) : (
+
           !loading && (
             <div
               className="bg-white rounded-2xl shadow-lg p-12 text-center border border-gray-100"

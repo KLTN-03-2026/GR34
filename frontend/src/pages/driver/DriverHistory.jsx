@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+﻿import { useEffect, useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import API from "../../services/api";
 import toast, { Toaster } from "react-hot-toast";
@@ -97,7 +97,7 @@ export default function DriverHistory() {
     <div className="min-h-screen bg-[#F8FAFC] p-4 lg:p-8 space-y-6 pb-20">
       <Toaster position="top-right" />
 
-      {}
+      {/* Phần giao diện */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[#113e48] flex items-center gap-2">
@@ -120,7 +120,7 @@ export default function DriverHistory() {
         </div>
       </div>
 
-      {}
+      {/* Phần giao diện */}
       <div className="flex overflow-x-auto pb-2 gap-2 hide-scrollbar">
         {[
           {
@@ -160,7 +160,7 @@ export default function DriverHistory() {
         })}
       </div>
 
-      {}
+      {/* Phần giao diện */}
       <div className="space-y-4">
         {loading ? (
           [...Array(4)].map((_, i) => (
@@ -190,14 +190,14 @@ export default function DriverHistory() {
                   key={h.id || i}
                   className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow flex flex-col sm:flex-row gap-4 sm:items-center"
                 >
-                  {}
+                  {/* Phần giao diện */}
                   <div
                     className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${statusConfig.bg} ${statusConfig.color} border ${statusConfig.border}`}
                   >
                     <StatusIcon size={24} />
                   </div>
 
-                  {}
+                  {/* Phần giao diện */}
                   <div className="flex-1 space-y-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <h3 className="text-lg font-bold text-gray-800">
@@ -220,7 +220,7 @@ export default function DriverHistory() {
                       </p>
                     </div>
 
-                    {}
+                    {/* Render điều kiện */}
                     {h.status === 'failed' && h.failure_note && (
                       <div className="flex items-start gap-2 mt-2 bg-red-50 border border-red-100 rounded-xl px-3 py-2">
                         <XCircle size={14} className="mt-0.5 shrink-0 text-red-500" />
@@ -232,7 +232,7 @@ export default function DriverHistory() {
                     )}
                   </div>
 
-                  {}
+                  {/* Phần giao diện */}
                   <div className="flex sm:flex-col items-center sm:items-end gap-2 sm:gap-0 text-gray-400 text-xs sm:text-right border-t sm:border-t-0 border-gray-50 pt-3 sm:pt-0 mt-2 sm:mt-0">
                     <div className="flex items-center gap-1">
                       <Calendar size={12} /> {date}

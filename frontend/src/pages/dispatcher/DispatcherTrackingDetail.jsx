@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+﻿import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import API from "../../services/api";
 import Map, {
@@ -204,7 +204,7 @@ export default function DispatcherTrackingDetail() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-10 font-sans">
-      {}
+      {/* Phần giao diện */}
       <div className="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-50 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-4">
           <button
@@ -238,9 +238,9 @@ export default function DispatcherTrackingDetail() {
       </div>
 
       <div className="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {}
+        {/* Phần giao diện */}
         <div className="lg:col-span-1 space-y-6">
-          {}
+          {/* Phần giao diện */}
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-6">
             <div className="flex gap-4 relative">
               <div className="flex flex-col items-center">
@@ -281,7 +281,7 @@ export default function DispatcherTrackingDetail() {
             </div>
           </div>
 
-          {}
+          {/* Phần giao diện */}
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
             <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
               <User size={18} className="text-gray-400" /> Thông tin tài xế
@@ -315,7 +315,7 @@ export default function DispatcherTrackingDetail() {
           </div>
         </div>
 
-        {}
+        {/* Phần giao diện */}
         <div className="lg:col-span-2 h-[600px] bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden relative">
           <Map
             ref={mapRef}
@@ -330,7 +330,7 @@ export default function DispatcherTrackingDetail() {
           >
             <NavigationControl position="bottom-right" />
 
-            {}
+            {/* Render điều kiện */}
             {routeGeoJSON && (
               <Source id="route" type="geojson" data={routeGeoJSON}>
                 <Layer
@@ -346,7 +346,7 @@ export default function DispatcherTrackingDetail() {
               </Source>
             )}
 
-            {}
+            {/* Render điều kiện */}
             {pickup && (
               <Marker
                 longitude={pickup[1]}
@@ -371,7 +371,7 @@ export default function DispatcherTrackingDetail() {
               </Marker>
             )}
 
-            {}
+            {/* Render điều kiện */}
             {delivery && (
               <Marker
                 longitude={delivery[1]}
@@ -396,7 +396,7 @@ export default function DispatcherTrackingDetail() {
               </Marker>
             )}
 
-            {}
+            {/* Render điều kiện */}
             {driverPos && (
               <Marker
                 longitude={driverPos[1]}
@@ -421,7 +421,7 @@ export default function DispatcherTrackingDetail() {
               </Marker>
             )}
 
-            {}
+            {/* Render điều kiện */}
             {popupInfo && (
               <Popup
                 anchor="top"

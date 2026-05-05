@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+﻿import { useEffect, useState, useRef } from "react";
 import { Bell, Package, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import API from "../services/api";
@@ -84,7 +84,7 @@ export default function CustomerNotifications({ customerId }) {
 
   return (
     <div className="relative select-none" ref={dropdownRef}>
-      {}
+      {/* Phần giao diện */}
       <motion.button
         whileTap={{ scale: 0.9 }}
         animate={hasNew ? { rotate: [0, -15, 15, -15, 15, 0] } : {}}
@@ -109,7 +109,7 @@ export default function CustomerNotifications({ customerId }) {
         )}
       </motion.button>
 
-      {}
+      {/* Phần giao diện */}
       <AnimatePresence>
         {show && (
           <motion.div

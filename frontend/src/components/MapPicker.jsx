@@ -1,29 +1,29 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import Map, { Marker, NavigationControl, GeolocateControl } from "react-map-gl";
-import { MapPinOff } from "lucide-react"; // 💡 Import thêm icon này
+import { MapPinOff } from "lucide-react";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 
+// Bản đồ chọn địa chỉ
 export default function MapPicker({ defaultPos, onConfirm, onCancel }) {
   const [viewState, setViewState] = useState(null);
   const [marker, setMarker] = useState(null);
 
-  //  State mới để theo dõi việc người dùng từ chối quyền vị trí
+
   const [geoError, setGeoError] = useState(false);
 
   useEffect(() => {
     setGeoError(false);
 
-    // Hàm gọi API lấy vị trí qua IP (Phương án dự phòng)
+
     const fetchLocationByIP = async () => {
       try {
         const res = await fetch("https://ipapi.co/json/");
         const data = await res.json();
 
         if (data.latitude && data.longitude) {
-          console.log("Đã lấy được vị trí qua IP dự phòng!");
-          // Zoom xa hơn một chút (zoom: 12) vì IP chỉ chính xác mức độ thành phố
+
           setViewState({
             latitude: data.latitude,
             longitude: data.longitude,
@@ -31,15 +31,14 @@ export default function MapPicker({ defaultPos, onConfirm, onCancel }) {
           });
           setMarker({ latitude: data.latitude, longitude: data.longitude });
         } else {
-          setGeoError(true); // API IP cũng thất bại thì mới báo lỗi
+          setGeoError(true);
         }
       } catch (err) {
-        console.error("Lỗi lấy vị trí qua IP:", err);
-        setGeoError(true); // Lỗi mạng thì báo lỗi
+        setGeoError(true);
       }
     };
 
-    // Luồng xử lý chính
+
     if (defaultPos && defaultPos[0] && defaultPos[1]) {
       setViewState({
         latitude: defaultPos[0],
@@ -55,24 +54,17 @@ export default function MapPicker({ defaultPos, onConfirm, onCancel }) {
           setMarker({ latitude, longitude });
         },
         (error) => {
-          console.warn(
-            "GPS bị lỗi/chặn (Mã: " +
-              error.code +
-              "). Đang chuyển sang dùng IP...",
-          );
-          //  KHI BỊ EXTENSION CHẶN (Mã 1) HOẶC LỖI KHÁC -> Gọi IP API dự phòng
+
           fetchLocationByIP();
         },
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
       );
     } else {
-      // Trình duyệt không hỗ trợ GPS -> Dùng IP
+
       fetchLocationByIP();
     }
   }, [defaultPos]);
-  // =========================================================================
-  // 1. MÀN HÌNH BÁO LỖI (Khi chưa cấp quyền vị trí hoặc bị chặn)
-  // =========================================================================
+
   if (geoError) {
     return (
       <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50 rounded-xl border border-gray-300 shadow-sm p-6 text-center">
@@ -109,9 +101,7 @@ export default function MapPicker({ defaultPos, onConfirm, onCancel }) {
       </div>
     );
   }
-  // =========================================================================
-  // 2. MÀN HÌNH LOADING (Đang chờ GPS trả về)
-  // =========================================================================
+
   if (!viewState || !marker) {
     return (
       <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50 rounded-xl border border-gray-300 shadow-sm">
@@ -123,9 +113,7 @@ export default function MapPicker({ defaultPos, onConfirm, onCancel }) {
     );
   }
 
-  // =========================================================================
-  // 3. MÀN HÌNH BẢN ĐỒ CHÍNH
-  // =========================================================================
+
   return (
     <div className="w-full h-full relative flex flex-col rounded-xl overflow-hidden border border-gray-300 shadow-sm bg-white">
       <Map
@@ -170,7 +158,7 @@ export default function MapPicker({ defaultPos, onConfirm, onCancel }) {
         </Marker>
       </Map>
 
-      {/* ACTION BAR */}
+      {/* Phần giao diện */}
       <div className="bg-white p-4 border-t flex justify-between items-center z-10">
         <div className="flex flex-col">
           <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">

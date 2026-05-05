@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import API from "../../services/api";
@@ -83,7 +83,7 @@ export default function DispatcherTracking() {
         </div>
       </div>
 
-      {}
+      {/* Phần giao diện */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
@@ -110,7 +110,7 @@ export default function DispatcherTracking() {
                     onClick={() => handleRowClick(a.shipment_id)}
                     className="hover:bg-blue-50/50 cursor-pointer transition-colors group"
                   >
-                    {}
+                    {/* Phần giao diện */}
                     <td className="px-6 py-4">
                       <div className="font-bold text-[#113e48] text-base mb-1">
                         {a.tracking_code}
@@ -126,7 +126,7 @@ export default function DispatcherTracking() {
                       </div>
                     </td>
 
-                    {}
+                    {/* Phần giao diện */}
                     <td className="px-6 py-4">
                       <div className="font-medium text-gray-800">
                         {a.driver_name}
@@ -136,7 +136,7 @@ export default function DispatcherTracking() {
                       </div>
                     </td>
 
-                    {}
+                    {/* Phần giao diện */}
                     <td className="px-6 py-4 max-w-[250px]">
                       <div className="flex items-start gap-2">
                         <MapPin
@@ -158,7 +158,7 @@ export default function DispatcherTracking() {
                       </div>
                     </td>
 
-                    {}
+                    {/* Phần giao diện */}
                     <td className="px-6 py-4 text-center">
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border ${
@@ -181,7 +181,7 @@ export default function DispatcherTracking() {
                       </span>
                     </td>
 
-                    {}
+                    {/* Phần giao diện */}
                     <td className="px-6 py-4 text-center">
                       <div
                         className="relative inline-block"
@@ -229,7 +229,7 @@ export default function DispatcherTracking() {
           </table>
         </div>
 
-        {}
+        {/* Phần giao diện */}
         <Pagination
           currentPage={page}
           totalPages={totalPages}

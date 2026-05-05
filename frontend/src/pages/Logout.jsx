@@ -6,9 +6,11 @@ export default function Logout() {
   const navigate = useNavigate();
 
   useEffect(() => {
+
     localStorage.removeItem("token");
     localStorage.removeItem("role");
     localStorage.removeItem("username");
+
 
     navigate("/login");
   }, [navigate]);

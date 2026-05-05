@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+﻿import { useEffect, useState, useRef } from "react";
 import API from "../../services/api";
 import Pagination from "../../components/Pagination";
 import toast, { Toaster } from "react-hot-toast";
@@ -29,82 +29,25 @@ import {
 } from "lucide-react";
 
 const STATUS_OPTIONS = [
-  {
-    value: "all",
-    label: "Tất cả",
-    icon: Filter,
-    color: "text-gray-500",
-    bg: "bg-gray-100",
-  },
-  {
-    value: "pending",
-    label: "Chờ xử lý",
-    icon: Clock,
-    color: "text-yellow-600",
-    bg: "bg-yellow-100",
-  },
-  {
-    value: "assigned",
-    label: "Đã phân công",
-    icon: ClipboardList,
-    color: "text-gray-600",
-    bg: "bg-gray-100",
-  },
-  {
-    value: "picking",
-    label: "Đang lấy hàng",
-    icon: PackageOpen,
-    color: "text-orange-600",
-    bg: "bg-orange-100",
-  },
-  {
-    value: "delivering",
-    label: "Đang giao hàng",
-    icon: Truck,
-    color: "text-blue-600",
-    bg: "bg-blue-100",
-  },
-  {
-    value: "delivered",
-    label: "Đã giao",
-    icon: Package,
-    color: "text-green-600",
-    bg: "bg-green-100",
-  },
-  {
-    value: "completed",
-    label: "Hoàn thành",
-    icon: CheckCircle,
-    color: "text-green-600",
-    bg: "bg-green-100",
-  },
-  {
-    value: "failed",
-    label: "Giao thất bại",
-    icon: AlertTriangle,
-    color: "text-red-600",
-    bg: "bg-red-100",
-  },
-  {
-    value: "canceled",
-    label: "Đã hủy",
-    icon: Ban,
-    color: "text-gray-500",
-    bg: "bg-gray-100",
-  },
+  { value: "all", label: "Tất cả", icon: Filter, color: "text-gray-500", bg: "bg-gray-100" },
+  { value: "pending", label: "Chờ xử lý", icon: Clock, color: "text-yellow-600", bg: "bg-yellow-100" },
+  { value: "assigned", label: "Đã phân công", icon: ClipboardList, color: "text-gray-600", bg: "bg-gray-100" },
+  { value: "picking", label: "Đang lấy hàng", icon: PackageOpen, color: "text-orange-600", bg: "bg-orange-100" },
+  { value: "delivering", label: "Đang giao hàng", icon: Truck, color: "text-blue-600", bg: "bg-blue-100" },
+  { value: "delivered", label: "Đã giao", icon: Package, color: "text-green-600", bg: "bg-green-100" },
+  { value: "completed", label: "Hoàn thành", icon: CheckCircle, color: "text-green-600", bg: "bg-green-100" },
+  { value: "failed", label: "Giao thất bại", icon: AlertTriangle, color: "text-red-600", bg: "bg-red-100" },
+  { value: "canceled", label: "Đã hủy", icon: Ban, color: "text-gray-500", bg: "bg-gray-100" },
 ];
 
 function StatusFilterDropdown({ value, onChange }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
-  const selected =
-    STATUS_OPTIONS.find((o) => o.value === value) || STATUS_OPTIONS[0];
+  const selected = STATUS_OPTIONS.find((o) => o.value === value) || STATUS_OPTIONS[0];
   const SelectedIcon = selected.icon;
 
   useEffect(() => {
-    const handleClick = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
-    };
+    const handleClick = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
@@ -121,10 +64,7 @@ function StatusFilterDropdown({ value, onChange }) {
           </span>
           <span>{selected.label}</span>
         </div>
-        <ChevronDown
-          size={14}
-          className={`text-gray-400 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
-        />
+        <ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
       </button>
 
       {open && (
@@ -135,25 +75,14 @@ function StatusFilterDropdown({ value, onChange }) {
             return (
               <button
                 key={opt.value}
-                onClick={() => {
-                  onChange(opt.value);
-                  setOpen(false);
-                }}
+                onClick={() => { onChange(opt.value); setOpen(false); }}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm transition-colors hover:bg-orange-50 ${isActive ? "bg-orange-50/60 font-semibold" : ""}`}
               >
-                <span
-                  className={`p-1.5 rounded-lg ${opt.bg} ${opt.color} flex-shrink-0`}
-                >
+                <span className={`p-1.5 rounded-lg ${opt.bg} ${opt.color} flex-shrink-0`}>
                   <Icon size={13} />
                 </span>
-                <span
-                  className={isActive ? "text-orange-700" : "text-gray-700"}
-                >
-                  {opt.label}
-                </span>
-                {isActive && (
-                  <span className="ml-auto w-1.5 h-1.5 rounded-full bg-orange-500" />
-                )}
+                <span className={isActive ? "text-orange-700" : "text-gray-700"}>{opt.label}</span>
+                {isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-orange-500" />}
               </button>
             );
           })}
@@ -204,7 +133,7 @@ export default function CustomerInvoice() {
       result = result.filter(
         (s) =>
           s.tracking_code?.toLowerCase().includes(keyword) ||
-          s.receiver_name?.toLowerCase().includes(keyword),
+          s.receiver_name?.toLowerCase().includes(keyword)
       );
     }
     setFiltered(result);
@@ -215,10 +144,10 @@ export default function CustomerInvoice() {
   const startIndex = (page - 1) * itemsPerPage;
   const currentItems = filtered.slice(startIndex, startIndex + itemsPerPage);
 
-  // Định dạng số tiền theo chuẩn Việt Nam
+// Định dạng số tiền theo chuẩn Việt Nam
   const fmt = (num) => Number(num || 0).toLocaleString("vi-VN");
 
-  // Lấy nhãn tên trạng thái tiếng Việt
+// Lấy nhãn tên trạng thái tiếng Việt
   const getStatusLabel = (status) => {
     const map = {
       pending: "Chờ xử lý",
@@ -238,9 +167,7 @@ export default function CustomerInvoice() {
   };
 
   const getPaymentMethodLabel = (method) => {
-    const key = String(method || "COD")
-      .trim()
-      .toUpperCase();
+    const key = String(method || "COD").trim().toUpperCase();
     const map = {
       COD: "Thu hộ khi giao (COD)",
       CASH: "Tiền mặt",
@@ -271,56 +198,27 @@ export default function CustomerInvoice() {
       img.src = dataUrl;
     });
 
-  // Tạo badge hiển thị trạng thái
+// Tạo badge hiển thị trạng thái
   const getStatusBadge = (status) => {
     const config = {
-      pending: {
-        color: "bg-yellow-100 text-yellow-700 border-yellow-200",
-        icon: <Clock size={12} />,
-      },
-      assigned: {
-        color: "bg-gray-100 text-gray-600 border-gray-200",
-        icon: <Package size={12} />,
-      },
-      picking: {
-        color: "bg-orange-100 text-orange-700 border-orange-200",
-        icon: <Package size={12} />,
-      },
-      delivering: {
-        color: "bg-blue-100 text-blue-700 border-blue-200",
-        icon: <Truck size={12} />,
-      },
-      delivered: {
-        color: "bg-green-100 text-green-700 border-green-200",
-        icon: <CheckCircle size={12} />,
-      },
-      completed: {
-        color: "bg-green-100 text-green-700 border-green-200",
-        icon: <CheckCircle size={12} />,
-      },
-      failed: {
-        color: "bg-red-100 text-red-700 border-red-200",
-        icon: <XCircle size={12} />,
-      },
-      canceled: {
-        color: "bg-gray-100 text-gray-600 border-gray-200",
-        icon: <XCircle size={12} />,
-      },
+      pending: { color: "bg-yellow-100 text-yellow-700 border-yellow-200", icon: <Clock size={12} /> },
+      assigned: { color: "bg-gray-100 text-gray-600 border-gray-200", icon: <Package size={12} /> },
+      picking: { color: "bg-orange-100 text-orange-700 border-orange-200", icon: <Package size={12} /> },
+      delivering: { color: "bg-blue-100 text-blue-700 border-blue-200", icon: <Truck size={12} /> },
+      delivered: { color: "bg-green-100 text-green-700 border-green-200", icon: <CheckCircle size={12} /> },
+      completed: { color: "bg-green-100 text-green-700 border-green-200", icon: <CheckCircle size={12} /> },
+      failed: { color: "bg-red-100 text-red-700 border-red-200", icon: <XCircle size={12} /> },
+      canceled: { color: "bg-gray-100 text-gray-600 border-gray-200", icon: <XCircle size={12} /> },
     };
-    const s = config[status] || {
-      color: "bg-gray-100 text-gray-600",
-      icon: null,
-    };
+    const s = config[status] || { color: "bg-gray-100 text-gray-600", icon: null };
     return (
-      <span
-        className={`inline-flex items-center justify-center min-w-[130px] gap-1 px-2.5 py-1.5 rounded-full text-xs font-bold border whitespace-nowrap ${s.color}`}
-      >
+      <span className={`inline-flex items-center justify-center min-w-[130px] gap-1 px-2.5 py-1.5 rounded-full text-xs font-bold border whitespace-nowrap ${s.color}`}>
         {s.icon} {getStatusLabel(status)}
       </span>
     );
   };
 
-  // Tải font tiếng Việt cho PDF
+// Tải font tiếng Việt cho PDF
   const loadVietnameseFont = async (doc) => {
     const toBase64 = (buffer) => {
       const bytes = new Uint8Array(buffer);
@@ -425,24 +323,18 @@ export default function CustomerInvoice() {
     doc.rect(x, y, w, h, "S");
   };
 
-  // Tạo và xuất file PDF phiếu giao hàng (khung đầy đủ + logo SpeedyShip)
+// Tạo và xuất file PDF phiếu giao hàng (khung đầy đủ + logo SpeedyShip)
   const generatePDF = async (shipment) => {
     setDownloading(shipment.id);
 
     try {
-      const doc = new jsPDF({
-        orientation: "portrait",
-        unit: "mm",
-        format: "a4",
-      });
+      const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
       const margin = 12;
       const innerW = pageWidth - margin * 2;
       const rawLogo = await loadLogoDataURL();
-      const logoDataUrl = rawLogo
-        ? await scrubLogoCheckerboardBackground(rawLogo)
-        : null;
+      const logoDataUrl = rawLogo ? await scrubLogoCheckerboardBackground(rawLogo) : null;
 
       await loadVietnameseFont(doc);
       doc.setFont("Roboto", "normal");
@@ -478,9 +370,7 @@ export default function CustomerInvoice() {
       doc.setFont("Roboto", "normal");
       doc.setFontSize(9);
       doc.setTextColor(45, 45, 45);
-      doc.text(`Mã đơn: ${shipment.tracking_code}`, midCx, y + 20, {
-        align: "center",
-      });
+      doc.text(`Mã đơn: ${shipment.tracking_code}`, midCx, y + 20, { align: "center" });
       doc.text(
         `Ngày tạo: ${new Date(shipment.created_at).toLocaleDateString("vi-VN")}`,
         midCx,
@@ -489,23 +379,14 @@ export default function CustomerInvoice() {
       );
       doc.setFontSize(7);
       doc.setTextColor(70, 88, 90);
-      doc.text(
-        "Hotline: 1900 888 999 | support@speedyship.com",
-        midCx,
-        y + 33.5,
-        {
-          align: "center",
-        },
-      );
+      doc.text("Hotline: 1900 888 999 | support@speedyship.com", midCx, y + 33.5, {
+        align: "center",
+      });
 
       if (logoDataUrl) {
         const maxLW = sideColW - 8;
         const maxLH = headerH - 10;
-        const { w: lw, h: lh } = await getImageFitSizeMM(
-          logoDataUrl,
-          maxLW,
-          maxLH,
-        );
+        const { w: lw, h: lh } = await getImageFitSizeMM(logoDataUrl, maxLW, maxLH);
         doc.addImage(
           logoDataUrl,
           "PNG",
@@ -523,10 +404,7 @@ export default function CustomerInvoice() {
         });
       }
 
-      const barcodeDataURL = generateBarcodeDataURL(
-        shipment.tracking_code,
-        true,
-      );
+      const barcodeDataURL = generateBarcodeDataURL(shipment.tracking_code, true);
       const { w: bw, h: bh } = await getImageFitSizeMM(
         barcodeDataURL,
         sideColW - 6,
@@ -552,14 +430,9 @@ export default function CustomerInvoice() {
       doc.setTextColor(17, 62, 72);
       doc.setFont("Roboto", "bold");
       doc.setFontSize(13);
-      doc.text(
-        String(shipment.tracking_code || ""),
-        margin + innerW / 2,
-        y + 7,
-        {
-          align: "center",
-        },
-      );
+      doc.text(String(shipment.tracking_code || ""), margin + innerW / 2, y + 7, {
+        align: "center",
+      });
       y += routeH;
 
       const colW = innerW / 2;
@@ -609,11 +482,7 @@ export default function CustomerInvoice() {
       ay += 6;
       doc.setFontSize(9.5);
       doc.setTextColor(55, 55, 55);
-      doc.text(
-        `SĐT: ${shipment.receiver_phone || "---"}`,
-        margin + colW + 3,
-        ay,
-      );
+      doc.text(`SĐT: ${shipment.receiver_phone || "---"}`, margin + colW + 3, ay);
       ay += 6;
       doc.text(deliveryLines, margin + colW + 3, ay);
 
@@ -685,10 +554,7 @@ export default function CustomerInvoice() {
         body: [
           ["Phí vận chuyển", `${fmt(shippingFee)} VNĐ`],
           ["Thu hộ COD", `${fmt(codAmount)} VNĐ`],
-          [
-            "Hình thức thanh toán",
-            getPaymentMethodLabel(shipment.payment_method),
-          ],
+          ["Hình thức thanh toán", getPaymentMethodLabel(shipment.payment_method)],
         ],
         foot: [["TỔNG THU NGƯỜI NHẬN", `${fmt(totalCollect)} VNĐ`]],
         styles: {
@@ -772,10 +638,7 @@ export default function CustomerInvoice() {
       const footerH = 16;
       let footerY = signatureY + signatureH + 4;
       if (footerY + footerH > pageHeight - margin) {
-        footerY = Math.max(
-          signatureY + signatureH + 2,
-          pageHeight - margin - footerH,
-        );
+        footerY = Math.max(signatureY + signatureH + 2, pageHeight - margin - footerH);
       }
       strokeFrame(doc, margin, footerY, innerW, footerH);
       doc.setFillColor(252, 252, 252);
@@ -811,7 +674,7 @@ export default function CustomerInvoice() {
     }
   };
 
-  // Xuất tất cả phiếu giao hàng
+// Xuất tất cả phiếu giao hàng
   const exportAll = () => {
     if (filtered.length === 0) return toast.error("Không có đơn nào để xuất!");
     filtered.forEach((s, i) => {
@@ -823,15 +686,14 @@ export default function CustomerInvoice() {
     <div className="animate-in fade-in duration-500 space-y-6 pb-10">
       <Toaster position="top-right" />
 
-      {}
+      {/* Phần giao diện */}
       <div
         className="relative z-30 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-5 rounded-2xl shadow-sm border border-gray-100"
         data-aos="fade-up"
       >
         <div>
           <h1 className="text-xl font-extrabold text-[#113e48] flex items-center gap-2">
-            <Receipt className="text-orange-500" size={24} /> Xuất phiếu giao
-            hàng PDF
+            <Receipt className="text-orange-500" size={24} /> Xuất phiếu giao hàng PDF
           </h1>
           <p className="text-xs text-gray-500 mt-1">
             Chọn đơn hàng và tải xuống phiếu giao hàng dạng PDF.
@@ -839,7 +701,7 @@ export default function CustomerInvoice() {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-          {}
+          {/* Phần giao diện */}
           <div className="relative group">
             <Search
               className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-orange-500 transition-colors"
@@ -854,16 +716,10 @@ export default function CustomerInvoice() {
             />
           </div>
 
-          {}
-          <StatusFilterDropdown
-            value={filterStatus}
-            onChange={(v) => {
-              setFilterStatus(v);
-              setPage(1);
-            }}
-          />
+          {/* Phần giao diện */}
+          <StatusFilterDropdown value={filterStatus} onChange={(v) => { setFilterStatus(v); setPage(1); }} />
 
-          {}
+          {/* Nút hành động */}
           <button
             onClick={exportAll}
             className="flex items-center gap-2 bg-[#113e48] hover:bg-[#1a5c6a] text-white px-4 py-2.5 rounded-xl text-sm font-bold transition-colors shadow-sm"
@@ -873,7 +729,7 @@ export default function CustomerInvoice() {
         </div>
       </div>
 
-      {}
+      {/* Phần giao diện */}
       <div
         className="relative z-10 bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden"
         data-aos="fade-up"
@@ -941,17 +797,19 @@ export default function CustomerInvoice() {
                     </td>
                     <td className="px-6 py-4 text-center">
                       <div className="flex justify-start gap-2 w-[72px] mx-auto">
-                        {}
+                        {/* Nút hành động */}
                         <button
                           onClick={() =>
-                            setPreviewData(previewData?.id === s.id ? null : s)
+                            setPreviewData(
+                              previewData?.id === s.id ? null : s
+                            )
                           }
                           className="p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
                           title="Xem trước"
                         >
                           <Eye size={16} />
                         </button>
-                        {}
+                        {/* Nút hành động */}
                         <button
                           onClick={() => generatePDF(s)}
                           disabled={downloading === s.id}
@@ -979,7 +837,7 @@ export default function CustomerInvoice() {
         />
       </div>
 
-      {}
+      {/* Render điều kiện */}
       {previewData && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 sm:p-6">
           <button
@@ -988,157 +846,110 @@ export default function CustomerInvoice() {
             className="absolute inset-0 bg-black/40 backdrop-blur-[1px]"
           />
           <div className="relative z-10 w-full max-w-4xl bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex justify-between items-center px-5 py-3 bg-[#113e48] text-white">
-              <h3 className="font-bold flex items-center gap-2 text-sm">
-                <FileText size={16} className="text-orange-400" />
-                Xem trước — {previewData.tracking_code}
-              </h3>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => generatePDF(previewData)}
-                  className="flex items-center gap-1.5 bg-orange-500 hover:bg-orange-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-colors"
-                >
-                  <Download size={13} /> Tải PDF
-                </button>
-                <button
-                  onClick={() => setPreviewData(null)}
-                  className="text-white/70 hover:text-white transition-colors p-1"
-                >
-                  <XCircle size={18} />
-                </button>
+          <div className="flex justify-between items-center px-5 py-3 bg-[#113e48] text-white">
+            <h3 className="font-bold flex items-center gap-2 text-sm">
+              <FileText size={16} className="text-orange-400" />
+              Xem trước — {previewData.tracking_code}
+            </h3>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => generatePDF(previewData)}
+                className="flex items-center gap-1.5 bg-orange-500 hover:bg-orange-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-colors"
+              >
+                <Download size={13} /> Tải PDF
+              </button>
+              <button
+                onClick={() => setPreviewData(null)}
+                className="text-white/70 hover:text-white transition-colors p-1"
+              >
+                <XCircle size={18} />
+              </button>
+            </div>
+          </div>
+
+          {/* Phần giao diện */}
+          <div className="p-5 space-y-4 max-h-[75vh] overflow-y-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {/* Phần giao diện */}
+              <div className="bg-blue-50 p-3 rounded-xl border border-blue-100">
+                <p className="text-[10px] font-bold text-blue-600 uppercase mb-1">Người gửi</p>
+                <p className="font-bold text-[#113e48] text-sm">{previewData.sender_name}</p>
+                <p className="text-xs text-gray-500">{previewData.sender_phone}</p>
+                <p className="text-xs text-gray-400 mt-1 line-clamp-2">{previewData.pickup_address}</p>
+              </div>
+              {/* Phần giao diện */}
+              <div className="bg-green-50 p-3 rounded-xl border border-green-100">
+                <p className="text-[10px] font-bold text-green-600 uppercase mb-1">Người nhận</p>
+                <p className="font-bold text-[#113e48] text-sm">{previewData.receiver_name}</p>
+                <p className="text-xs text-gray-500">{previewData.receiver_phone}</p>
+                <p className="text-xs text-gray-400 mt-1 line-clamp-2">{previewData.delivery_address}</p>
               </div>
             </div>
 
-            {}
-            <div className="p-5 space-y-4 max-h-[75vh] overflow-y-auto">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {}
-                <div className="bg-blue-50 p-3 rounded-xl border border-blue-100">
-                  <p className="text-[10px] font-bold text-blue-600 uppercase mb-1">
-                    Người gửi
-                  </p>
-                  <p className="font-bold text-[#113e48] text-sm">
-                    {previewData.sender_name}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {previewData.sender_phone}
-                  </p>
-                  <p className="text-xs text-gray-400 mt-1 line-clamp-2">
-                    {previewData.pickup_address}
-                  </p>
+            {/* Phần giao diện */}
+            {previewData.driver_name ? (
+              <div className="bg-orange-50 p-4 rounded-xl border border-orange-100 flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-orange-200 flex items-center justify-center text-orange-700 font-bold text-xl">
+                  {previewData.driver_name.charAt(0)}
                 </div>
-                {}
-                <div className="bg-green-50 p-3 rounded-xl border border-green-100">
-                  <p className="text-[10px] font-bold text-green-600 uppercase mb-1">
-                    Người nhận
-                  </p>
-                  <p className="font-bold text-[#113e48] text-sm">
-                    {previewData.receiver_name}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {previewData.receiver_phone}
-                  </p>
-                  <p className="text-xs text-gray-400 mt-1 line-clamp-2">
-                    {previewData.delivery_address}
-                  </p>
+                <div className="flex-1">
+                  <p className="text-[10px] font-bold text-orange-600 uppercase mb-0.5">Tài xế phụ trách</p>
+                  <p className="font-bold text-[#113e48]">{previewData.driver_name}</p>
+                  <div className="flex flex-col gap-1 mt-1">
+                    <p className="text-[11px] text-gray-600 flex items-center gap-1.5">
+                      <Phone size={12} className="text-orange-500" /> {previewData.driver_phone || "Đang cập nhật SĐT"}
+                    </p>
+                    <p className="text-[11px] text-gray-600 flex items-center gap-1.5">
+                      <Truck size={12} className="text-orange-500" /> Biển số: <span className="font-semibold text-gray-800 tracking-wider">{previewData.plate_number || "Đang cập nhật"}</span>
+                    </p>
+                  </div>
+                </div>
+                {previewData.driver_phone && (
+                  <a href={"tel:" + previewData.driver_phone} className="bg-white p-2 rounded-full shadow-sm text-green-600 hover:bg-green-50 transition-colors">
+                    <Phone size={20} />
+                  </a>
+                )}
+              </div>
+            ) : (
+              <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-400">
+                  <Truck size={20} />
+                </div>
+                <div className="flex-1">
+                  <p className="text-[10px] font-bold text-gray-500 uppercase mb-0.5">Tài xế phụ trách</p>
+                  <p className="font-bold text-gray-400 italic">Chưa phân công tài xế</p>
+                </div>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                <p className="text-[10px] font-bold text-slate-500 uppercase mb-2">Thanh toán</p>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-slate-500">Phí vận chuyển</span>
+                    <span className="font-bold text-[#113e48]">{fmt(previewData.shipping_fee)}₫</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-slate-500">Thu hộ COD</span>
+                    <span className="font-bold text-[#113e48]">{fmt(previewData.cod_amount)}₫</span>
+                  </div>
+                  <div className="pt-2 border-t border-slate-200 flex items-center justify-between text-sm">
+                    <span className="text-slate-500">Trạng thái</span>
+                    <span className="font-bold text-blue-600">{getStatusLabel(previewData.status)}</span>
+                  </div>
                 </div>
               </div>
 
-              {}
-              {previewData.driver_name ? (
-                <div className="bg-orange-50 p-4 rounded-xl border border-orange-100 flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-orange-200 flex items-center justify-center text-orange-700 font-bold text-xl">
-                    {previewData.driver_name.charAt(0)}
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-[10px] font-bold text-orange-600 uppercase mb-0.5">
-                      Tài xế phụ trách
-                    </p>
-                    <p className="font-bold text-[#113e48]">
-                      {previewData.driver_name}
-                    </p>
-                    <div className="flex flex-col gap-1 mt-1">
-                      <p className="text-[11px] text-gray-600 flex items-center gap-1.5">
-                        <Phone size={12} className="text-orange-500" />{" "}
-                        {previewData.driver_phone || "Đang cập nhật SĐT"}
-                      </p>
-                      <p className="text-[11px] text-gray-600 flex items-center gap-1.5">
-                        <Truck size={12} className="text-orange-500" /> Biển số:{" "}
-                        <span className="font-semibold text-gray-800 tracking-wider">
-                          {previewData.plate_number || "Đang cập nhật"}
-                        </span>
-                      </p>
-                    </div>
-                  </div>
-                  {previewData.driver_phone && (
-                    <a
-                      href={"tel:" + previewData.driver_phone}
-                      className="bg-white p-2 rounded-full shadow-sm text-green-600 hover:bg-green-50 transition-colors"
-                    >
-                      <Phone size={20} />
-                    </a>
-                  )}
-                </div>
-              ) : (
-                <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-400">
-                    <Truck size={20} />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-[10px] font-bold text-gray-500 uppercase mb-0.5">
-                      Tài xế phụ trách
-                    </p>
-                    <p className="font-bold text-gray-400 italic">
-                      Chưa phân công tài xế
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase mb-2">
-                    Thanh toán
-                  </p>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-slate-500">Phí vận chuyển</span>
-                      <span className="font-bold text-[#113e48]">
-                        {fmt(previewData.shipping_fee)}₫
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-slate-500">Thu hộ COD</span>
-                      <span className="font-bold text-[#113e48]">
-                        {fmt(previewData.cod_amount)}₫
-                      </span>
-                    </div>
-                    <div className="pt-2 border-t border-slate-200 flex items-center justify-between text-sm">
-                      <span className="text-slate-500">Trạng thái</span>
-                      <span className="font-bold text-blue-600">
-                        {getStatusLabel(previewData.status)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-[#113e48] text-white p-4 rounded-xl border border-[#113e48] flex flex-col justify-center">
-                  <p className="text-[10px] text-orange-300 uppercase font-bold tracking-wider text-center mb-1">
-                    Tổng thu
-                  </p>
-                  <p className="text-3xl font-black text-center leading-tight">
-                    {fmt(
-                      Number(previewData.cod_amount) +
-                        Number(previewData.shipping_fee),
-                    )}
-                    ₫
-                  </p>
-                  <p className="text-center text-xs text-white/70 mt-2">
-                    Người nhận thanh toán khi giao hàng
-                  </p>
-                </div>
+              <div className="bg-[#113e48] text-white p-4 rounded-xl border border-[#113e48] flex flex-col justify-center">
+                <p className="text-[10px] text-orange-300 uppercase font-bold tracking-wider text-center mb-1">Tổng thu</p>
+                <p className="text-3xl font-black text-center leading-tight">
+                  {fmt(Number(previewData.cod_amount) + Number(previewData.shipping_fee))}₫
+                </p>
+                <p className="text-center text-xs text-white/70 mt-2">Người nhận thanh toán khi giao hàng</p>
               </div>
             </div>
+          </div>
           </div>
         </div>
       )}

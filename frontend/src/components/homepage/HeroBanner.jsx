@@ -1,4 +1,4 @@
-import { Swiper, SwiperSlide } from "swiper/react";
+﻿import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination, Navigation, EffectFade } from "swiper/modules";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -19,7 +19,7 @@ export default function HeroBanner() {
   const navigate = useNavigate();
   const { openAIChat } = useChat();
 
-  // TRACKING STATE
+
   const [trackingCode, setTrackingCode] = useState("");
   const [shipment, setShipment] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -38,15 +38,14 @@ export default function HeroBanner() {
         return { text: "Đang giao hàng", color: "text-blue-600 font-semibold" };
       case "completed":
         return { text: "Hoàn tất", color: "text-green-600 font-semibold" };
-      case "cancelled":
+      case "canceled":
         return { text: "Đã hủy", color: "text-red-600 font-semibold" };
       default:
         return { text: "Không xác định", color: "text-gray-500 font-medium" };
     }
   };
 
-  // --- FIX 1: Lỗi crash khi có Response ---
-  // Thêm kiểm tra swiperRef.autoplay có tồn tại không trước khi gọi hàm
+
   useEffect(() => {
     if (swiperRef && swiperRef.autoplay) {
       if (shipment || loading || trackingCode.length > 0) {
@@ -83,7 +82,7 @@ export default function HeroBanner() {
   };
 
   return (
-    // FIX 2: Container Mobile dùng chiều cao cố định, PC giữ nguyên min-h
+
     <section className="relative h-[750px] md:min-h-[80vh]">
       <Swiper
         centeredSlides
@@ -96,21 +95,21 @@ export default function HeroBanner() {
         modules={[Autoplay, Pagination, Navigation, EffectFade]}
         className="h-full"
       >
-        {/* SLIDE 1 */}
+        {/* Phần giao diện */}
         <SwiperSlide>
           <section className="relative w-full h-full md:aspect-[21/9] bg-black overflow-hidden">
-            {/* BACKGROUND */}
+            {/* Hình ảnh minh họa */}
             <img
               src="/assets/banners/banner1.png"
               className="absolute inset-0 w-full h-full object-cover object-center"
               alt="Banner"
             />
 
-            {/* OVERLAY: Gradient tối ở 2 đầu (trên/dưới) để chữ và form nổi bật, GIỮ LẠI PHẦN GIỮA TRONG SUỐT */}
+            {/* Phần giao diện */}
             <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-transparent to-black/60" />
 
-            {/* --- PHẦN 1: NỘI DUNG CHỮ (Đảm bảo không bị mất) --- */}
-            {/* Dùng flex-col và pt-28 (mobile) / pt-16 (PC) để căn chỉnh chuẩn xác từ trên xuống */}
+            {/* Phần giao diện */}
+
             <div className="absolute top-0 left-0 w-full z-30 flex flex-col items-center pt-24 md:pt-14 px-4 text-center">
               <p className="uppercase tracking-[0.3em] text-xs md:text-sm text-blue-300 font-bold mb-3 drop-shadow-md">
                 SpeedyShip Logistics
@@ -123,12 +122,12 @@ export default function HeroBanner() {
                 Trực Tuyến.
               </h1>
 
-              {/* Đảm bảo Slogan hiển thị rõ */}
+              {/* Phần giao diện */}
               <p className="text-gray-100 text-sm md:text-lg max-w-xl mt-3 drop-shadow-md font-medium">
                 Tạo đơn trong giây lát — Cập nhật trạng thái từng Km.
               </p>
 
-              {/* BUTTONS */}
+              {/* Phần giao diện */}
               <div className="flex flex-row gap-4 mt-6">
                 <button
                   onClick={handleCreateShipment}
@@ -145,10 +144,10 @@ export default function HeroBanner() {
               </div>
             </div>
 
-            {/* --- PHẦN 2: FORM TRA CỨU (Sửa lỗi hiển thị) --- */}
-            {/* Bỏ hết các div bao quanh gây lỗi, chỉ giữ lại vị trí absolute đáy */}
+            {/* Phần giao diện */}
+
             <div className="absolute bottom-[10%] w-full flex justify-center z-40 px-4">
-              {/* Giới hạn chiều rộng form để không bị bè ra quá to */}
+              {/* Phần giao diện */}
               <div className="w-full max-w-[350px]">
                 <TrackingMiniPanel
                   trackingCode={trackingCode}
@@ -164,7 +163,7 @@ export default function HeroBanner() {
           </section>
         </SwiperSlide>
 
-        {/* Slide 2 */}
+        {/* Phần giao diện */}
         <SwiperSlide>
           <section className="relative w-full h-full md:aspect-[21/9] bg-black overflow-hidden flex items-center justify-center md:block">
             <img
@@ -174,7 +173,7 @@ export default function HeroBanner() {
             />
             <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-black/10 to-transparent" />
 
-            {/* GLASS CARD: Mobile ở giữa, PC giữ vị trí cũ */}
+            {/* Phần giao diện */}
             <div
               className="
               relative md:absolute md:right-[1%] md:bottom-[50%] md:right-2 md:-translate-y-1/2
@@ -194,7 +193,7 @@ export default function HeroBanner() {
           </section>
         </SwiperSlide>
 
-        {/* Slide 3 */}
+        {/* Phần giao diện */}
         <SwiperSlide>
           <section className="relative w-full h-full md:aspect-[21/9] overflow-hidden flex items-center justify-center md:block">
             <img
@@ -226,7 +225,7 @@ export default function HeroBanner() {
           </section>
         </SwiperSlide>
 
-        {/* Slide 4 */}
+        {/* Phần giao diện */}
         <SwiperSlide>
           <section className="relative w-full h-full md:aspect-[21/9] overflow-hidden flex items-center justify-center md:block">
             <img
@@ -254,7 +253,7 @@ export default function HeroBanner() {
           </section>
         </SwiperSlide>
 
-        {/* Slide 5 */}
+        {/* Phần giao diện */}
         <SwiperSlide>
           <section className="relative w-full h-full md:aspect-[21/9] bg-black overflow-hidden flex items-center justify-center md:block">
             <img

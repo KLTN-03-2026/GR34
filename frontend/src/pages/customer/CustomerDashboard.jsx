@@ -180,8 +180,7 @@ export default function CustomerDashboard() {
         {/* Pie Chart */}
         <div className="bg-white p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-sm border border-gray-100 lg:col-span-1 flex flex-col">
           <h3 className="text-base md:text-lg font-bold text-[#113e48] mb-2 flex items-center gap-2">
-            <PieChartIcon size={18} className="text-gray-400" /> Tỷ lệ trạng
-            thái
+            <PieChartIcon size={18} className="text-gray-400" /> Tỷ lệ trạng thái
           </h3>
 
           <div className="flex-1 min-h-[250px] md:min-h-[300px] relative">
@@ -269,9 +268,7 @@ export default function CustomerDashboard() {
                     >
                       <div className="flex justify-between items-start mb-2 border-b border-gray-100 pb-2">
                         <div>
-                          <p className="text-xs text-gray-400 font-medium">
-                            Mã VĐ
-                          </p>
+                          <p className="text-xs text-gray-400 font-medium">Mã VĐ</p>
                           <p className="font-bold text-[#113e48] text-sm">
                             {s.tracking_code}
                           </p>
@@ -280,21 +277,13 @@ export default function CustomerDashboard() {
                       </div>
                       <div className="grid grid-cols-2 gap-2 text-sm">
                         <div>
-                          <p className="text-[10px] text-gray-400 uppercase">
-                            Người nhận
-                          </p>
-                          <p className="font-medium text-gray-800 truncate">
-                            {s.receiver_name}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {s.receiver_phone}
-                          </p>
+                          <p className="text-[10px] text-gray-400 uppercase">Người nhận</p>
+                          <p className="font-medium text-gray-800 truncate">{s.receiver_name}</p>
+                          <p className="text-xs text-gray-500">{s.receiver_phone}</p>
                         </div>
                         <div className="text-right flex flex-col justify-between">
                           <div>
-                            <p className="text-[10px] text-gray-400 uppercase">
-                              Tiền COD
-                            </p>
+                            <p className="text-[10px] text-gray-400 uppercase">Tiền COD</p>
                             <p className="font-bold text-gray-700">
                               {Number(s.cod_amount).toLocaleString("vi-VN")}₫
                             </p>
@@ -317,9 +306,7 @@ export default function CustomerDashboard() {
                         <th className="px-4 py-3">Người nhận</th>
                         <th className="px-4 py-3 text-center">Trạng thái</th>
                         <th className="px-4 py-3 text-right">COD</th>
-                        <th className="px-4 py-3 rounded-tr-lg text-right">
-                          Ngày tạo
-                        </th>
+                        <th className="px-4 py-3 rounded-tr-lg text-right">Ngày tạo</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
@@ -332,12 +319,8 @@ export default function CustomerDashboard() {
                             {s.tracking_code}
                           </td>
                           <td className="px-4 py-4">
-                            <div className="font-medium text-gray-900">
-                              {s.receiver_name}
-                            </div>
-                            <div className="text-xs text-gray-400">
-                              {s.receiver_phone}
-                            </div>
+                            <div className="font-medium text-gray-900">{s.receiver_name}</div>
+                            <div className="text-xs text-gray-400">{s.receiver_phone}</div>
                           </td>
                           <td className="px-4 py-4 text-center">
                             <StatusBadge status={s.status} />
@@ -362,13 +345,7 @@ export default function CustomerDashboard() {
   );
 }
 
-function StatCard({
-  title,
-  value,
-  icon,
-  bg,
-  valueSize = "text-xl md:text-2xl",
-}) {
+function StatCard({ title, value, icon, bg, valueSize = "text-xl md:text-2xl" }) {
   return (
     <div className="bg-white p-3 md:p-5 rounded-xl md:rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between hover:shadow-md transition-shadow group h-full">
       <div className="w-[60%]">

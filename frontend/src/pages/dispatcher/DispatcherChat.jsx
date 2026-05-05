@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useLayoutEffect } from "react";
+﻿import { useEffect, useState, useRef, useLayoutEffect } from "react";
 import io from "socket.io-client";
 
 
@@ -211,7 +211,7 @@ export default function DispatcherChat() {
 
   return (
     <div className="relative flex h-[85vh] bg-white shadow-xl rounded-xl overflow-hidden border border-gray-200">
-      {}
+      {/* Phần giao diện */}
       <div className="w-1/3 border-r bg-gray-50 flex flex-col">
         <div className="p-4 border-b flex items-center justify-between bg-white">
           <h3 className="font-bold text-gray-700">
@@ -265,7 +265,7 @@ export default function DispatcherChat() {
         </div>
       </div>
 
-      {}
+      {/* Phần giao diện */}
       <div className="flex-1 flex flex-col bg-white">
         <div className="h-16 border-b flex items-center px-6 justify-between bg-white shadow-sm z-10">
           {selectedChat ? (
@@ -314,7 +314,7 @@ export default function DispatcherChat() {
             )
           ) : (
             <div className="h-full flex flex-col items-center justify-center text-gray-300">
-              {}
+              {/* Văn bản hiển thị */}
               <p>Xin chào, Dispatcher!</p>
             </div>
           )}

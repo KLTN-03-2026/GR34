@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import API from "../services/api";
 import Map, {
@@ -25,7 +25,9 @@ import {
   FaClock,
 } from "react-icons/fa";
 
+
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
+
 
 const CustomMarker = ({ icon, bgColor, ringColor, onClick }) => {
   return (
@@ -61,6 +63,7 @@ export default function Tracking() {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
+
   const [driverPos, setDriverPos] = useState(null);
   const [routeGeoJSON, setRouteGeoJSON] = useState(null);
   const [pickup, setPickup] = useState(null);
@@ -77,6 +80,7 @@ export default function Tracking() {
   useEffect(() => {
     if (initialCode) handleSearch();
   }, [initialCode]);
+
 
   const getStatusInfo = (status) => {
     if (!status)
@@ -138,6 +142,7 @@ export default function Tracking() {
     };
   };
 
+
   const fetchRouteOSRM = async (start, end) => {
     if (!start || !end) return null;
     const startStr = `${start[1]},${start[0]}`;
@@ -147,6 +152,7 @@ export default function Tracking() {
 
     const latDiff = Math.abs(start[0] - end[0]);
     let url = "";
+
 
     if (latDiff > 2) {
       url = `https://router.project-osrm.org/route/v1/driving/${startStr};${daNang};${nhaTrang};${endStr}?overview=full&geometries=geojson`;
@@ -160,11 +166,13 @@ export default function Tracking() {
       if (data.code === "Ok" && data.routes.length > 0) {
         return { type: "Feature", geometry: data.routes[0].geometry };
       }
-    } catch (error) {}
+    } catch (error) {
+    }
     return null;
   };
 
-  // Xử lý tìm kiếm
+
+// Xử lý tìm kiếm
   const handleSearch = async () => {
     setError("");
     setSuccess("");
@@ -204,6 +212,7 @@ export default function Tracking() {
       setShipment(data);
       setSuccess("Tra cứu thành công!");
 
+
       let pk =
         data.pickup_lat && data.pickup_lng
           ? [Number(data.pickup_lat), Number(data.pickup_lng)]
@@ -215,6 +224,7 @@ export default function Tracking() {
 
       setPickup(pk);
       setDelivery(dl);
+
 
       if (data.status === "picking" || data.status === "delivering") {
         const geoJson = await fetchRouteOSRM(pk, dl);
@@ -237,6 +247,7 @@ export default function Tracking() {
     }
   };
 
+
   useEffect(() => {
     if (
       !routeGeoJSON ||
@@ -249,6 +260,7 @@ export default function Tracking() {
     let index = 0;
     const totalPoints = pathCoordinates.length;
 
+
     animationRef.current = setInterval(() => {
       if (index >= totalPoints) index = 0;
       const point = pathCoordinates[index];
@@ -259,10 +271,12 @@ export default function Tracking() {
     return () => clearInterval(animationRef.current);
   }, [routeGeoJSON]);
 
+
   useEffect(() => {
     if (!mapRef.current) return;
 
     const features = [];
+
 
     if (pickup)
       features.push({
@@ -278,20 +292,24 @@ export default function Tracking() {
 
     if (features.length === 0) return;
 
+
     const featureCollection = { type: "FeatureCollection", features: features };
 
     try {
       const [minLng, minLat, maxLng, maxLat] = bbox(featureCollection);
 
+
       const isSamePoint = minLng === maxLng && minLat === maxLat;
 
       if (isSamePoint) {
+
         mapRef.current.flyTo({
           center: [minLng, minLat],
           zoom: 14,
           duration: 1000,
         });
       } else {
+
         mapRef.current.fitBounds(
           [
             [minLng, minLat],
@@ -301,17 +319,19 @@ export default function Tracking() {
             padding: 80,
             duration: 1500,
             maxZoom: 14,
-          },
+          }
         );
       }
-    } catch (error) {}
+    } catch (error) {
+    }
   }, [routeGeoJSON, pickup, delivery, shipment?.status]);
+
 
   const statusInfo = shipment ? getStatusInfo(shipment.status) : null;
 
   return (
     <div className="font-sans bg-slate-50 min-h-screen text-slate-700">
-      {}
+      {/* Khối nội dung */}
       <section className="relative pt-24 pb-32 bg-[#113e48] text-white overflow-hidden">
         <div
           className="absolute inset-0 opacity-10"
@@ -344,7 +364,7 @@ export default function Tracking() {
         </div>
       </section>
 
-      {}
+      {/* Khối nội dung */}
       <section className="-mt-16 relative z-20 px-6">
         <div
           className="max-w-3xl mx-auto bg-white p-6 rounded-3xl shadow-xl border border-gray-100"
@@ -419,13 +439,13 @@ export default function Tracking() {
         </div>
       </section>
 
-      {}
+      {/* Render điều kiện */}
       {shipment && statusInfo && (
         <section className="py-16 px-6 max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-3 gap-8">
-            {}
+            {/* Phần giao diện */}
             <div className="lg:col-span-1 space-y-6" data-aos="fade-right">
-              {}
+              {/* Phần giao diện */}
               <div
                 className={`p-6 rounded-3xl shadow-lg border-l-8 ${
                   statusInfo.bg
@@ -445,7 +465,7 @@ export default function Tracking() {
                 </p>
               </div>
 
-              {}
+              {/* Phần giao diện */}
               <div className="bg-white p-6 rounded-3xl shadow-lg border border-gray-100">
                 <h3 className="text-lg font-bold text-[#113e48] mb-4 flex items-center gap-2">
                   <FaBoxOpen className="text-orange-500" /> Thông tin kiện hàng
@@ -473,7 +493,7 @@ export default function Tracking() {
                     <span className="text-gray-500 text-sm">Thu hộ (COD)</span>
                     <span className="font-bold text-green-600 bg-green-50 px-2 py-1 rounded-md">
                       {parseInt(shipment.cod_amount || 0).toLocaleString(
-                        "vi-VN",
+                        "vi-VN"
                       )}{" "}
                       VNĐ
                     </span>
@@ -491,7 +511,7 @@ export default function Tracking() {
               </div>
             </div>
 
-            {}
+            {/* Phần giao diện */}
             <div className="lg:col-span-2" data-aos="fade-left">
               <div className="bg-white p-2 rounded-3xl shadow-xl border border-gray-200 h-[600px] relative z-0 overflow-hidden">
                 <Map
@@ -507,7 +527,7 @@ export default function Tracking() {
                 >
                   <NavigationControl position="bottom-right" />
 
-                  {}
+                  {/* Render điều kiện */}
                   {routeGeoJSON && (
                     <Source id="route" type="geojson" data={routeGeoJSON}>
                       <Layer
@@ -524,7 +544,7 @@ export default function Tracking() {
                     </Source>
                   )}
 
-                  {}
+                  {/* Render điều kiện */}
                   {pickup && (
                     <Marker
                       longitude={pickup[1]}
@@ -551,7 +571,7 @@ export default function Tracking() {
                     </Marker>
                   )}
 
-                  {}
+                  {/* Render điều kiện */}
                   {delivery && (
                     <Marker
                       longitude={delivery[1]}
@@ -578,7 +598,7 @@ export default function Tracking() {
                     </Marker>
                   )}
 
-                  {}
+                  {/* Render điều kiện */}
                   {driverPos && (
                     <Marker
                       longitude={driverPos[1]}
@@ -601,7 +621,9 @@ export default function Tracking() {
                         <div className="text-center font-bold text-xs p-1">
                           {shipment.status === "completed" ||
                           shipment.status === "delivered" ? (
-                            <span className="text-green-600">Đã giao hàng</span>
+                            <span className="text-green-600">
+                              Đã giao hàng
+                            </span>
                           ) : (
                             <>
                               🚚 Đang vận chuyển <br />
@@ -616,7 +638,7 @@ export default function Tracking() {
                   )}
                 </Map>
 
-                {}
+                {/* Phần giao diện */}
                 <div className="absolute bottom-6 left-6 z-[1000] bg-white/90 backdrop-blur-sm p-4 rounded-2xl shadow-lg max-w-xs">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
@@ -631,9 +653,9 @@ export default function Tracking() {
                         shipment.status === "delivering"
                           ? "Đang di chuyển"
                           : shipment.status === "completed" ||
-                              shipment.status === "delivered"
-                            ? "Đã đến nơi"
-                            : "Chưa xuất phát"}
+                            shipment.status === "delivered"
+                          ? "Đã đến nơi"
+                          : "Chưa xuất phát"}
                       </p>
                     </div>
                   </div>
@@ -644,7 +666,7 @@ export default function Tracking() {
         </section>
       )}
 
-      {}
+      {/* Khối nội dung */}
       <section className="py-20 bg-white border-t border-gray-100 mt-10">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <h2 className="text-2xl font-bold text-[#113e48] mb-4">

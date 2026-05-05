@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import {
   Search,
   MapPin,
@@ -11,6 +11,7 @@ import {
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 
+// Bộ chọn địa chỉ Việt Nam
 export default function DiaChiSelector({
   label,
   onChange,
@@ -34,6 +35,7 @@ export default function DiaChiSelector({
       .catch((err) => console.error("Lỗi tải tỉnh thành:", err));
   }, []);
 
+// Xử lý tìm kiếm
   const handleSearch = async (query) => {
     setSearchQuery(query);
     if (query.length < 3) {
@@ -48,7 +50,6 @@ export default function DiaChiSelector({
       const data = await res.json();
       setSuggestions(data.features || []);
     } catch (err) {
-      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -111,16 +112,8 @@ export default function DiaChiSelector({
           required={required}
         />
 
-        {/* <button
-          type="button"
-          onClick={onOpenMap}
-          className="absolute right-2 top-2 bottom-2 px-4 bg-orange-500 hover:bg-orange-600 text-white rounded-xl flex items-center gap-2 shadow-md transition-all active:scale-95"
-        >
-          <MapPin size={16} fill="white" />
-          <span className="text-xs font-bold uppercase">Bản đồ</span>
-        </button> */}
+        {/* Phần giao diện */}
 
-        {/* --- GỢI Ý SEARCH --- */}
         {suggestions.length > 0 && (
           <div className="absolute z-[100] w-full mt-2 bg-white border border-gray-100 rounded-2xl shadow-2xl max-h-80 overflow-y-auto animate-in fade-in zoom-in-95">
             {suggestions.map((s) => (
@@ -154,7 +147,7 @@ export default function DiaChiSelector({
         )}
       </div>
 
-      {/* --- PHẦN NHẬP THỦ CÔNG  */}
+      {/* Nút hành động */}
       <button
         type="button"
         onClick={() => setShowManual(!showManual)}

@@ -1,6 +1,7 @@
 import toast from "react-hot-toast";
 import MapPicker from "./MapPicker.jsx";
 
+// Modal bản đồ chọn vị trí
 export default function LocationMapModal({
   isOpen,
   onClose,
@@ -9,7 +10,7 @@ export default function LocationMapModal({
 }) {
   if (!isOpen) return null;
 
-  // Chuyển hàm reverseGeocode vào đây để tái sử dụng ở bất kỳ đâu gọi Modal này
+
   const reverseGeocode = async (lat, lng) => {
     try {
       const res = await fetch(
@@ -26,7 +27,7 @@ export default function LocationMapModal({
     const address = await reverseGeocode(pos.lat, pos.lng);
     toast.success("Đã xác nhận vị trí!", { id: "geo" });
 
-    // Trả về cả tọa độ lẫn địa chỉ text cho file cha
+
     onConfirm({ lat: pos.lat, lng: pos.lng, address });
   };
 

@@ -1,4 +1,4 @@
-
+﻿
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import API from "../../services/api";
@@ -315,7 +315,7 @@ export default function DriverShipmentDetail() {
     <div className="min-h-screen bg-[#F8FAFC] pb-24">
       <Toaster position="top-center" />
 
-      {}
+      {/* Phần giao diện */}
       <div className="bg-white px-4 py-4 sticky top-0 z-30 shadow-sm border-b border-gray-100 flex items-center justify-between">
         <button
           onClick={() => navigate(-1)}
@@ -333,7 +333,7 @@ export default function DriverShipmentDetail() {
       </div>
 
       <div className="p-4 lg:p-8 max-w-5xl mx-auto space-y-6">
-        {}
+        {/* Phần giao diện */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden relative">
           <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-lg shadow-sm border border-gray-100 text-xs font-bold text-gray-600 flex items-center gap-2">
             <MapPin size={14} className="text-blue-500" /> Lộ trình vận chuyển
@@ -352,7 +352,7 @@ export default function DriverShipmentDetail() {
             >
               <NavigationControl position="bottom-right" showCompass={false} />
 
-              {}
+              {/* Phần giao diện */}
               <Marker
                 latitude={coords.driver.lat}
                 longitude={coords.driver.lng}
@@ -361,7 +361,7 @@ export default function DriverShipmentDetail() {
                 <DriverMarker />
               </Marker>
 
-              {}
+              {/* Phần giao diện */}
               <Marker
                 latitude={coords.pickup.lat}
                 longitude={coords.pickup.lng}
@@ -370,7 +370,7 @@ export default function DriverShipmentDetail() {
                 <LocationMarker type="pickup" />
               </Marker>
 
-              {}
+              {/* Phần giao diện */}
               <Marker
                 latitude={coords.delivery.lat}
                 longitude={coords.delivery.lng}
@@ -382,7 +382,7 @@ export default function DriverShipmentDetail() {
           </div>
         </div>
 
-        {}
+        {/* Phần giao diện */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
           <div className="flex flex-col sm:flex-row gap-4 items-center">
             <div className="w-full sm:w-1/2">
@@ -422,10 +422,10 @@ export default function DriverShipmentDetail() {
           </div>
         </div>
 
-        {}
+        {/* Phần giao diện */}
         <div className="grid md:grid-cols-2 gap-6">
           <div className="space-y-4">
-            {}
+            {/* Phần giao diện */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 relative overflow-hidden">
               <div className="absolute top-0 left-0 w-1 h-full bg-orange-400"></div>
               <h3 className="text-sm font-bold text-gray-800 flex items-center gap-2 mb-4">
@@ -455,7 +455,7 @@ export default function DriverShipmentDetail() {
               </div>
             </div>
 
-            {}
+            {/* Phần giao diện */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 relative overflow-hidden">
               <div className="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
               <h3 className="text-sm font-bold text-gray-800 flex items-center gap-2 mb-4">
@@ -486,7 +486,7 @@ export default function DriverShipmentDetail() {
             </div>
           </div>
 
-          {}
+          {/* Phần giao diện */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 h-fit">
             <h3 className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
               <ClipboardList className="text-gray-500" size={18} /> THÔNG TIN

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -9,18 +9,19 @@ import {
   faComments,
 } from "@fortawesome/free-solid-svg-icons";
 
+// Nút hành động nổi
 export default function FloatingActions({ onOpenChatBubble, onOpenChatTop }) {
   const [open, setOpen] = useState(false);
   const [showNotice, setShowNotice] = useState(true);
 
-  // Ẩn bubble sau 5 giây
+
   useEffect(() => {
     if (!showNotice) return;
     const t = setTimeout(() => setShowNotice(false), 5000);
     return () => clearTimeout(t);
   }, [showNotice]);
 
-  // Khi đóng menu → bubble hiện lại
+
   useEffect(() => {
     if (!open) {
       setTimeout(() => setShowNotice(true), 500);
@@ -29,7 +30,7 @@ export default function FloatingActions({ onOpenChatBubble, onOpenChatTop }) {
     }
   }, [open]);
 
-  // Animation variants
+
   const itemVariants = {
     hidden: { opacity: 0, y: 20, scale: 0.5 },
     visible: (custom) => ({
@@ -47,9 +48,9 @@ export default function FloatingActions({ onOpenChatBubble, onOpenChatTop }) {
   };
 
   return (
-    //  UPDATE: Đẩy vị trí ra xa góc hơn (bottom-10 right-10) để hợp với nút to
+
     <div className="fixed bottom-6 right-6 z-[9999] flex flex-col items-end gap-5">
-      {/* 🔔 Bubble thông báo (Tooltip) - UPDATE: To hơn */}
+      {/* Phần giao diện */}
       <AnimatePresence>
         {!open && showNotice && (
           <motion.div
@@ -80,11 +81,11 @@ export default function FloatingActions({ onOpenChatBubble, onOpenChatTop }) {
         )}
       </AnimatePresence>
 
-      {/* --- CÁC NÚT CON --- */}
+      {/* Phần giao diện */}
       <AnimatePresence>
         {open && (
           <>
-            {/* Nút Chat AI - UPDATE: To hơn (w-16 h-16) */}
+            {/* Phần giao diện */}
             <motion.div
               custom={2}
               variants={itemVariants}
@@ -115,7 +116,7 @@ export default function FloatingActions({ onOpenChatBubble, onOpenChatTop }) {
               </button>
             </motion.div>
 
-            {/* Nút Chat Realtime - UPDATE: To hơn (w-16 h-16) */}
+            {/* Phần giao diện */}
             <motion.div
               custom={1}
               variants={itemVariants}
@@ -149,7 +150,7 @@ export default function FloatingActions({ onOpenChatBubble, onOpenChatTop }) {
         )}
       </AnimatePresence>
 
-      {/* --- NÚT MENU CHÍNH - UPDATE: To nhất (w-20 h-20) --- */}
+      {/* Phần giao diện */}
       <motion.button
         onClick={() => setOpen(!open)}
         whileHover={{ scale: 1.05 }}
@@ -168,7 +169,7 @@ export default function FloatingActions({ onOpenChatBubble, onOpenChatTop }) {
           }
         `}
       >
-        {/* Icon xoay - UPDATE: Text to hơn (text-3xl) */}
+        {/* Phần giao diện */}
         <motion.div
           initial={false}
           animate={{ rotate: open ? 180 : 0 }}
@@ -178,12 +179,12 @@ export default function FloatingActions({ onOpenChatBubble, onOpenChatTop }) {
           <FontAwesomeIcon icon={open ? faXmark : faCommentDots} />
         </motion.div>
 
-        {/* Vòng Pulse */}
+        {/* Render điều kiện */}
         {!open && (
           <span className="absolute inset-0 rounded-full border-2 border-white/30 animate-[ping_2s_infinite] opacity-50 pointer-events-none"></span>
         )}
 
-        {/* Hiệu ứng Shine */}
+        {/* Render điều kiện */}
         {!open && (
           <div className="absolute top-0 -left-[100%] w-full h-full bg-white/20 skew-x-[45deg] group-hover:left-[100%] transition-all duration-700 ease-in-out"></div>
         )}

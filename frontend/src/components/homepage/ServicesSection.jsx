@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+﻿import React, { useRef } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay } from "swiper/modules";
 import "swiper/css";
@@ -12,7 +12,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
 
-// --- 1. KHAI BÁO BỘ ICON SVG ---
+
 const ServiceIcons = {
   Transport: () => (
     <svg
@@ -189,7 +189,7 @@ const ServiceIcons = {
   ),
 };
 
-// --- 2. HỌA TIẾT TRANG TRÍ ---
+
 const PlusPatternSVG = ({ className }) => (
   <svg
     width="100%"
@@ -258,7 +258,7 @@ const RadarPatternSVG = ({ className }) => (
   </svg>
 );
 
-// --- 3. DỮ LIỆU DATA ---
+
 const servicesData = [
   {
     id: "01",
@@ -292,14 +292,14 @@ const servicesData = [
   },
 ];
 
-// --- 4. COMPONENT CHÍNH ---
+
 export default function ServicesCarouselSection() {
   const prevRef = useRef(null);
   const nextRef = useRef(null);
 
   return (
     <section className="py-20 bg-slate-50 relative overflow-hidden">
-      {/* SVG TRANG TRÍ NỀN */}
+      {/* Phần giao diện */}
       <div className="hidden lg:block absolute top-0 left-0 w-64 h-96 -translate-x-16 -translate-y-16 opacity-[0.04] text-[#113e48] z-0 pointer-events-none">
         <PlusPatternSVG />
       </div>
@@ -308,7 +308,7 @@ export default function ServicesCarouselSection() {
       </div>
 
       <div className="max-w-[1400px] mx-auto px-6 relative z-10">
-        {/* Header */}
+        {/* Phần giao diện */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-100 text-orange-600 mb-4 border border-orange-200">
             <FontAwesomeIcon icon={faCube} className="text-xl" />
@@ -321,7 +321,7 @@ export default function ServicesCarouselSection() {
           </h2>
         </div>
 
-        {/* Carousel Container */}
+        {/* Phần giao diện */}
         <div className="relative px-4 md:px-10">
           <button
             ref={prevRef}
@@ -361,14 +361,14 @@ export default function ServicesCarouselSection() {
             {servicesData.map((s) => (
               <SwiperSlide key={s.id} className="h-auto">
                 <div className="group h-full min-h-[340px] flex flex-col p-6 rounded-2xl bg-white shadow-md border border-gray-100 hover:border-[#113e48] relative overflow-hidden transition-all duration-300 hover:-translate-y-1">
-                  {/* Background Slide Effect (Nền xanh trượt lên) */}
+                  {/* Phần giao diện */}
                   <div className="absolute inset-0 bg-[#113e48] translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-in-out z-0"></div>
 
-                  {/* === HIỆU ỨNG LƯỚT SÁNG (SHINE EFFECT) ĐÃ CẬP NHẬT THEO NÚT BẤM === */}
-                  {/* Thay đổi: skew-x-[45deg], bg-white/20, duration-700 */}
+                  {/* Phần giao diện */}
+
                   <div className="absolute top-0 -left-[100%] w-full h-full bg-white/20 skew-x-[45deg] group-hover:left-[100%] transition-all duration-700 ease-in-out z-1"></div>
 
-                  {/* Nội dung Card */}
+                  {/* Phần giao diện */}
                   <div className="relative z-10 flex flex-col h-full">
                     <div className="flex justify-between items-start mb-5">
                       <div className="w-14 h-14 rounded-full bg-slate-50 group-hover:bg-white/10 flex items-center justify-center transition-colors duration-300 border border-gray-50 group-hover:border-transparent">

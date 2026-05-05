@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import {
   CheckCircle,
   Truck,
@@ -15,6 +15,7 @@ import {
   Rocket,
 } from "lucide-react";
 
+// Sidebar tóm tắt đơn hàng
 export default function OrderSummarySidebar({
   serviceType,
   setServiceType,
@@ -52,7 +53,7 @@ export default function OrderSummarySidebar({
   return (
     <div className="lg:col-span-1">
       <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 sticky top-6 overflow-hidden">
-        {/* HEADER */}
+        {/* Phần giao diện */}
         <div className="bg-gradient-to-r from-[#113e48] to-[#1a5c6a] px-6 py-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-white/10 rounded-xl backdrop-blur-sm">
@@ -70,7 +71,7 @@ export default function OrderSummarySidebar({
         </div>
 
         <div className="p-5 space-y-5">
-          {/* DỊCH VỤ */}
+          {/* Phần giao diện */}
           <div>
             <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-3">
               Chọn loại dịch vụ
@@ -125,10 +126,10 @@ export default function OrderSummarySidebar({
             </div>
           </div>
 
-          {/* DIVIDER */}
+          {/* Phần giao diện */}
           <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
 
-          {/* CHI TIẾT PHÍ */}
+          {/* Phần giao diện */}
           <div>
             <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-3">
               Chi tiết cước phí
@@ -148,7 +149,7 @@ export default function OrderSummarySidebar({
               </div>
             ) : shippingData ? (
               <div className="space-y-2">
-                {/* Cước cơ bản */}
+                {/* Phần giao diện */}
                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
                   <span className="text-gray-500 flex items-center gap-2 text-sm">
                     <MapPin
@@ -167,7 +168,7 @@ export default function OrderSummarySidebar({
                   </span>
                 </div>
 
-                {/* Phí COD */}
+                {/* Phần giao diện */}
                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
                   <span className="text-gray-500 flex items-center gap-2 text-sm">
                     <Banknote
@@ -189,7 +190,7 @@ export default function OrderSummarySidebar({
                   </span>
                 </div>
 
-                {/* Thuế VAT */}
+                {/* Phần giao diện */}
                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
                   <span className="text-gray-500 flex items-center gap-2 text-sm">
                     <ShieldCheck
@@ -203,7 +204,7 @@ export default function OrderSummarySidebar({
                   </span>
                 </div>
 
-                {/* Thông báo liên tỉnh */}
+                {/* Render điều kiện */}
                 {shippingData?.is_inter_provincial && (
                   <div className="bg-blue-50/80 p-3 rounded-xl text-[11px] text-blue-700 flex gap-2 border border-blue-100 mt-1">
                     <AlertCircle
@@ -218,7 +219,7 @@ export default function OrderSummarySidebar({
                   </div>
                 )}
 
-                {/* TỔNG PHÍ SHIP */}
+                {/* Phần giao diện */}
                 <div className="flex justify-between items-center pt-2 mt-1 border-t border-dashed border-gray-200">
                   <span className="text-sm font-bold text-gray-600 flex items-center gap-2">
                     <Truck size={15} className="text-[#113e48]" />
@@ -241,9 +242,9 @@ export default function OrderSummarySidebar({
             )}
           </div>
 
-          {/* TỔNG THU KHÁCH */}
+          {/* Phần giao diện */}
           <div className="bg-gradient-to-br from-[#113e48] via-[#164a56] to-[#0d2f37] rounded-2xl p-5 text-white shadow-xl relative overflow-hidden">
-            {/* decorative circles */}
+            {/* Phần giao diện */}
             <div className="absolute -top-6 -right-6 w-24 h-24 bg-white/5 rounded-full" />
             <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-white/5 rounded-full" />
 
@@ -257,7 +258,7 @@ export default function OrderSummarySidebar({
                 </div>
               </div>
 
-              {/* breakdown */}
+              {/* Phần giao diện */}
               <div className="space-y-1 mb-3">
                 <div className="flex justify-between text-[11px]">
                   <span className="text-white/50">Tiền hàng (COD)</span>
@@ -273,10 +274,10 @@ export default function OrderSummarySidebar({
                 </div>
               </div>
 
-              {/* line */}
+              {/* Phần giao diện */}
               <div className="h-px bg-gradient-to-r from-white/10 via-white/20 to-white/10 mb-3" />
 
-              {/* total */}
+              {/* Phần giao diện */}
               <div className="flex justify-between items-end">
                 <span className="text-xs text-white/40 font-medium">
                   Tổng thu
@@ -288,7 +289,7 @@ export default function OrderSummarySidebar({
             </div>
           </div>
 
-          {/* BUTTON */}
+          {/* Nút hành động */}
           <button
             type="submit"
             disabled={creating || !shippingData || loading}

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import API from "../services/api";
@@ -11,16 +11,20 @@ import {
   FaPaperPlane,
 } from "react-icons/fa";
 
+
 import Map, { Marker, Popup, NavigationControl } from "react-map-gl";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
+
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
+
 
 const OFFICE_COORDS = {
   lat: 16.0544,
   lng: 108.2022,
 };
+
 
 const OfficeMarker = ({ onClick }) => {
   return (
@@ -28,17 +32,17 @@ const OfficeMarker = ({ onClick }) => {
       onClick={onClick}
       className="relative w-12 h-12 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform duration-200"
     >
-      {}
+      {/* Phần giao diện */}
       <div className="absolute inset-0 bg-orange-500 rounded-full opacity-20 animate-ping"></div>
 
-      {}
+      {/* Hình ảnh minh họa */}
       <img
         src="https://cdn-icons-png.flaticon.com/512/684/684908.png"
         alt="Office"
         className="relative z-10 w-10 h-10 drop-shadow-lg"
       />
 
-      {}
+      {/* Phần giao diện */}
       <div className="absolute -bottom-2 w-3 h-3 bg-white transform rotate-45 border-r border-b border-gray-300 z-0"></div>
     </div>
   );
@@ -73,7 +77,7 @@ export default function Contact() {
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
-  // Xử lý submit form
+// Xử lý submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -92,9 +96,9 @@ export default function Contact() {
     <div className="font-sans bg-gray-50">
       <Toaster position="top-center" />
 
-      {}
+      {/* Khối nội dung */}
       <section className="pt-32 pb-20 bg-[#113e48] text-white text-center relative overflow-hidden">
-        {}
+        {/* Phần giao diện */}
         <div className="absolute inset-0 opacity-10 pointer-events-none">
           <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
             <pattern
@@ -138,9 +142,9 @@ export default function Contact() {
         </div>
       </section>
 
-      {}
+      {/* Khối nội dung */}
       <section className="max-w-7xl mx-auto py-20 px-6 grid lg:grid-cols-2 gap-12 -mt-10 relative z-20">
-        {}
+        {/* Phần giao diện */}
         <div
           data-aos="fade-right"
           className="bg-white p-8 rounded-2xl shadow-xl shadow-[#113e48]/5 border border-gray-100 h-full flex flex-col"
@@ -194,7 +198,7 @@ export default function Contact() {
             </div>
           </div>
 
-          {}
+          {/* Phần giao diện */}
           <div className="rounded-xl shadow-inner overflow-hidden h-[300px] border border-gray-200 mt-auto relative">
             <Map
               ref={mapRef}
@@ -210,7 +214,7 @@ export default function Contact() {
             >
               <NavigationControl position="bottom-right" />
 
-              {}
+              {/* Phần giao diện */}
               <Marker
                 longitude={OFFICE_COORDS.lng}
                 latitude={OFFICE_COORDS.lat}
@@ -219,7 +223,7 @@ export default function Contact() {
                 <OfficeMarker onClick={() => setShowPopup(true)} />
               </Marker>
 
-              {}
+              {/* Render điều kiện */}
               {showPopup && (
                 <Popup
                   longitude={OFFICE_COORDS.lng}
@@ -244,7 +248,7 @@ export default function Contact() {
           </div>
         </div>
 
-        {}
+        {/* Phần giao diện */}
         <div
           data-aos="fade-left"
           className="bg-white p-8 md:p-10 rounded-2xl shadow-xl shadow-[#113e48]/5 border border-gray-100"
@@ -336,7 +340,7 @@ export default function Contact() {
         </div>
       </section>
 
-      {}
+      {/* Khối nội dung */}
       <section className="bg-white py-16 border-t border-gray-100 text-center">
         <div className="max-w-4xl mx-auto px-6" data-aos="fade-up">
           <h4 className="text-2xl font-bold mb-4 text-[#113e48]">
