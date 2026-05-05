@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import API from "../services/api";
-// Import Component bạn vừa tạo
+
 import PartnerCarousel from "../components/homepage/PartnerCarousel";
 import {
   FaEnvelope,
@@ -13,6 +13,7 @@ import {
   FaHeadset,
 } from "react-icons/fa";
 
+// Trang đăng nhập
 export default function Login() {
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: "", password: "" });
@@ -22,6 +23,7 @@ export default function Login() {
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
+// Xử lý submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -47,9 +49,15 @@ export default function Login() {
       localStorage.setItem("role", user.role);
       localStorage.setItem("username", user.name);
       localStorage.setItem("userId", user.id.toString());
+      if (user.region_id) {
+        localStorage.setItem("region_id", String(user.region_id));
+      }
 
       if (user.role === "customer") {
         localStorage.setItem("customer_id", user.id.toString());
+      }
+      if (user.role === "dispatcher") {
+        localStorage.setItem("dispatcher_id", user.id.toString());
       }
 
       if (user.role === "admin") navigate("/admin");
@@ -75,7 +83,7 @@ export default function Login() {
         transition={{ duration: 0.5 }}
         className="bg-white w-full max-w-5xl rounded-3xl shadow-2xl flex overflow-hidden min-h-[600px]"
       >
-        {/* --- CỘT TRÁI: FORM ĐĂNG NHẬP --- */}
+        {}
         <div className="w-full md:w-1/2 p-8 md:p-12 bg-white flex flex-col justify-center relative">
           <div className="mb-6">
             <img
@@ -98,7 +106,7 @@ export default function Login() {
               </div>
             )}
 
-            {/* Email */}
+            {}
             <div className="space-y-1">
               <label className="text-xs font-bold text-[#113e48] ml-1">
                 Email
@@ -110,7 +118,7 @@ export default function Login() {
                 <input
                   type="email"
                   name="email"
-                  placeholder="admin@speedyship.com"
+                  placeholder="khachhang@speedyship.com"
                   value={form.email}
                   onChange={handleChange}
                   className="w-full pl-11 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all text-slate-700 font-medium text-sm"
@@ -118,7 +126,7 @@ export default function Login() {
               </div>
             </div>
 
-            {/* Password */}
+            {}
             <div className="space-y-1">
               <div className="flex justify-between items-center ml-1">
                 <label className="text-xs font-bold text-[#113e48]">
@@ -178,13 +186,13 @@ export default function Login() {
             </p>
           </div>
 
-          {/* --- SỬ DỤNG COMPONENT Ở ĐÂY --- */}
+          {}
           <div className="border-t border-gray-100 pt-2">
             <PartnerCarousel />
           </div>
         </div>
 
-        {/* --- CỘT PHẢI (Giữ nguyên) --- */}
+        {}
         <div className="hidden md:flex w-1/2 relative bg-[#113e48] flex-col justify-center p-12 text-white overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl translate-x-1/2 -translate-y-1/2"></div>
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-orange-500/10 rounded-full blur-3xl -translate-x-1/2 translate-y-1/2"></div>

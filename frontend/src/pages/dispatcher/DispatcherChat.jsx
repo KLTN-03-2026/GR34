@@ -1,37 +1,36 @@
 import { useEffect, useState, useRef, useLayoutEffect } from "react";
 import io from "socket.io-client";
 
-// Khởi tạo socket bên ngoài để tránh connect lại khi re-render
+
 const socket = io("http://localhost:5000", {
-  autoConnect: false, // Kiểm soát kết nối thủ công
+  autoConnect: false,
 });
 
+// Chat nội bộ điều phối viên
 export default function DispatcherChat() {
-  // 🗃️ State quản lý dữ liệu
+
   const [activeChats, setActiveChats] = useState([]);
   const [selectedChat, setSelectedChat] = useState(null);
 
-  // 💡 QUAN TRỌNG: Lưu message theo dạng Dictionary { chatId: [messages] }
+
   const [allMessages, setAllMessages] = useState({});
 
   const [input, setInput] = useState("");
   const [toast, setToast] = useState(null);
 
-  // Ref dùng để scroll xuống cuối
+
   const messagesEndRef = useRef(null);
-  // Ref để truy cập state mới nhất trong socket listeners
+
   const selectedChatRef = useRef(selectedChat);
 
-  // Cập nhật ref khi state thay đổi
+
   useEffect(() => {
     selectedChatRef.current = selectedChat;
   }, [selectedChat]);
 
-  // ========================
-  // 🧠 Load & Save LocalStorage
-  // ========================
+
   useEffect(() => {
-    // Load dữ liệu khi mount
+
     const saved = localStorage.getItem("dispatcherChatData");
     if (saved) {
       try {
@@ -47,7 +46,6 @@ export default function DispatcherChat() {
           socket.emit("joinDispatcher");
         }
       } catch (e) {
-        console.error("Lỗi parse LocalStorage", e);
       }
     } else {
       socket.connect();
@@ -59,7 +57,7 @@ export default function DispatcherChat() {
     };
   }, []);
 
-  // Save dữ liệu mỗi khi state quan trọng thay đổi
+
   useEffect(() => {
     localStorage.setItem(
       "dispatcherChatData",
@@ -67,26 +65,21 @@ export default function DispatcherChat() {
     );
   }, [activeChats, selectedChat, allMessages]);
 
-  // ========================
-  // 📜 Auto Scroll xuống cuối
-  // ========================
+
   useLayoutEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [allMessages, selectedChat]);
 
-  // ========================
-  // ⚡ Xử lý Socket Events (ĐÃ SỬA LỖI DOUBLE MESSAGE)
-  // ========================
+
   useEffect(() => {
-    // Helper để thêm tin nhắn vào đúng chat ID
+
     const addMessageToChat = (chatId, msg) => {
       setAllMessages((prev) => {
         const currentMsgs = prev[chatId] || [];
 
-        // 🛡️ Logic chống trùng lặp (Optional): Kiểm tra nếu tin nhắn vừa đến đã tồn tại
-        // (Dựa vào timestamp hoặc nội dung nếu không có ID unique)
+
         const isDuplicate = currentMsgs.some(
           (m) => m.content === msg.content && m.created_at === msg.created_at
         );
@@ -100,10 +93,9 @@ export default function DispatcherChat() {
     };
 
     const onNewChat = ({ chatId, customerId }) => {
-      console.log("🆕 Khách hàng mới:", chatId);
       setActiveChats((prev) => {
         if (prev.includes(chatId)) return prev;
-        return [chatId, ...prev]; // Đưa lên đầu danh sách
+        return [chatId, ...prev];
       });
       showToast(`Khách hàng #${customerId} bắt đầu chat #${chatId}`);
     };
@@ -116,41 +108,37 @@ export default function DispatcherChat() {
       addMessageToChat(chatId, msg);
     };
 
-    // 🟢 HÀM 1: CHỈ XỬ LÝ VIỆC HIỂN THỊ TIN NHẮN VÀO KHUNG CHAT
-    // Lắng nghe sự kiện 'newMessage'
+
     const handleNewMessage = (msg) => {
       addMessageToChat(msg.chatId, msg);
     };
 
-    // 🟠 HÀM 2: XỬ LÝ THÔNG BÁO TỪ DISPATCHER ROOM
+
     const handleCustomerNotification = (msg) => {
       const { chatId, content } = msg;
 
-      // 1. Cập nhật Sidebar (Đưa chat lên đầu danh sách)
+
       setActiveChats((prev) => {
         const filtered = prev.filter((id) => id !== chatId);
         return [chatId, ...filtered];
       });
 
-      // 2. Logic quan trọng:
-      // Nếu Dispatcher ĐANG KHÔNG xem chat này -> Thì phải lưu tin nhắn vào State
-      // (Vì lúc này Dispatcher chưa join room nên không nhận được sự kiện 'newMessage')
+
       if (selectedChatRef.current !== chatId) {
         showToast(`Tin nhắn mới từ #${chatId}: "${content}"`);
 
-        // 🔥 THÊM DÒNG NÀY ĐỂ LƯU TIN NHẮN ĐẦU TIÊN
+
         addMessageToChat(chatId, msg);
       }
 
-      // Ngược lại: Nếu đang xem chat (selectedChatRef.current === chatId)
-      // thì sự kiện 'newMessage' đã lo việc lưu rồi, ta không làm gì cả để tránh double.
+
     };
 
     const onChatEnded = ({ chatId }) => {
       showToast(`Cuộc trò chuyện #${chatId} đã kết thúc.`);
       setActiveChats((prev) => prev.filter((id) => id !== chatId));
 
-      // Xóa tin nhắn của chat đã đóng (Tùy chọn)
+
       setAllMessages((prev) => {
         const newState = { ...prev };
         delete newState[chatId];
@@ -162,17 +150,17 @@ export default function DispatcherChat() {
       }
     };
 
-    // Đăng ký sự kiện
+
     socket.on("newChat", onNewChat);
     socket.on("welcomeMessage", onWelcomeMessage);
 
-    // 👇 TÁCH RIÊNG 2 SỰ KIỆN NÀY ĐỂ TRÁNH LẶP
-    socket.on("newMessage", handleNewMessage); // Vẽ Chat
-    socket.on("customerMessage", handleCustomerNotification); // Báo Toast
+
+    socket.on("newMessage", handleNewMessage);
+    socket.on("customerMessage", handleCustomerNotification);
 
     socket.on("chatEnded", onChatEnded);
 
-    // Cleanup
+
     return () => {
       socket.off("newChat", onNewChat);
       socket.off("welcomeMessage", onWelcomeMessage);
@@ -182,9 +170,7 @@ export default function DispatcherChat() {
     };
   }, []);
 
-  // ========================
-  // ✉️ Gửi tin nhắn
-  // ========================
+
   const sendMessage = () => {
     if (!selectedChat || !input.trim()) return;
     const msg = {
@@ -192,20 +178,17 @@ export default function DispatcherChat() {
       senderId: 0,
       role: "dispatcher",
       content: input.trim(),
-      // timestamp: new Date().toISOString(), // Server sẽ tạo timestamp
+
     };
 
     socket.emit("sendMessage", msg);
 
-    // Lưu ý: Không cần setAllMessages ở đây vì server sẽ emit lại 'newMessage'
-    // và hàm handleNewMessage sẽ bắt sự kiện đó để vẽ lên UI.
+
 
     setInput("");
   };
 
-  // ========================
-  // 🔁 Chọn chat
-  // ========================
+
   const selectChat = (id) => {
     setSelectedChat(id);
     socket.emit("joinChat", id);
@@ -223,12 +206,12 @@ export default function DispatcherChat() {
     setTimeout(() => setToast(null), 3000);
   };
 
-  // Lấy tin nhắn của chat đang chọn
+
   const currentMessages = selectedChat ? allMessages[selectedChat] || [] : [];
 
   return (
     <div className="relative flex h-[85vh] bg-white shadow-xl rounded-xl overflow-hidden border border-gray-200">
-      {/* Sidebar List Chat */}
+      {}
       <div className="w-1/3 border-r bg-gray-50 flex flex-col">
         <div className="p-4 border-b flex items-center justify-between bg-white">
           <h3 className="font-bold text-gray-700">
@@ -282,7 +265,7 @@ export default function DispatcherChat() {
         </div>
       </div>
 
-      {/* Main Chat Area */}
+      {}
       <div className="flex-1 flex flex-col bg-white">
         <div className="h-16 border-b flex items-center px-6 justify-between bg-white shadow-sm z-10">
           {selectedChat ? (
@@ -331,7 +314,7 @@ export default function DispatcherChat() {
             )
           ) : (
             <div className="h-full flex flex-col items-center justify-center text-gray-300">
-              {/* Icon Placeholder */}
+              {}
               <p>Xin chào, Dispatcher!</p>
             </div>
           )}

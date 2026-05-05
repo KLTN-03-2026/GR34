@@ -1,4 +1,4 @@
-// src/pages/driver/DriverShipmentDetail.jsx
+
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import API from "../../services/api";
@@ -27,6 +27,7 @@ import { motion, AnimatePresence } from "framer-motion";
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 mapboxgl.accessToken = MAPBOX_TOKEN;
 
+
 const DriverMarker = () => (
   <div className="relative flex items-center justify-center w-10 h-10">
     <span className="absolute w-full h-full bg-blue-400 rounded-full opacity-30 animate-ping"></span>
@@ -45,6 +46,7 @@ const LocationMarker = ({ type }) => (
     {type === "pickup" ? <PackageOpen size={16} /> : <MapPin size={16} />}
   </div>
 );
+
 
 const STATUS_OPTIONS = [
   {
@@ -168,6 +170,7 @@ const StatusDropdown = ({ currentStatus, onChange, disabled }) => {
   );
 };
 
+// Chi tiết đơn hàng tài xế đang xử lý
 export default function DriverShipmentDetail() {
   const { id, shipmentId } = useParams();
   const navigate = useNavigate();
@@ -176,18 +179,20 @@ export default function DriverShipmentDetail() {
   const [shipment, setShipment] = useState(null);
   const [loading, setLoading] = useState(true);
 
+
   const [coords, setCoords] = useState({
     driver: { lat: 10.762622, lng: 106.660172 },
     pickup: { lat: 10.762622, lng: 106.660172 },
     delivery: { lat: 10.762622, lng: 106.660172 },
   });
 
+
   const geocodeAddress = async (address) => {
     try {
       const response = await fetch(
         `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-          address,
-        )}.json?access_token=${MAPBOX_TOKEN}&limit=1&country=VN`,
+          address
+        )}.json?access_token=${MAPBOX_TOKEN}&limit=1&country=VN`
       );
       const data = await response.json();
       if (data.features && data.features.length > 0) {
@@ -195,7 +200,6 @@ export default function DriverShipmentDetail() {
         return { lat, lng };
       }
     } catch (error) {
-      console.error("Geocoding error:", error);
     }
     return null;
   };
@@ -203,26 +207,30 @@ export default function DriverShipmentDetail() {
   const fetchShipmentAndCoords = async () => {
     setLoading(true);
     try {
+
       const res = await API.get(`/shipments/${shipmentId}`);
       const data = res.data;
       setShipment(data);
+
 
       let driverPos = coords.driver;
       if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(
           (pos) => {
             driverPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-            // Cập nhật state driver ngay lập tức
+
             setCoords((prev) => ({ ...prev, driver: driverPos }));
           },
-          (err) => console.error("GPS Error:", err),
+          (err) => console.error("GPS Error:", err)
         );
       }
+
 
       const [pickupCoords, deliveryCoords] = await Promise.all([
         geocodeAddress(data.pickup_address),
         geocodeAddress(data.delivery_address),
       ]);
+
 
       setCoords((prev) => ({
         ...prev,
@@ -230,16 +238,26 @@ export default function DriverShipmentDetail() {
         delivery: deliveryCoords || prev.delivery,
       }));
 
+
       if (pickupCoords && deliveryCoords && mapRef.current) {
+        const bounds = new mapboxgl.LngLatBounds();
+        bounds.extend([pickupCoords.lng, pickupCoords.lat]);
+        bounds.extend([deliveryCoords.lng, deliveryCoords.lat]);
+        bounds.extend([driverPos.lng, driverPos.lat]);
+        mapRef.current.fitBounds(bounds, {
+          padding: 80,
+          duration: 900,
+          maxZoom: 15,
+        });
       }
     } catch (err) {
-      console.error(err);
       toast.error("Không thể tải thông tin đơn hàng");
     } finally {
       setLoading(false);
     }
   };
 
+// Xử lý thay đổi trạng thái
   const handleStatusChange = async (newStatus) => {
     const toastId = toast.loading("Đang cập nhật...");
     try {
@@ -256,6 +274,19 @@ export default function DriverShipmentDetail() {
   useEffect(() => {
     fetchShipmentAndCoords();
   }, [shipmentId]);
+
+  useEffect(() => {
+    if (!mapRef.current) return;
+    const bounds = new mapboxgl.LngLatBounds();
+    bounds.extend([coords.pickup.lng, coords.pickup.lat]);
+    bounds.extend([coords.delivery.lng, coords.delivery.lat]);
+    bounds.extend([coords.driver.lng, coords.driver.lat]);
+    mapRef.current.fitBounds(bounds, {
+      padding: 80,
+      duration: 700,
+      maxZoom: 15,
+    });
+  }, [coords]);
 
   if (loading)
     return (
@@ -284,7 +315,7 @@ export default function DriverShipmentDetail() {
     <div className="min-h-screen bg-[#F8FAFC] pb-24">
       <Toaster position="top-center" />
 
-      {/* 1. HEADER */}
+      {}
       <div className="bg-white px-4 py-4 sticky top-0 z-30 shadow-sm border-b border-gray-100 flex items-center justify-between">
         <button
           onClick={() => navigate(-1)}
@@ -302,7 +333,7 @@ export default function DriverShipmentDetail() {
       </div>
 
       <div className="p-4 lg:p-8 max-w-5xl mx-auto space-y-6">
-        {/* 2. MAP SECTION */}
+        {}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden relative">
           <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-lg shadow-sm border border-gray-100 text-xs font-bold text-gray-600 flex items-center gap-2">
             <MapPin size={14} className="text-blue-500" /> Lộ trình vận chuyển
@@ -321,6 +352,7 @@ export default function DriverShipmentDetail() {
             >
               <NavigationControl position="bottom-right" showCompass={false} />
 
+              {}
               <Marker
                 latitude={coords.driver.lat}
                 longitude={coords.driver.lng}
@@ -329,6 +361,7 @@ export default function DriverShipmentDetail() {
                 <DriverMarker />
               </Marker>
 
+              {}
               <Marker
                 latitude={coords.pickup.lat}
                 longitude={coords.pickup.lng}
@@ -337,6 +370,7 @@ export default function DriverShipmentDetail() {
                 <LocationMarker type="pickup" />
               </Marker>
 
+              {}
               <Marker
                 latitude={coords.delivery.lat}
                 longitude={coords.delivery.lng}
@@ -348,7 +382,7 @@ export default function DriverShipmentDetail() {
           </div>
         </div>
 
-        {/* 3. STATUS & ACTION CARD */}
+        {}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
           <div className="flex flex-col sm:flex-row gap-4 items-center">
             <div className="w-full sm:w-1/2">
@@ -375,7 +409,7 @@ export default function DriverShipmentDetail() {
               </a>
               <a
                 href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                  shipment.delivery_address,
+                  shipment.delivery_address
                 )}`}
                 target="_blank"
                 rel="noreferrer"
@@ -388,8 +422,10 @@ export default function DriverShipmentDetail() {
           </div>
         </div>
 
+        {}
         <div className="grid md:grid-cols-2 gap-6">
           <div className="space-y-4">
+            {}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 relative overflow-hidden">
               <div className="absolute top-0 left-0 w-1 h-full bg-orange-400"></div>
               <h3 className="text-sm font-bold text-gray-800 flex items-center gap-2 mb-4">
@@ -419,6 +455,7 @@ export default function DriverShipmentDetail() {
               </div>
             </div>
 
+            {}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 relative overflow-hidden">
               <div className="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
               <h3 className="text-sm font-bold text-gray-800 flex items-center gap-2 mb-4">
@@ -449,6 +486,7 @@ export default function DriverShipmentDetail() {
             </div>
           </div>
 
+          {}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 h-fit">
             <h3 className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
               <ClipboardList className="text-gray-500" size={18} /> THÔNG TIN

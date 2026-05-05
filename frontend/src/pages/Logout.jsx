@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
+// Xử lý đăng xuất
 export default function Logout() {
   const navigate = useNavigate();
 

@@ -19,18 +19,18 @@ export default function DispatcherContactsPro() {
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // --- STATE LỌC & TÌM KIẾM ---
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState("all"); // 'all', 'assigned', 'resolved'
 
-  // --- STATE MODAL ---
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
+
+
   const [showNoteModal, setShowNoteModal] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
   const [note, setNote] = useState("");
 
   const dispatcherId = localStorage.getItem("userId");
 
-  // 1. Load dữ liệu
+
   const fetchMyContacts = async () => {
     setLoading(true);
     try {
@@ -47,7 +47,7 @@ export default function DispatcherContactsPro() {
     fetchMyContacts();
   }, []);
 
-  // 2. Logic Lọc & Tìm kiếm
+
   const filteredContacts = useMemo(() => {
     return contacts.filter((c) => {
       const matchSearch =
@@ -59,14 +59,14 @@ export default function DispatcherContactsPro() {
         filterStatus === "all"
           ? true
           : filterStatus === "resolved"
-            ? c.status === "resolved"
-            : c.status !== "resolved"; // 'assigned' hoặc 'approved' đều tính là chưa xong
+          ? c.status === "resolved"
+          : c.status !== "resolved";
 
       return matchSearch && matchStatus;
     });
   }, [contacts, searchTerm, filterStatus]);
 
-  // 3. Xử lý Modal
+
   const openNoteModal = (id) => {
     setSelectedId(id);
     setShowNoteModal(true);
@@ -87,7 +87,7 @@ export default function DispatcherContactsPro() {
         status: "resolved",
         note,
       });
-      toast.success("✅ Đã xử lý xong!", { id: toastId });
+      toast.success("Đã xử lý xong!", { id: toastId });
       closeNoteModal();
       fetchMyContacts();
     } catch (err) {
@@ -95,7 +95,7 @@ export default function DispatcherContactsPro() {
     }
   };
 
-  // 4. Tiện ích Copy
+
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
     toast.success("Đã sao chép: " + text);
@@ -104,7 +104,7 @@ export default function DispatcherContactsPro() {
   return (
     <div className="min-h-screen bg-slate-50/50 p-6 font-sans pb-32">
       <div className="max-w-6xl mx-auto space-y-6">
-        {/* --- HEADER --- */}
+        {}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h1 className="text-2xl font-extrabold text-slate-800 flex items-center gap-2">
@@ -126,9 +126,9 @@ export default function DispatcherContactsPro() {
           </button>
         </div>
 
-        {/* --- TOOLBAR (SEARCH & FILTER) --- */}
+        {}
         <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row gap-4 items-center">
-          {/* Search */}
+          {}
           <div className="relative w-full md:w-96 group">
             <Search
               className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors"
@@ -143,7 +143,7 @@ export default function DispatcherContactsPro() {
             />
           </div>
 
-          {/* Filter Tabs */}
+          {}
           <div className="flex p-1 bg-slate-100 rounded-xl w-full md:w-auto">
             {[
               { id: "all", label: "Tất cả" },
@@ -165,7 +165,7 @@ export default function DispatcherContactsPro() {
           </div>
         </div>
 
-        {/* --- LIST CONTACTS --- */}
+        {}
         <div className="grid grid-cols-1 gap-4">
           {loading ? (
             <div className="text-center py-12 text-slate-400">
@@ -182,7 +182,7 @@ export default function DispatcherContactsPro() {
                 }`}
               >
                 <div className="flex flex-col md:flex-row gap-6">
-                  {/* Info Column */}
+                  {}
                   <div className="flex-1">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-3">
@@ -202,13 +202,13 @@ export default function DispatcherContactsPro() {
                           <div className="flex items-center gap-2 text-xs text-slate-400 font-medium">
                             <Clock size={12} /> Tạo lúc:{" "}
                             {new Date(
-                              c.created_at || Date.now(),
+                              c.created_at || Date.now()
                             ).toLocaleDateString("vi-VN")}
                           </div>
                         </div>
                       </div>
 
-                      {/* Status Badge */}
+                      {}
                       <span
                         className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide flex items-center gap-1.5 ${
                           c.status === "resolved"
@@ -265,7 +265,7 @@ export default function DispatcherContactsPro() {
                     </div>
                   </div>
 
-                  {/* Actions Column */}
+                  {}
                   <div className="flex md:flex-col justify-end gap-3 border-t md:border-t-0 md:border-l border-slate-100 pt-4 md:pt-0 md:pl-6 min-w-[140px]">
                     {c.status !== "resolved" ? (
                       <>
@@ -305,11 +305,11 @@ export default function DispatcherContactsPro() {
         </div>
       </div>
 
-      {/* --- MODAL GHI CHÚ (Nâng cấp) --- */}
+      {}
       {showNoteModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex justify-center items-center z-50 animate-in fade-in duration-200">
           <div className="bg-white p-0 rounded-2xl shadow-2xl w-[90%] max-w-md relative overflow-hidden animate-in zoom-in-95 duration-200">
-            {/* Modal Header */}
+            {}
             <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-5 text-white flex justify-between items-center">
               <h2 className="text-lg font-bold flex items-center gap-2">
                 <CheckCircle className="text-green-300" /> Xác nhận xử lý
@@ -322,7 +322,7 @@ export default function DispatcherContactsPro() {
               </button>
             </div>
 
-            {/* Modal Body */}
+            {}
             <div className="p-6">
               <label className="block text-sm font-bold text-slate-700 mb-2">
                 Ghi chú kết quả:
@@ -341,7 +341,7 @@ export default function DispatcherContactsPro() {
               </p>
             </div>
 
-            {/* Modal Footer */}
+            {}
             <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
               <button
                 onClick={closeNoteModal}

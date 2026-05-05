@@ -53,8 +53,7 @@ const inferCategory = (question = "") => {
   const q = question.toLowerCase();
   if (/(đơn|vận đơn|tra cứu|giao|nhận|pickup|delivery)/.test(q)) return "order";
   if (/(thanh toán|ví|cod|phí|giá|tiền|nạp|rút)/.test(q)) return "payment";
-  if (/(tài khoản|đăng nhập|mật khẩu|profile|hồ sơ|khóa)/.test(q))
-    return "account";
+  if (/(tài khoản|đăng nhập|mật khẩu|profile|hồ sơ|khóa)/.test(q)) return "account";
   return "general";
 };
 
@@ -75,9 +74,7 @@ export default function CustomerSupport() {
   const { openAIChat } = useChat();
   const [activeFaqTab, setActiveFaqTab] = useState("general");
   const [loadingFaq, setLoadingFaq] = useState(false);
-  const [questionsByCategory, setQuestionsByCategory] = useState(
-    DEFAULT_QUESTIONS_BY_CATEGORY,
-  );
+  const [questionsByCategory, setQuestionsByCategory] = useState(DEFAULT_QUESTIONS_BY_CATEGORY);
   const [expandedQuestion, setExpandedQuestion] = useState(null);
   const [answerByQuestion, setAnswerByQuestion] = useState({});
   const [loadingAnswerQuestion, setLoadingAnswerQuestion] = useState("");
@@ -86,9 +83,7 @@ export default function CustomerSupport() {
     setLoadingFaq(true);
     API.get("/ai/faq-suggestions")
       .then((res) => {
-        const list = Array.isArray(res.data?.suggestions)
-          ? res.data.suggestions
-          : [];
+        const list = Array.isArray(res.data?.suggestions) ? res.data.suggestions : [];
         if (list.length === 0) return;
 
         const next = {
@@ -126,9 +121,7 @@ export default function CustomerSupport() {
       const res = await API.post("/ai/ask", { message: question });
       setAnswerByQuestion((prev) => ({
         ...prev,
-        [question]:
-          res.data?.reply ||
-          "Hiện chưa có câu trả lời phù hợp cho câu hỏi này.",
+        [question]: res.data?.reply || "Hiện chưa có câu trả lời phù hợp cho câu hỏi này.",
       }));
     } catch {
       setAnswerByQuestion((prev) => ({
@@ -148,8 +141,7 @@ export default function CustomerSupport() {
             <Headphones /> Trung tâm hỗ trợ AI
           </h1>
           <p className="text-blue-100 text-sm max-w-xl">
-            FAQ theo từng nhóm chủ đề. Chạm vào câu hỏi để AI SpeedyShip trả lời
-            ngay.
+            FAQ theo từng nhóm chủ đề. Chạm vào câu hỏi để AI SpeedyShip trả lời ngay.
           </p>
         </div>
         <div className="absolute right-0 bottom-0 opacity-20">
@@ -158,110 +150,98 @@ export default function CustomerSupport() {
       </div>
 
       <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 min-h-[600px]">
-        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8">
-          <aside className="space-y-2">
-            {FAQ_CATEGORY_ORDER.map((tab) => {
-              const isActive = tab === activeFaqTab;
-              const TabIcon = FAQ_CATEGORY_META[tab].icon;
-              return (
-                <button
-                  key={tab}
-                  onClick={() => {
-                    setActiveFaqTab(tab);
-                    setExpandedQuestion(null);
-                  }}
-                  className={`w-full text-left px-5 py-3 rounded-xl text-base font-semibold transition-colors ${
-                    isActive
-                      ? "bg-orange-50 text-orange-600 border border-orange-200 shadow-sm"
-                      : "text-gray-600 border border-transparent hover:bg-gray-50"
-                  }`}
-                >
-                  <span className="flex items-center gap-2">
-                    <TabIcon size={15} />
-                    {FAQ_CATEGORY_META[tab].label}
-                  </span>
-                </button>
-              );
-            })}
-
-            <div className="mt-6 rounded-xl border border-red-100 bg-red-50 p-4">
-              <p className="text-sm font-bold text-[#113e48]">
-                Bạn vẫn cần trợ giúp?
-              </p>
-              <p className="text-xs text-gray-600 mt-1 mb-3">
-                Chat trực tiếp với AI để hỏi theo ngữ cảnh đơn hàng của bạn.
-              </p>
-              <button
-                onClick={() => {
-                  openAIChat();
-                }}
-                className="w-full bg-red-500 hover:bg-red-600 text-white text-xs font-bold py-2 rounded-lg flex items-center justify-center gap-2"
-              >
-                <MessageCircle size={14} /> Trò chuyện ngay
-              </button>
-            </div>
-          </aside>
-
-          <section className="space-y-3">
-            {loadingFaq && (
-              <div className="text-sm text-gray-500 py-5 flex items-center gap-2">
-                <Loader2 size={16} className="animate-spin" /> Đang tải câu hỏi
-                FAQ...
-              </div>
-            )}
-
-            {!loadingFaq &&
-              faqQuestions.map((q) => {
-                const isOpen = expandedQuestion === q;
-                const answer = answerByQuestion[q];
-                const isLoadingThis = loadingAnswerQuestion === q;
-
+          <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8">
+            <aside className="space-y-2">
+              {FAQ_CATEGORY_ORDER.map((tab) => {
+                const isActive = tab === activeFaqTab;
+                const TabIcon = FAQ_CATEGORY_META[tab].icon;
                 return (
-                  <div
-                    key={q}
-                    className="border border-gray-200 rounded-lg overflow-hidden"
+                  <button
+                    key={tab}
+                    onClick={() => {
+                      setActiveFaqTab(tab);
+                      setExpandedQuestion(null);
+                    }}
+                    className={`w-full text-left px-5 py-3 rounded-xl text-base font-semibold transition-colors ${
+                      isActive
+                        ? "bg-orange-50 text-orange-600 border border-orange-200 shadow-sm"
+                        : "text-gray-600 border border-transparent hover:bg-gray-50"
+                    }`}
                   >
-                    <button
-                      onClick={() => handleToggleQuestion(q)}
-                      className="w-full px-5 py-4 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
-                    >
-                      <span className="text-base font-medium text-[#113e48]">
-                        {q}
-                      </span>
-                      <ChevronDown
-                        size={18}
-                        className={`text-gray-400 transition-transform ${isOpen ? "rotate-180" : ""}`}
-                      />
-                    </button>
-
-                    {isOpen && (
-                      <div className="px-4 py-3 border-t border-gray-100 bg-gray-50">
-                        {isLoadingThis && (
-                          <p className="text-sm text-gray-500 flex items-center gap-2">
-                            <Loader2 size={14} className="animate-spin" /> AI
-                            đang trả lời...
-                          </p>
-                        )}
-                        {!isLoadingThis && (
-                          <ul className="space-y-1.5">
-                            {formatAnswerToBullets(answer).map((line, idx) => (
-                              <li
-                                key={`${q}-${idx}`}
-                                className="text-base text-gray-700 leading-relaxed flex gap-2"
-                              >
-                                <span className="text-[#113e48]">•</span>
-                                <span>{line}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </div>
-                    )}
-                  </div>
+                    <span className="flex items-center gap-2">
+                      <TabIcon size={15} />
+                      {FAQ_CATEGORY_META[tab].label}
+                    </span>
+                  </button>
                 );
               })}
-          </section>
-        </div>
+
+              <div className="mt-6 rounded-xl border border-red-100 bg-red-50 p-4">
+                <p className="text-sm font-bold text-[#113e48]">Bạn vẫn cần trợ giúp?</p>
+                <p className="text-xs text-gray-600 mt-1 mb-3">
+                  Chat trực tiếp với AI để hỏi theo ngữ cảnh đơn hàng của bạn.
+                </p>
+                <button
+                  onClick={() => {
+                    openAIChat();
+                  }}
+                  className="w-full bg-red-500 hover:bg-red-600 text-white text-xs font-bold py-2 rounded-lg flex items-center justify-center gap-2"
+                >
+                  <MessageCircle size={14} /> Trò chuyện ngay
+                </button>
+              </div>
+            </aside>
+
+            <section className="space-y-3">
+              {loadingFaq && (
+                <div className="text-sm text-gray-500 py-5 flex items-center gap-2">
+                  <Loader2 size={16} className="animate-spin" /> Đang tải câu hỏi FAQ...
+                </div>
+              )}
+
+              {!loadingFaq &&
+                faqQuestions.map((q) => {
+                  const isOpen = expandedQuestion === q;
+                  const answer = answerByQuestion[q];
+                  const isLoadingThis = loadingAnswerQuestion === q;
+
+                  return (
+                    <div key={q} className="border border-gray-200 rounded-lg overflow-hidden">
+                      <button
+                        onClick={() => handleToggleQuestion(q)}
+                        className="w-full px-5 py-4 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
+                      >
+                        <span className="text-base font-medium text-[#113e48]">{q}</span>
+                        <ChevronDown
+                          size={18}
+                          className={`text-gray-400 transition-transform ${isOpen ? "rotate-180" : ""}`}
+                        />
+                      </button>
+
+                      {isOpen && (
+                        <div className="px-4 py-3 border-t border-gray-100 bg-gray-50">
+                          {isLoadingThis && (
+                            <p className="text-sm text-gray-500 flex items-center gap-2">
+                              <Loader2 size={14} className="animate-spin" /> AI đang trả lời...
+                            </p>
+                          )}
+                          {!isLoadingThis && (
+                            <ul className="space-y-1.5">
+                              {formatAnswerToBullets(answer).map((line, idx) => (
+                                <li key={`${q}-${idx}`} className="text-base text-gray-700 leading-relaxed flex gap-2">
+                                  <span className="text-[#113e48]">•</span>
+                                  <span>{line}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+            </section>
+          </div>
       </div>
     </div>
   );

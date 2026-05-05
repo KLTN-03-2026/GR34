@@ -12,10 +12,11 @@ import {
   Menu,
   ChevronRight,
   UserCog,
+  AlertTriangle,
 } from "lucide-react";
 import DispatcherNotifications from "../components/DispatcherNotifications";
 
-// ⚡ Khởi tạo socket kết nối backend
+
 const socket = io("http://localhost:5000", { transports: ["websocket"] });
 
 export default function DispatcherLayout() {
@@ -26,7 +27,8 @@ export default function DispatcherLayout() {
   const [hasNewMessage, setHasNewMessage] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // 🚪 Đăng xuất
+
+// Xử lý đăng xuất
   const handleLogout = () => {
     if (window.confirm("Bạn có chắc chắn muốn đăng xuất?")) {
       localStorage.clear();
@@ -34,12 +36,11 @@ export default function DispatcherLayout() {
     }
   };
 
-  // 🟣 Kết nối socket
+
   useEffect(() => {
     socket.emit("joinDispatcher");
     socket.on("newMessage", (msg) => {
       if (msg.role === "customer") {
-        console.log("📩 Tin nhắn mới:", msg);
         if (!location.pathname.includes("/dispatcher/chat")) {
           setHasNewMessage(true);
         }
@@ -48,7 +49,7 @@ export default function DispatcherLayout() {
     return () => socket.off("newMessage");
   }, [location.pathname]);
 
-  // Style cho Link
+
   const navLinkClasses = ({ isActive }) => `
     relative flex items-center gap-3 px-4 py-3.5 text-sm font-medium rounded-xl transition-all duration-300 group
     ${
@@ -58,7 +59,7 @@ export default function DispatcherLayout() {
     }
   `;
 
-  // Title Header
+
   const getPageTitle = () => {
     switch (location.pathname) {
       case "/dispatcher":
@@ -71,6 +72,8 @@ export default function DispatcherLayout() {
         return "Danh bạ khách hàng";
       case "/dispatcher/chat":
         return "Hỗ trợ trực tuyến";
+      case "/dispatcher/failed-orders":
+        return "⚠️ Cần xử lý gấp";
       default:
         return "Trung tâm điều hành";
     }
@@ -78,7 +81,7 @@ export default function DispatcherLayout() {
 
   return (
     <div className="flex h-screen bg-[#F8FAFC] overflow-hidden font-sans">
-      {/* MOBILE OVERLAY */}
+      {}
       {isSidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-30 lg:hidden"
@@ -86,7 +89,7 @@ export default function DispatcherLayout() {
         />
       )}
 
-      {/* =============== SIDEBAR =============== */}
+      {}
       <aside
         className={`
         fixed lg:static inset-y-0 left-0 z-40 w-72 bg-[#113e48] text-white flex flex-col shadow-2xl transition-transform duration-300
@@ -95,7 +98,7 @@ export default function DispatcherLayout() {
         }
       `}
       >
-        {/* 1. Brand Logo */}
+        {}
         <div className="h-20 flex items-center px-8 border-b border-white/10 bg-[#0d2f36]">
           <div
             className="flex items-center gap-2 cursor-pointer"
@@ -114,7 +117,7 @@ export default function DispatcherLayout() {
           </div>
         </div>
 
-        {/* 2. Menu */}
+        {}
         <div className="flex-1 overflow-y-auto py-8 px-4 space-y-1 custom-scrollbar">
           <p className="px-4 mb-4 text-xs font-bold text-blue-200/60 uppercase tracking-widest">
             Điều hành
@@ -135,6 +138,20 @@ export default function DispatcherLayout() {
 
             <NavLink to="/dispatcher/contacts" className={navLinkClasses}>
               <Phone size={20} /> <span>Liên hệ khách hàng</span>
+            </NavLink>
+
+            {}
+            <NavLink to="/dispatcher/failed-orders" className={({ isActive }) => `
+              relative flex items-center gap-3 px-4 py-3.5 text-sm font-medium rounded-xl transition-all duration-300 group
+              ${
+                isActive
+                  ? "bg-orange-500 text-white shadow-lg shadow-orange-500/30 translate-x-1"
+                  : "text-orange-300 hover:bg-orange-500/20 hover:text-orange-200"
+              }
+            `}>
+              <AlertTriangle size={20} />
+              <span className="flex-1">Cần xử lý gấp</span>
+              <span className="w-2 h-2 bg-orange-400 rounded-full animate-pulse" />
             </NavLink>
 
             <p className="px-4 mt-8 mb-4 text-xs font-bold text-blue-200/60 uppercase tracking-widest">
@@ -158,7 +175,7 @@ export default function DispatcherLayout() {
           </nav>
         </div>
 
-        {/* 3. User Profile */}
+        {}
         <div className="p-4 bg-[#0d2f36] border-t border-white/5">
           <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
             <div className="flex items-center gap-3 overflow-hidden">
@@ -184,9 +201,9 @@ export default function DispatcherLayout() {
         </div>
       </aside>
 
-      {/* =============== MAIN CONTENT =============== */}
+      {}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* HEADER BAR */}
+        {}
         <header className="h-20 bg-white shadow-sm border-b border-gray-100 flex items-center justify-between px-6 lg:px-10 z-40 relative">
           <div className="flex items-center gap-4">
             <button
@@ -206,7 +223,7 @@ export default function DispatcherLayout() {
           </div>
 
           <div className="flex items-center gap-3 sm:gap-6">
-            {/* Component Thông Báo */}
+            {}
             <div className="relative">
               <DispatcherNotifications dispatcherId={dispatcherId} />
             </div>
@@ -223,7 +240,7 @@ export default function DispatcherLayout() {
           </div>
         </header>
 
-        {/* CONTENT */}
+        {}
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-[#F8FAFC] p-6 lg:p-10 scroll-smooth">
           <div className="max-w-7xl mx-auto min-h-full">
             <Outlet />
