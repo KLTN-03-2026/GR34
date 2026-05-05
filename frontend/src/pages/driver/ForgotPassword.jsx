@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import API from "../services/api";
 import PartnerCarousel from "../components/homepage/PartnerCarousel";
-// 👇 Import Navbar và Footer
+
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 
@@ -19,10 +19,10 @@ import {
   FaPaperPlane,
 } from "react-icons/fa";
 
+// Quên mật khẩu
 export default function ForgotPassword() {
   const navigate = useNavigate();
 
-  // --- STATE ---
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
@@ -32,14 +32,12 @@ export default function ForgotPassword() {
   const [loading, setLoading] = useState(false);
   const [count, setCount] = useState(0);
 
-  // --- TIMER EFFECT ---
   useEffect(() => {
     if (count <= 0) return;
     const t = setInterval(() => setCount((c) => c - 1), 1000);
     return () => clearInterval(t);
   }, [count]);
 
-  // --- HANDLERS ---
   const handleSendOtp = async (e) => {
     e.preventDefault();
     setMessage({ type: "", text: "" });
@@ -99,12 +97,11 @@ export default function ForgotPassword() {
   };
 
   return (
-    // ✨ Thay đổi layout chính để chứa Navbar & Footer
     <div className="min-h-screen flex flex-col bg-gray-50 font-sans">
-      {/* 1. NAVBAR */}
+      {}
       <Navbar />
 
-      {/* 2. MAIN CONTENT (Căn giữa) */}
+      {}
       <div className="flex-grow flex items-center justify-center p-4 sm:p-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -112,7 +109,7 @@ export default function ForgotPassword() {
           transition={{ duration: 0.5 }}
           className="bg-white w-full max-w-5xl rounded-3xl shadow-2xl flex overflow-hidden min-h-[600px] border border-gray-100"
         >
-          {/* --- CỘT TRÁI: FORM --- */}
+          {}
           <div className="w-full md:w-1/2 p-8 md:p-12 bg-white flex flex-col justify-center relative">
             <div className="mb-8">
               <Link to="/" className="inline-block mb-6">
@@ -132,7 +129,7 @@ export default function ForgotPassword() {
               </p>
             </div>
 
-            {/* Thông báo */}
+            {}
             {message.text && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
@@ -143,12 +140,12 @@ export default function ForgotPassword() {
                     : "bg-green-50 text-green-600 border-green-100"
                 }`}
               >
-                <span>{message.type === "error" ? "⚠️" : "✅"}</span>{" "}
+                <span>{message.type === "error" ? "⚠️" : ""}</span>{" "}
                 {message.text}
               </motion.div>
             )}
 
-            {/* FORM */}
+            {}
             {step === 1 ? (
               <form onSubmit={handleSendOtp} className="space-y-5">
                 <div className="space-y-1">
@@ -277,13 +274,13 @@ export default function ForgotPassword() {
               </Link>
             </div>
 
-            {/* --- PARTNER CAROUSEL --- */}
+            {}
             <div className="border-t border-gray-100 pt-6 mt-auto">
               <PartnerCarousel />
             </div>
           </div>
 
-          {/* --- CỘT PHẢI --- */}
+          {}
           <div className="hidden md:flex w-1/2 relative bg-[#113e48] flex-col justify-center p-12 text-white overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl translate-x-1/2 -translate-y-1/2"></div>
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-orange-500/10 rounded-full blur-3xl -translate-x-1/2 translate-y-1/2"></div>
@@ -345,7 +342,7 @@ export default function ForgotPassword() {
         </motion.div>
       </div>
 
-      {/* 3. FOOTER */}
+      {}
       <Footer />
     </div>
   );

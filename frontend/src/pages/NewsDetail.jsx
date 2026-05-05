@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import API from "../services/api";
 import { FaUser, FaComments, FaArrowLeft, FaCalendarAlt } from "react-icons/fa";
 
+// Chi tiết bài tin tức
 export default function NewsDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -21,7 +22,6 @@ export default function NewsDetail() {
         const res = await API.get(`/news/${id}`);
         setArticle(res.data);
       } catch (err) {
-        console.error("Lỗi tải tin tức:", err);
       } finally {
         setLoading(false);
       }
@@ -40,9 +40,7 @@ export default function NewsDetail() {
   if (!article) {
     return (
       <div className="min-h-[50vh] flex flex-col items-center justify-center p-6 text-center">
-        <h2 className="text-2xl font-bold text-[#113e48] mb-4">
-          Bài viết không tồn tại
-        </h2>
+        <h2 className="text-2xl font-bold text-[#113e48] mb-4">Bài viết không tồn tại</h2>
         <button
           onClick={() => navigate("/")}
           className="flex items-center gap-2 px-6 py-3 bg-[#113e48] text-white font-bold rounded-lg hover:bg-orange-500 transition-colors"
@@ -56,7 +54,7 @@ export default function NewsDetail() {
   return (
     <div className="bg-gray-50 min-h-screen font-sans py-12">
       <div className="max-w-6xl mx-auto px-4 md:px-8">
-        {/* Nút quay lại */}
+        {}
         <button
           onClick={() => navigate(-1)}
           className="flex items-center gap-2 text-gray-500 hover:text-orange-500 font-bold mb-8 transition-colors"
@@ -64,7 +62,9 @@ export default function NewsDetail() {
           <FaArrowLeft /> Quay lại
         </button>
 
+        {}
         <article className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+          {}
           {article.image && (
             <div className="w-full bg-gray-100 flex justify-center border-b border-gray-100">
               <img
@@ -76,7 +76,7 @@ export default function NewsDetail() {
           )}
 
           <div className="p-8 md:p-12">
-            {/* Meta Info */}
+            {}
             <div className="flex flex-wrap items-center gap-6 text-sm font-semibold text-gray-500 mb-6 uppercase tracking-wider">
               <div className="flex items-center gap-2">
                 <FaCalendarAlt className="text-orange-500" />
@@ -88,40 +88,28 @@ export default function NewsDetail() {
               </div>
               <div className="w-1.5 h-1.5 bg-gray-300 rounded-full"></div>
               <div className="flex items-center gap-2">
-                <FaComments className="text-orange-500" />{" "}
-                {article.comments || 0} Bình luận
+                <FaComments className="text-orange-500" /> {article.comments || 0} Bình luận
               </div>
             </div>
 
+            {}
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-[#113e48] leading-snug mb-8">
               {article.title}
             </h1>
 
-            <div
+            {}
+            <div 
               className="prose prose-lg max-w-none text-gray-700 leading-relaxed font-medium break-words"
-              dangerouslySetInnerHTML={{
-                __html: article.content
-                  ? article.content
-                      .replace(/\n/g, "<br />")
-                      .replace(/&nbsp;|\u00A0/g, " ")
-                  : "",
-              }}
+              dangerouslySetInnerHTML={{ __html: article.content ? article.content.replace(/\n/g, "<br />").replace(/&nbsp;|\u00A0/g, " ") : "" }}
             />
 
+            {}
             <div className="mt-12 pt-8 border-t border-gray-100">
               <div className="flex items-center gap-3 flex-wrap">
-                <span className="text-sm font-bold text-gray-400 uppercase tracking-wider mr-2">
-                  Chủ đề:
-                </span>
-                {[
-                  "#Logistics",
-                  "#VậnChuyển",
-                  "#SpeedyShip",
-                  "#ChuyểnPhátNhanh",
-                  "#TinTứcMới",
-                ].map((tag, idx) => (
-                  <span
-                    key={idx}
+                <span className="text-sm font-bold text-gray-400 uppercase tracking-wider mr-2">Chủ đề:</span>
+                {["#Logistics", "#VậnChuyển", "#SpeedyShip", "#ChuyểnPhátNhanh", "#TinTứcMới"].map((tag, idx) => (
+                  <span 
+                    key={idx} 
                     className="px-4 py-2 bg-gray-100 hover:bg-orange-50 hover:text-orange-600 text-gray-600 rounded-lg text-sm font-bold cursor-pointer transition-colors"
                   >
                     {tag}

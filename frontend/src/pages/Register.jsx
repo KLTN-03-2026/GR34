@@ -14,6 +14,7 @@ import {
   FaHeadset,
 } from "react-icons/fa";
 
+// Trang đăng ký tài khoản
 export default function Register() {
   const navigate = useNavigate();
 
@@ -37,7 +38,7 @@ export default function Register() {
     }
   };
 
-  // Validate
+
   const validateForm = () => {
     const newErrors = {};
     if (!form.name.trim()) newErrors.name = "Vui lòng nhập họ tên.";
@@ -55,14 +56,14 @@ export default function Register() {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Countdown
+
   useEffect(() => {
     if (countdown <= 0) return;
     const timer = setInterval(() => setCountdown((c) => c - 1), 1000);
     return () => clearInterval(timer);
   }, [countdown]);
 
-  // Gửi OTP
+
   const handleSendOtp = async () => {
     setMessage({ type: "", text: "" });
     if (!form.email)
@@ -84,7 +85,8 @@ export default function Register() {
     }
   };
 
-  // Đăng ký
+
+// Xử lý đăng ký tài khoản
   const handleRegister = async (e) => {
     e.preventDefault();
     setMessage({ type: "", text: "" });
@@ -123,7 +125,7 @@ export default function Register() {
         transition={{ duration: 0.5 }}
         className="bg-white w-full max-w-5xl rounded-3xl shadow-2xl flex overflow-hidden min-h-[600px]"
       >
-        {/* --- CỘT TRÁI: FORM ĐĂNG KÝ --- */}
+        {}
         <div className="w-full md:w-1/2 p-8 md:p-12 bg-white flex flex-col justify-center relative">
           <div className="mb-6">
             <img
@@ -157,7 +159,7 @@ export default function Register() {
               )}
             </AnimatePresence>
 
-            {/* Họ tên */}
+            {}
             <div className="space-y-1">
               <label className="text-xs font-bold text-[#113e48] ml-1">
                 Họ và tên
@@ -182,7 +184,7 @@ export default function Register() {
               )}
             </div>
 
-            {/* Email + OTP Button */}
+            {}
             <div className="space-y-1">
               <label className="text-xs font-bold text-[#113e48] ml-1">
                 Email
@@ -226,7 +228,7 @@ export default function Register() {
               )}
             </div>
 
-            {/* OTP Input (Hiện khi đã gửi) */}
+            {}
             <AnimatePresence>
               {otpSent && (
                 <motion.div
@@ -260,7 +262,7 @@ export default function Register() {
               )}
             </AnimatePresence>
 
-            {/* Mật khẩu */}
+            {}
             <div className="space-y-1">
               <label className="text-xs font-bold text-[#113e48] ml-1">
                 Mật khẩu
@@ -287,7 +289,7 @@ export default function Register() {
               )}
             </div>
 
-            {/* Số điện thoại */}
+            {}
             <div className="space-y-1">
               <label className="text-xs font-bold text-[#113e48] ml-1">
                 Số điện thoại (Tuỳ chọn)
@@ -349,7 +351,7 @@ export default function Register() {
           </div>
         </div>
 
-        {/* --- CỘT PHẢI: INFO (Giống Login) --- */}
+        {}
         <div className="hidden md:flex w-1/2 relative bg-[#113e48] flex-col justify-center p-12 text-white overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl translate-x-1/2 -translate-y-1/2"></div>
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-orange-500/10 rounded-full blur-3xl -translate-x-1/2 translate-y-1/2"></div>

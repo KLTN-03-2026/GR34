@@ -5,13 +5,14 @@ export default function DriverChangePassword() {
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
 
+// Xử lý submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
     await API.patch("/drivers/1/change-password", {
       oldPassword,
       newPassword,
     });
-    alert("✅ Đổi mật khẩu thành công");
+    alert("Đổi mật khẩu thành công");
     setOldPassword("");
     setNewPassword("");
   };

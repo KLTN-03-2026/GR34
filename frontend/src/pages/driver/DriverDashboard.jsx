@@ -2,6 +2,17 @@ import { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { io } from "socket.io-client";
 import toast, { Toaster } from "react-hot-toast";
+
+
+const STATUS_LABELS = {
+  assigned:   { label: "Đã nhận đơn",    color: "bg-gray-100 text-gray-700" },
+  picking:    { label: "Đang lấy hàng",  color: "bg-orange-100 text-orange-700" },
+  delivering: { label: "Đang giao",       color: "bg-blue-100 text-blue-700" },
+  completed:  { label: "Hoàn thành",      color: "bg-green-100 text-green-700" },
+  failed:     { label: "Giao thất bại",  color: "bg-red-100 text-red-700" },
+  pending:    { label: "Chờ xử lý",    color: "bg-yellow-100 text-yellow-700" },
+};
+
 import { motion } from "framer-motion";
 import {
   PackageCheck,
@@ -10,6 +21,8 @@ import {
   Clock,
   MapPin,
   AlertCircle,
+  Rocket,
+  X,
 } from "lucide-react";
 
 import Map, { Marker, NavigationControl, GeolocateControl } from "react-map-gl";
@@ -20,7 +33,7 @@ import API from "../../services/api";
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 
-// --- Components Con ---
+
 const DriverMarker = () => (
   <div className="relative flex items-center justify-center w-12 h-12">
     <span className="absolute w-full h-full bg-blue-400 rounded-full opacity-30 animate-ping"></span>
@@ -59,21 +72,69 @@ const StatCard = ({ title, value, icon: Icon, colorClass, delay }) => (
   </motion.div>
 );
 
+// Trang tổng quan của tài xế
 export default function DriverDashboard() {
   const { id } = useParams();
   const mapRef = useRef(null);
 
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [driverLocation, setDriverLocation] = useState(null); // Để null ban đầu để check
+  const [driverLocation, setDriverLocation] = useState(null);
 
-  // Socket
+
   useEffect(() => {
     const socket = io("http://localhost:5000");
     if (id) socket.emit("registerDriver", id);
 
-    socket.on("newAssignment", () => {
-      toast.success("📦 Bạn có đơn hàng mới!");
+    socket.on("newAssignment", (data) => {
+      const isExpress = data?.service_type === 'fast';
+      const tracking = data?.tracking_code || '';
+
+      if (isExpress) {
+
+        toast.custom((t) => (
+          <div className={`flex items-start gap-3 px-4 py-3 rounded-2xl shadow-2xl border-2 border-red-400 bg-red-50 max-w-sm w-full ${
+            t.visible ? 'animate-enter' : 'animate-leave'
+          }`}>
+            <div className="w-10 h-10 rounded-full bg-red-500 flex items-center justify-center shrink-0 animate-pulse">
+              <Rocket size={20} className="text-white" />
+            </div>
+            <div className="flex-1">
+              <p className="font-black text-red-700 text-sm">🚨 ĐƠN HỎA TỐC — ƯU TIÊN!</p>
+              <p className="text-red-600 text-xs mt-0.5">
+                {tracking ? `Mã vận đơn: ${tracking}` : 'Bạn có đơn hàng hỏa tốc mới!'}
+              </p>
+              <p className="text-red-400 text-[10px] mt-1">Giao ngay, không được để trễ!</p>
+            </div>
+            <button onClick={() => toast.dismiss(t.id)}>
+              <X size={16} className="text-red-400" />
+            </button>
+          </div>
+        ), { duration: 8000 });
+
+      } else {
+
+        toast.custom((t) => (
+          <div className={`flex items-start gap-3 px-4 py-3 rounded-2xl shadow-xl border border-blue-200 bg-white max-w-sm w-full ${
+            t.visible ? 'animate-enter' : 'animate-leave'
+          }`}>
+            <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center shrink-0">
+              <PackageCheck size={20} className="text-white" />
+            </div>
+            <div className="flex-1">
+              <p className="font-bold text-blue-800 text-sm">📦 Đơn hàng mới!</p>
+              <p className="text-gray-600 text-xs mt-0.5">
+                {tracking ? `Mã vận đơn: ${tracking}` : 'Bạn vừa được phân công đơn hàng.'}
+              </p>
+            </div>
+            <button onClick={() => toast.dismiss(t.id)}>
+              <X size={16} className="text-gray-400" />
+            </button>
+          </div>
+        ), { duration: 5000 });
+
+      }
+
       fetchStats();
     });
 
@@ -84,44 +145,52 @@ export default function DriverDashboard() {
     try {
       const res = await API.get(`/drivers/dashboard/${id}`);
       setStats(res.data);
+
+      if (res.data.latitude && res.data.longitude) {
+        setDriverLocation({
+          latitude: parseFloat(res.data.latitude),
+          longitude: parseFloat(res.data.longitude),
+        });
+      }
+
+      // Xin quyền vị trí và cập nhật tọa độ mới
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const { latitude, longitude } = position.coords;
+            setDriverLocation({ latitude, longitude });
+            // Cập nhật backend
+            try {
+              await API.patch(`/drivers/location/${id}`, { latitude, longitude });
+            } catch (err) {
+              console.error("Lỗi cập nhật vị trí:", err);
+            }
+          },
+          (error) => {
+            console.error("Lỗi lấy vị trí:", error);
+          },
+          { enableHighAccuracy: true }
+        );
+      }
     } catch (err) {
-      console.error(err);
       toast.error("Không thể tải dữ liệu.");
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchLocation = async () => {
-    try {
-      if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            setDriverLocation({
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
-            });
-          },
-          (error) => {
-            console.error("Lỗi GPS:", error);
-            // Fallback vị trí mặc định (TP.HCM) nếu lỗi GPS
-            setDriverLocation({ latitude: 10.762622, longitude: 106.660172 });
-          },
-        );
-      } else {
-        setDriverLocation({ latitude: 10.762622, longitude: 106.660172 });
-      }
-    } catch (err) {
-      console.error("Lỗi lấy vị trí:", err);
-    }
-  };
-
   useEffect(() => {
     fetchStats();
-    fetchLocation();
-    const interval = setInterval(fetchLocation, 300000);
-    return () => clearInterval(interval);
   }, [id]);
+
+  useEffect(() => {
+    if (!driverLocation || !mapRef.current) return;
+    mapRef.current.easeTo({
+      center: [driverLocation.longitude, driverLocation.latitude],
+      zoom: 15,
+      duration: 900,
+    });
+  }, [driverLocation]);
 
   if (loading) {
     return (
@@ -138,16 +207,15 @@ export default function DriverDashboard() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] p-4 pb-20 lg:p-8 space-y-6">
-      <Toaster position="top-right" />
+      <Toaster position="top-right" containerStyle={{ top: 80 }} />
 
-      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
             👋 Xin chào, Tài xế <span className="text-blue-600">#{id}</span>
           </h1>
           <p className="text-sm text-gray-500 mt-1 flex items-center gap-1">
-            <MapPin size={14} /> Khu vực hoạt động: TP.HCM
+            <MapPin size={14} /> Khu vực hoạt động: Đà Nẵng
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -159,7 +227,7 @@ export default function DriverDashboard() {
         </div>
       </div>
 
-      {/* Stats */}
+      {}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -203,7 +271,7 @@ export default function DriverDashboard() {
         />
       </div>
 
-      {/* Mapbox - Chỉ render khi có location */}
+      {}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="p-4 border-b border-gray-100 flex justify-between items-center">
           <h3 className="font-bold text-gray-800 flex items-center gap-2">
@@ -211,7 +279,7 @@ export default function DriverDashboard() {
           </h3>
         </div>
 
-        {/* Container phải có height cố định */}
+        {}
         <div className="h-[300px] w-full relative bg-gray-100">
           {driverLocation ? (
             <Map
@@ -243,7 +311,7 @@ export default function DriverDashboard() {
         </div>
       </div>
 
-      {/* Recent Orders */}
+      {}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 lg:p-6">
         <h2 className="text-lg font-bold text-gray-800 mb-4">
           Đơn hàng gần đây
@@ -253,15 +321,32 @@ export default function DriverDashboard() {
             stats.recentShipments.map((s) => (
               <div
                 key={s.id}
-                className="flex items-center justify-between p-4 rounded-xl border border-gray-100 bg-white"
+                className={`flex items-center justify-between p-4 rounded-xl border ${
+                  s.service_type === 'fast'
+                    ? 'border-red-200 bg-red-50/40'
+                    : 'border-gray-100 bg-white'
+                }`}
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
-                    <PackageCheck size={20} />
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                    s.service_type === 'fast'
+                      ? 'bg-red-100 text-red-600'
+                      : 'bg-gray-100 text-gray-500'
+                  }`}>
+                    {s.service_type === 'fast' ? (
+                      <Rocket size={20} className="animate-pulse" />
+                    ) : (
+                      <PackageCheck size={20} />
+                    )}
                   </div>
                   <div>
-                    <h4 className="font-bold text-gray-800 text-sm">
+                    <h4 className="font-bold text-gray-800 text-sm flex items-center gap-2">
                       {s.tracking_code}
+                      {s.service_type === 'fast' && (
+                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-black bg-red-500 text-white">
+                          <Rocket size={9} /> ƯU TIÊN
+                        </span>
+                      )}
                     </h4>
                     <p className="text-xs text-gray-500 mt-0.5">
                       Khách: {s.receiver_name}
@@ -269,8 +354,10 @@ export default function DriverDashboard() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className="inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold bg-gray-100 text-gray-700 capitalize mb-1">
-                    {s.status}
+                  <span className={`inline-flex items-center justify-center min-w-[130px] px-2.5 py-1.5 rounded-full text-xs font-bold mb-1 ${
+                    (STATUS_LABELS[s.status]?.color) || 'bg-gray-100 text-gray-600'
+                  }`}>
+                    {STATUS_LABELS[s.status]?.label || s.status}
                   </span>
                   <p className="text-[10px] text-gray-400">
                     {new Date(s.updated_at).toLocaleDateString("vi-VN")}

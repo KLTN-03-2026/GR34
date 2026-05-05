@@ -22,7 +22,9 @@ import {
   User,
 } from "lucide-react";
 
+
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
+
 
 const CustomMarker = ({ icon, bgColor, ringColor, onClick }) => {
   return (
@@ -45,6 +47,7 @@ const CustomMarker = ({ icon, bgColor, ringColor, onClick }) => {
   );
 };
 
+
 const translateStatus = (status) => {
   const map = {
     pending: "Chờ xử lý",
@@ -54,11 +57,13 @@ const translateStatus = (status) => {
     delivered: "Đã giao hàng",
     completed: "Hoàn tất",
     failed: "Giao thất bại",
-    cancelled: "Đã hủy",
+    canceled: "Đã hủy",
   };
   return map[status] || status;
 };
 
+
+// Chi tiết vận đơn đang theo dõi
 export default function DispatcherTrackingDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -71,10 +76,12 @@ export default function DispatcherTrackingDetail() {
   const [driverPos, setDriverPos] = useState(null);
   const [popupInfo, setPopupInfo] = useState(null);
 
+
   const fetchRouteOSRM = async (start, end) => {
     if (!start || !end) return null;
     const startStr = `${start[1]},${start[0]}`;
     const endStr = `${end[1]},${end[0]}`;
+
 
     const daNang = "108.2022,16.0544";
     const nhaTrang = "109.1967,12.2388";
@@ -95,7 +102,6 @@ export default function DispatcherTrackingDetail() {
         return { type: "Feature", geometry: data.routes[0].geometry };
       }
     } catch (error) {
-      console.error("Lỗi OSRM:", error);
     }
     return null;
   };
@@ -106,6 +112,7 @@ export default function DispatcherTrackingDetail() {
         const res = await API.get(`/dispatcher/shipments/${id}`);
         const data = res.data;
         setShipment(data);
+
 
         let pk =
           data.pickup_lat && data.pickup_lng
@@ -118,6 +125,7 @@ export default function DispatcherTrackingDetail() {
 
         setPickup(pk);
         setDelivery(dl);
+
 
         if (data.status === "picking" || data.status === "delivering") {
           const geoJson = await fetchRouteOSRM(pk, dl);
@@ -140,13 +148,14 @@ export default function DispatcherTrackingDetail() {
           setRouteGeoJSON(null);
         }
       } catch (err) {
-        console.error(err);
       }
     };
     fetchDetail();
   }, [id]);
 
+
   useEffect(() => {
+
     if (!mapRef.current || !pickup || !delivery) return;
 
     const features = [];
@@ -160,12 +169,14 @@ export default function DispatcherTrackingDetail() {
       geometry: { type: "Point", coordinates: [delivery[1], delivery[0]] },
     });
 
+
     if (routeGeoJSON) features.push(routeGeoJSON);
 
     const featureCollection = { type: "FeatureCollection", features: features };
 
     try {
       const [minLng, minLat, maxLng, maxLat] = bbox(featureCollection);
+
 
       const isSamePoint = minLng === maxLng && minLat === maxLat;
 
@@ -177,11 +188,10 @@ export default function DispatcherTrackingDetail() {
             [minLng, minLat],
             [maxLng, maxLat],
           ],
-          { padding: 80, duration: 1500, maxZoom: 14 },
+          { padding: 80, duration: 1500, maxZoom: 14 }
         );
       }
     } catch (error) {
-      console.error("Zoom error:", error);
     }
   }, [routeGeoJSON, pickup, delivery]);
 
@@ -194,7 +204,7 @@ export default function DispatcherTrackingDetail() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-10 font-sans">
-      {/* HEADER */}
+      {}
       <div className="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-50 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-4">
           <button
@@ -219,8 +229,8 @@ export default function DispatcherTrackingDetail() {
             shipment.status === "completed"
               ? "bg-green-100 text-green-700 border-green-200"
               : shipment.status === "delivering"
-                ? "bg-orange-100 text-orange-700 border-orange-200"
-                : "bg-blue-100 text-blue-700 border-blue-200"
+              ? "bg-orange-100 text-orange-700 border-orange-200"
+              : "bg-blue-100 text-blue-700 border-blue-200"
           }`}
         >
           {translateStatus(shipment.status)}
@@ -228,9 +238,9 @@ export default function DispatcherTrackingDetail() {
       </div>
 
       <div className="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* INFO COLUMN */}
+        {}
         <div className="lg:col-span-1 space-y-6">
-          {/* Sender & Receiver */}
+          {}
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-6">
             <div className="flex gap-4 relative">
               <div className="flex flex-col items-center">
@@ -271,6 +281,7 @@ export default function DispatcherTrackingDetail() {
             </div>
           </div>
 
+          {}
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
             <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
               <User size={18} className="text-gray-400" /> Thông tin tài xế
@@ -304,6 +315,7 @@ export default function DispatcherTrackingDetail() {
           </div>
         </div>
 
+        {}
         <div className="lg:col-span-2 h-[600px] bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden relative">
           <Map
             ref={mapRef}
@@ -318,6 +330,7 @@ export default function DispatcherTrackingDetail() {
           >
             <NavigationControl position="bottom-right" />
 
+            {}
             {routeGeoJSON && (
               <Source id="route" type="geojson" data={routeGeoJSON}>
                 <Layer
@@ -333,6 +346,7 @@ export default function DispatcherTrackingDetail() {
               </Source>
             )}
 
+            {}
             {pickup && (
               <Marker
                 longitude={pickup[1]}
@@ -357,6 +371,7 @@ export default function DispatcherTrackingDetail() {
               </Marker>
             )}
 
+            {}
             {delivery && (
               <Marker
                 longitude={delivery[1]}
@@ -381,6 +396,7 @@ export default function DispatcherTrackingDetail() {
               </Marker>
             )}
 
+            {}
             {driverPos && (
               <Marker
                 longitude={driverPos[1]}
@@ -405,6 +421,7 @@ export default function DispatcherTrackingDetail() {
               </Marker>
             )}
 
+            {}
             {popupInfo && (
               <Popup
                 anchor="top"
