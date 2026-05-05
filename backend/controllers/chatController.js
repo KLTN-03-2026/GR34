@@ -1,12 +1,12 @@
 import pool from "../config/db.js";
 
-
+// Khởi tạo hoặc lấy lại phiên chat active của khách hàng
 export const startChat = async (req, res) => {
   const { customer_id } = req.body;
   try {
     let [rows] = await pool.query(
       "SELECT * FROM chats WHERE customer_id = ? AND status='active'",
-      [customer_id]
+      [customer_id],
     );
 
     let chatId;
@@ -15,7 +15,7 @@ export const startChat = async (req, res) => {
     } else {
       const [result] = await pool.query(
         "INSERT INTO chats (customer_id, status) VALUES (?, 'active')",
-        [customer_id]
+        [customer_id],
       );
       chatId = result.insertId;
     }
@@ -26,13 +26,13 @@ export const startChat = async (req, res) => {
   }
 };
 
-
+// Lấy lịch sử tin nhắn của một phiên chat theo chatId
 export const getMessages = async (req, res) => {
   const { chatId } = req.params;
   try {
     const [rows] = await pool.query(
       "SELECT * FROM messages WHERE chat_id = ? ORDER BY created_at ASC",
-      [chatId]
+      [chatId],
     );
     res.json(rows);
   } catch (err) {
@@ -40,26 +40,25 @@ export const getMessages = async (req, res) => {
   }
 };
 
-
+// Lưu tin nhắn mới vào database (gọi nội bộ từ socket)
 export const saveMessage = async (chatId, senderId, role, content) => {
   try {
     await pool.query(
       "INSERT INTO messages (chat_id, sender_id, role, content, created_at) VALUES (?, ?, ?, ?, NOW())",
-      [chatId, senderId, role, content]
+      [chatId, senderId, role, content],
     );
-  } catch (err) {
-  }
+  } catch (err) {}
 };
 
-
+// Kết thúc phiên chat, cập nhật trạng thái thành closed
 export const endChat = async (req, res) => {
   const { chatId } = req.params;
   try {
     await pool.query(
       "UPDATE chats SET status='closed', ended_at=NOW() WHERE id=?",
-      [chatId]
+      [chatId],
     );
-    res.json({ message: "✅ Chat đã kết thúc" });
+    res.json({ message: " Chat đã kết thúc" });
   } catch (err) {
     res.status(500).json({ error: "Server error" });
   }

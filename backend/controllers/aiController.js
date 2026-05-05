@@ -1,5 +1,24 @@
 import axios from "axios";
 
+const DEFAULT_FAQ_SUGGESTIONS = [
+  "Cách tạo đơn hàng nhanh trên SpeedyShip?",
+  "Tôi muốn tra cứu vận đơn thì làm thế nào?",
+  "Phí vận chuyển nội thành và liên tỉnh bao nhiêu?",
+  "Khi giao thất bại thì xử lý ra sao?",
+  "Có hỗ trợ thu hộ COD không?",
+  "Làm sao nạp/rút tiền trong ví SpeedyShip?",
+  "Tôi có thể đổi địa chỉ nhận sau khi tạo đơn không?",
+  "Chính sách đền bù khi hàng hư hỏng như thế nào?",
+];
+
+// Trả về danh sách câu hỏi FAQ gợi ý cho chatbot
+export const getFaqSuggestions = async (_req, res) => {
+  return res.json({
+    suggestions: DEFAULT_FAQ_SUGGESTIONS,
+  });
+};
+
+// Xử lý tin nhắn chatbot: tra cứu đơn, trả lời FAQ cứng, hoặc chuyển sang Groq AI
 export const askBot = async (req, res) => {
   try {
     const { message } = req.body;
@@ -74,7 +93,7 @@ https://speedyship.vn
     if (/hotline|sdt|số điện thoại|gọi điện|tư vấn/.test(msg)) {
       return res.json({
         reply: `
-📞 *Hotline SpeedyShip:* **0363 337 081**  
+📞 *Hotline SpeedyShip:* **1900 888 999**  
 👉 Hỗ trợ từ 7:00 đến 22:00 mỗi ngày.
 `,
       });
@@ -85,7 +104,7 @@ https://speedyship.vn
       return res.json({
         reply: `
 📩 *Email hỗ trợ:*  
-support@speedyship.vn  
+support@speedyship.com  
 
 👉 Bạn có thể gửi khiếu nại, tư vấn kỹ thuật, đối tác.
  `,
@@ -109,7 +128,7 @@ https://facebook.com/speedyship.vn
       return res.json({
         reply: `
 🏢 *Văn phòng SpeedyShip:*  
-**Số 123, Nguyễn Văn Linh, Thanh Khê, TP Đà Nẵng**  
+**55 Nguyễn Văn Linh, Quận Hải Châu, TP. Đà Nẵng**  
 ⏰ *Giờ làm việc:* 7:00 – 22:00  
 `,
       });
@@ -144,9 +163,9 @@ Thông tin mẫu:
 - Ship nội thành: 15.000đ
 - Liên tỉnh: 25.000–35.000đ
 - Thời gian giao: nội thành 1–2h, liên tỉnh 1–2 ngày
-- Hotline: 0363 337 081
+- Hotline: 1900 888 999
 - Website: https://speedyship.vn
-- Email: truongcss1220@gmail.com
+- Email: support@speedyship.com
 `,
           },
           { role: "user", content: message },

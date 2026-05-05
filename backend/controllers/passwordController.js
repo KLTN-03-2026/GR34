@@ -26,7 +26,25 @@ export const forgotPassword = async (req, res) => {
     await sendMail(
       email,
       "SpeedyShip - Khôi phục mật khẩu",
-      `<h2>Mã OTP khôi phục: <b>${otp}</b></h2>`
+      `
+  <div style="font-family:Arial,sans-serif;max-width:480px;margin:auto;border:1px solid #e5e5e5;border-radius:10px;overflow:hidden;">
+    <div style="background:#1e90ff;padding:16px 24px;text-align:center;color:#fff;font-size:20px;font-weight:700;">
+      Khôi phục mật khẩu SpeedyShip
+    </div>
+    <div style="padding:24px 30px;color:#333;font-size:15px;line-height:1.6;">
+      <p>Xin chào,</p>
+      <p>Bạn đang yêu cầu khôi phục mật khẩu tài khoản SpeedyShip. Mã OTP xác thực của bạn là:</p>
+      <div style="font-size:36px;font-weight:700;color:#1e90ff;text-align:center;margin:20px 0;">
+        ${otp}
+      </div>
+      <p>Mã OTP có hiệu lực <strong>5 phút</strong>. Vui lòng không chia sẻ mã với bất kỳ ai.</p>
+      <hr style="border:none;border-top:1px solid #ddd;margin:24px 0;">
+      <p style="font-size:12px;color:#777;text-align:center;">
+        Nếu bạn không yêu cầu khôi phục mật khẩu, hãy bỏ qua email này.
+      </p>
+    </div>
+  </div>
+      `
     );
 
     res.json({ message: "Đã gửi OTP." });
@@ -35,6 +53,7 @@ export const forgotPassword = async (req, res) => {
   }
 };
 
+// Xác thực OTP quên mật khẩu, trả về resetToken JWT 15 phút nếu hợp lệ
 export const verifyForgotOtp = async (req, res) => {
   const { email, otp } = req.body;
 

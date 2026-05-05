@@ -1,6 +1,7 @@
 import db from "../config/db.js";
 
 
+// Lấy thông tin ví của user, tự tạo ví mới nếu chưa có
 export const getWallet = async (req, res) => {
   try {
     const { user_id } = req.params;
@@ -43,6 +44,7 @@ export const getTransactions = async (req, res) => {
 };
 
 
+// Nạp tiền thủ công vào ví và ghi nhận giao dịch (admin / test)
 export const depositMoney = async (req, res) => {
   try {
     const { wallet_id, amount, description } = req.body;

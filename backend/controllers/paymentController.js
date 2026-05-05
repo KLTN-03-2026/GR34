@@ -2,7 +2,7 @@ import db from "../config/db.js";
 import crypto from "crypto";
 import axios from "axios";
 
-
+// Lấy danh sách tất cả giao dịch thanh toán kèm thông tin đơn hàng và khách hàng
 export const getAllPayments = async (req, res) => {
   try {
     const [rows] = await db.query(`
@@ -18,7 +18,6 @@ export const getAllPayments = async (req, res) => {
   }
 };
 
-
 // Tạo thanh toán mới
 export const createPayment = async (req, res) => {
   try {
@@ -30,15 +29,15 @@ export const createPayment = async (req, res) => {
 
     await db.query(
       "INSERT INTO payments (shipment_id, customer_id, amount, method, status) VALUES (?, ?, ?, ?, 'pending')",
-      [shipment_id, customer_id, amount, method]
+      [shipment_id, customer_id, amount, method],
     );
-    res.json({ message: "✅ Tạo thanh toán thành công" });
+    res.json({ message: " Tạo thanh toán thành công" });
   } catch (err) {
     res.status(500).json({ message: "Lỗi server khi tạo thanh toán" });
   }
 };
 
-
+// Tạo yêu cầu thanh toán MoMo cho đơn hàng, sinh link redirect và lưu vào database
 export const createMomoPayment = async (req, res) => {
   try {
     const { shipment_id, customer_id, amount } = req.body;
@@ -46,13 +45,12 @@ export const createMomoPayment = async (req, res) => {
       return res.status(400).json({ error: "Thiếu dữ liệu thanh toán" });
     await db.query(
       "UPDATE shipments SET payment_method = 'MOMO' WHERE id = ?",
-      [shipment_id]
+      [shipment_id],
     );
 
     const partnerCode = "MOMO";
     const accessKey = "F8BBA842ECF85";
     const secretKey = "K951B6PE1waDMi640xX08PD3vg6EkVlz";
-
 
     const orderId = `SHIP${Date.now()}`;
     const requestId = orderId;
@@ -83,25 +81,27 @@ export const createMomoPayment = async (req, res) => {
       lang: "vi",
     };
 
-
     const momoRes = await axios.post(
       "https://test-payment.momo.vn/v2/gateway/api/create",
-      body
+      body,
     );
-
 
     await db.query(
       `INSERT INTO payments (order_id, shipment_id, customer_id, amount, method, status) VALUES (?, ?, ?, ?, ?, 'pending')`,
-      [orderId, shipment_id, customer_id, amount, "Momo"]
+      [orderId, shipment_id, customer_id, amount, "Momo"],
     );
 
     res.json({ ...momoRes.data, payUrl: momoRes.data.payUrl });
   } catch (err) {
-    res.status(500).json({ error: err.response?.data?.message || "Lỗi tạo thanh toán MoMo" });
+    res
+      .status(500)
+      .json({
+        error: err.response?.data?.message || "Lỗi tạo thanh toán MoMo",
+      });
   }
 };
 
-
+// Tạo yêu cầu nạp tiền ví qua MoMo, tạo giao dịch pending trong transactions
 export const createWalletDepositMomo = async (req, res) => {
   try {
     const { wallet_id, amount } = req.body;
@@ -109,21 +109,17 @@ export const createWalletDepositMomo = async (req, res) => {
     if (!wallet_id || !amount)
       return res.status(400).json({ error: "Thiếu dữ liệu nạp tiền" });
 
-
     const partnerCode = "MOMO";
     const accessKey = "F8BBA842ECF85";
     const secretKey = "K951B6PE1waDMi640xX08PD3vg6EkVlz";
-
 
     const orderId = `WALLET${Date.now()}`;
     const requestId = orderId;
     const orderInfo = `Nạp tiền vào ví #${wallet_id}`;
 
-
     const redirectUrl = `http://localhost:5173/customer/wallet?orderId=${orderId}&resultCode=0&type=wallet`;
     const ipnUrl = "http://localhost:5000/api/payments/momo/callback";
     const requestType = "captureWallet";
-
 
     const rawSignature = `accessKey=${accessKey}&amount=${amount}&extraData=&ipnUrl=${ipnUrl}&orderId=${orderId}&orderInfo=${orderInfo}&partnerCode=${partnerCode}&redirectUrl=${redirectUrl}&requestId=${requestId}&requestType=${requestType}`;
     const signature = crypto
@@ -145,17 +141,15 @@ export const createWalletDepositMomo = async (req, res) => {
       extraData: "",
     };
 
-
     const momoRes = await axios.post(
       "https://test-payment.momo.vn/v2/gateway/api/create",
-      body
+      body,
     );
-
 
     await db.query(
       `INSERT INTO transactions (order_id, wallet_id, type, amount, description, status) 
        VALUES (?, ?, 'deposit', ?, ?, 'pending')`,
-      [orderId, wallet_id, amount, `Nạp tiền qua MoMo #${orderId}`]
+      [orderId, wallet_id, amount, `Nạp tiền qua MoMo #${orderId}`],
     );
 
     res.json({ ...momoRes.data, payUrl: momoRes.data.payUrl });
@@ -164,7 +158,7 @@ export const createWalletDepositMomo = async (req, res) => {
   }
 };
 
-
+// Nhận IPN callback từ MoMo, cập nhật trạng thái thanh toán và số dư ví
 export const momoIPN = async (req, res) => {
   try {
     const { orderId, resultCode } = req.body;
@@ -172,43 +166,33 @@ export const momoIPN = async (req, res) => {
 
     const status = resultCode === 0 ? "success" : "failed";
 
-
     if (orderId.startsWith("SHIP")) {
       await db.query("UPDATE payments SET status=? WHERE order_id=?", [
         status === "success" ? "completed" : "failed",
         orderId,
       ]);
-    }
-
-
-    else if (orderId.startsWith("WALLET")) {
-
+    } else if (orderId.startsWith("WALLET")) {
       await db.query("UPDATE transactions SET status=? WHERE order_id=?", [
         status,
         orderId,
       ]);
 
-
       if (status === "success") {
-
         const [trans] = await db.query(
           "SELECT wallet_id, amount FROM transactions WHERE order_id = ?",
-          [orderId]
+          [orderId],
         );
-
 
         if (trans.length > 0) {
           const { wallet_id, amount } = trans[0];
 
-
           await db.query(
             "UPDATE wallets SET balance = balance + ? WHERE id = ?",
-            [amount, wallet_id]
+            [amount, wallet_id],
           );
         }
       }
     }
-
 
     if (process.env.NODE_ENV !== "production") {
       let redirectUrl = "";
@@ -217,7 +201,6 @@ export const momoIPN = async (req, res) => {
       } else {
         redirectUrl = `http://localhost:5173/customer/payment-success?orderId=${orderId}&resultCode=${resultCode}`;
       }
-
 
       setTimeout(() => {
         res.redirect(redirectUrl);
@@ -231,18 +214,19 @@ export const momoIPN = async (req, res) => {
   }
 };
 
-
+// Cập nhật trạng thái giao dịch thanh toán (admin)
 export const updatePaymentStatus = async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
     await db.query("UPDATE payments SET status = ? WHERE id = ?", [status, id]);
-    res.json({ message: "✅ Cập nhật trạng thái thành công" });
+    res.json({ message: " Cập nhật trạng thái thành công" });
   } catch (err) {
     res.status(500).json({ message: "Lỗi server khi cập nhật" });
   }
 };
 
+// Xóa bản ghi thanh toán theo ID (admin)
 export const deletePayment = async (req, res) => {
   try {
     const { id } = req.params;
@@ -253,24 +237,19 @@ export const deletePayment = async (req, res) => {
   }
 };
 
-
+// Thanh toán đơn hàng bằng số dư ví, kiểm tra đủ tiền và trừ số dư (dùng transaction)
 export const payShipmentByWallet = async (req, res) => {
   const { shipment_id, user_id, amount } = req.body;
   let connection;
 
   try {
-
     connection = await db.getConnection();
-
 
     await connection.beginTransaction();
 
-
-
-
     const [wallets] = await connection.query(
       "SELECT * FROM wallets WHERE user_id = ? FOR UPDATE",
-      [user_id]
+      [user_id],
     );
 
     if (wallets.length === 0) {
@@ -280,48 +259,40 @@ export const payShipmentByWallet = async (req, res) => {
 
     const wallet = wallets[0];
 
-
     if (Number(wallet.balance) < Number(amount)) {
       await connection.rollback();
       return res.status(400).json({ error: "Số dư ví không đủ để thanh toán" });
     }
 
-
     await connection.query(
       "UPDATE wallets SET balance = balance - ?, updated_at = NOW() WHERE id = ?",
-      [amount, wallet.id]
+      [amount, wallet.id],
     );
-
 
     const transactionId = `TRANS${Date.now()}`;
     await connection.query(
       "INSERT INTO transactions (wallet_id, order_id, amount, type, description, status, created_at) VALUES (?, ?, ?, 'payment', ?, 'success', NOW())",
-      [wallet.id, transactionId, amount, `Thanh toán đơn hàng #${shipment_id}`]
+      [wallet.id, transactionId, amount, `Thanh toán đơn hàng #${shipment_id}`],
     );
-
 
     await connection.query(
       "UPDATE shipments SET payment_method = 'WALLET', status = 'pending' WHERE id = ?",
-      [shipment_id]
+      [shipment_id],
     );
-
 
     await connection.query(
       "INSERT INTO payments (shipment_id, customer_id, amount, method, status, order_id) VALUES (?, ?, ?, 'WALLET', 'completed', ?)",
-      [shipment_id, user_id, amount, transactionId]
+      [shipment_id, user_id, amount, transactionId],
     );
-
 
     await connection.commit();
 
     res.json({ message: "Thanh toán thành công", transactionId });
   } catch (err) {
-
     if (connection) await connection.rollback();
 
     res.status(500).json({ error: "Lỗi xử lý thanh toán ví" });
   } finally {
-
     if (connection) connection.release();
   }
 };
