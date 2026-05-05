@@ -1,4 +1,4 @@
-
+﻿
 import { useEffect, useState } from "react";
 import { NavLink, Outlet, useNavigate, useParams } from "react-router-dom";
 import {
@@ -83,7 +83,7 @@ export default function DriverLayout() {
 
   return (
     <div className="flex min-h-screen bg-slate-50 relative">
-      {}
+      {/* Render điều kiện */}
       {isMobileMenuOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
@@ -91,7 +91,7 @@ export default function DriverLayout() {
         />
       )}
 
-      {}
+      {/* Phần giao diện */}
       <aside
         className={`fixed lg:static inset-y-0 left-0 z-50 w-72 bg-gradient-to-b from-blue-800 to-blue-900 text-white flex flex-col transition-transform duration-300 ease-in-out shadow-2xl ${
           isMobileMenuOpen
@@ -99,9 +99,9 @@ export default function DriverLayout() {
             : "-translate-x-full lg:translate-x-0"
         }`}
       >
-        {}
+        {/* Phần giao diện */}
         <div className="p-6 text-center border-b border-blue-700/50 relative">
-          {}
+          {/* Nút hành động */}
           <button
             onClick={() => setIsMobileMenuOpen(false)}
             className="absolute top-4 right-4 text-blue-300 hover:text-white lg:hidden"
@@ -119,7 +119,7 @@ export default function DriverLayout() {
           </div>
         </div>
 
-        {}
+        {/* Phần giao diện */}
         <div className="flex-1 p-4 overflow-y-auto space-y-1">
           <p className="px-4 text-xs font-bold text-blue-400 uppercase tracking-wider mb-2 mt-2">
             Menu chính
@@ -147,7 +147,7 @@ export default function DriverLayout() {
           />
         </div>
 
-        {}
+        {/* Phần giao diện */}
         <div className="p-4 border-t border-blue-700/50 space-y-3 bg-blue-900/50">
           <button
             onClick={() => navigate("/")}
@@ -165,9 +165,9 @@ export default function DriverLayout() {
         </div>
       </aside>
 
-      {}
+      {/* Phần giao diện */}
       <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
-        {}
+        {/* Phần giao diện */}
         <header className="bg-white shadow-sm p-4 flex items-center justify-between sticky top-0 z-30">
           <div className="flex items-center gap-3">
             <button
@@ -188,7 +188,7 @@ export default function DriverLayout() {
           </div>
         </header>
 
-        {}
+        {/* Phần giao diện */}
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-slate-50 p-4 sm:p-6 lg:p-8">
           <Outlet />
         </main>

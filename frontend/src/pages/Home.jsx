@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+﻿import { useNavigate } from "react-router-dom";
 
 import HeroBanner from "../components/homepage/HeroBanner";
 
@@ -35,14 +35,16 @@ export default function Home() {
 
   return (
     <>
-      {}
-      {}
+      {/* Phần giao diện */}
+
       <HeroBanner />
 
       <AboutSection />
 
       <PartnerCarousel
+
         className="py-10 bg-white"
+
         logoSize="w-32 h-16 md:w-40 md:h-20"
       />
 
@@ -54,29 +56,28 @@ export default function Home() {
 
       <CommitmentSection />
 
-      {}
-      {}
-      {}
-      {}
+      {/* Phần giao diện */}
 
-      {}
+      {/* Phần giao diện */}
+
+      {/* Phần giao diện */}
       <RealtimeSection onChatAI={openAIChat} />
 
       <Testimonials />
 
-      {}
+      {/* Phần giao diện */}
 
       <FinalCTA onChat={openSupportChat} />
 
       <NewsSection />
 
-      {}
+      {/* Phần giao diện */}
 
       {aiOpen && <ChatPopupTop onClose={closeAIChat} bubbleOpen={false} />}
 
       {supportOpen && <ChatBubble onClose={closeSupportChat} />}
 
-      {}
+      {/* Phần giao diện */}
       <FloatingActions
         onOpenChatBubble={openSupportChat}
         onOpenChatTop={openAIChat}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef } from "react";
 import io from "socket.io-client";
 import { motion, AnimatePresence } from "framer-motion";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -194,7 +194,7 @@ export default function ChatBubble({ onClose }) {
         height: collapsed ? "auto" : isMobile ? "100dvh" : "600px",
       }}
     >
-      {}
+      {/* Phần giao diện */}
       <AnimatePresence>
         {showToast && (
           <motion.div
@@ -209,7 +209,7 @@ export default function ChatBubble({ onClose }) {
         )}
       </AnimatePresence>
 
-      {}
+      {/* Phần giao diện */}
       <motion.div
         layout="position"
         className={`bg-gradient-to-r from-orange-600 to-blue-500 text-white px-4 py-3 flex justify-between items-center cursor-pointer select-none shrink-0 z-10 ${
@@ -266,7 +266,7 @@ export default function ChatBubble({ onClose }) {
         </div>
       </motion.div>
 
-      {}
+      {/* Phần giao diện */}
       <AnimatePresence>
         {!collapsed && (
           <motion.div
@@ -326,7 +326,7 @@ export default function ChatBubble({ onClose }) {
               <div ref={messagesEndRef} />
             </div>
 
-            {}
+            {/* Phần giao diện */}
             <div className="p-2 md:p-3 bg-white border-t border-gray-100 relative z-20 shrink-0 pb-safe">
               <div
                 className={`relative flex items-center bg-gray-100 rounded-full px-3 md:px-4 py-1.5 md:py-2 border border-transparent transition-all duration-300 ${

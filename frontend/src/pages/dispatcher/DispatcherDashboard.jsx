@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../../services/api";
 import {
@@ -140,7 +140,7 @@ export default function DispatcherDashboard() {
         </div>
       </div>
 
-      {}
+      {/* Phần giao diện */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatCard
           title="Tổng đơn hàng"
@@ -172,9 +172,9 @@ export default function DispatcherDashboard() {
         />
       </div>
 
-      {}
+      {/* Phần giao diện */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        {}
+        {/* Phần giao diện */}
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 lg:col-span-1">
           <h3 className="font-bold text-gray-700 mb-4 flex items-center gap-2">
             <CheckCircle size={18} className="text-blue-500" /> Tỷ lệ giao hàng
@@ -202,7 +202,7 @@ export default function DispatcherDashboard() {
                 <Legend verticalAlign="bottom" height={36} />
               </PieChart>
             </ResponsiveContainer>
-            {}
+            {/* Phần giao diện */}
             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center -mt-4">
               <span className="text-2xl font-bold text-gray-700">
                 {totalShipments}
@@ -212,7 +212,7 @@ export default function DispatcherDashboard() {
           </div>
         </div>
 
-        {}
+        {/* Phần giao diện */}
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 lg:col-span-2">
           <h3 className="font-bold text-gray-700 mb-4 flex items-center gap-2">
             <DollarSign size={18} className="text-green-500" /> Doanh thu theo
@@ -263,9 +263,9 @@ export default function DispatcherDashboard() {
         </div>
       </div>
 
-      {}
+      {/* Phần giao diện */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {}
+        {/* Phần giao diện */}
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
           <div className="flex justify-between items-center mb-6">
             <h3 className="font-bold text-gray-700">🏆 Top Tài Xế Xuất Sắc</h3>
@@ -318,7 +318,7 @@ export default function DispatcherDashboard() {
           </div>
         </div>
 
-        {}
+        {/* Phần giao diện */}
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
           <div className="flex justify-between items-center mb-6">
             <h3 className="font-bold text-red-600 flex items-center gap-2">
@@ -381,7 +381,7 @@ export default function DispatcherDashboard() {
 function StatCard({ title, value, icon, color, sub }) {
   return (
     <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow relative overflow-hidden group">
-      {}
+      {/* Phần giao diện */}
       <div className={`absolute left-0 top-0 bottom-0 w-1 ${color}`}></div>
 
       <div className="flex justify-between items-start">

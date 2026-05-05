@@ -1,11 +1,12 @@
-import { useEffect, useState, useRef } from "react";
+﻿import { useEffect, useState, useRef } from "react";
 import { Bell, Package } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import API from "../services/api";
 import { io } from "socket.io-client";
 
 
-const socket = io("http://localhost:5000", { transports: ["websocket"] });
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:5000";
+const socket = io(SOCKET_URL, { transports: ["websocket"] });
 
 // Thông báo cho tài xế
 export default function DriverNotifications({ driverId }) {
@@ -37,28 +38,26 @@ export default function DriverNotifications({ driverId }) {
 
 
   useEffect(() => {
-    if (show && driverId) fetchNotifications();
-  }, [show, driverId]);
+    if (driverId) fetchNotifications();
+  }, [driverId]);
 
 
   useEffect(() => {
     if (!driverId) return;
     socket.emit("registerDriver", driverId);
 
-    socket.on("newNotification", (notif) => {
+    const handleRealtimeNotification = () => {
       setHasNew(true);
-      setNotifications((prev) => [
-        {
-          id: Date.now(),
-          message: notif.message,
-          is_read: 0,
-          created_at: new Date(),
-        },
-        ...prev,
-      ]);
-    });
+      fetchNotifications();
+    };
 
-    return () => socket.off("newNotification");
+    socket.on("newAssignment", handleRealtimeNotification);
+    socket.on("newNotification", handleRealtimeNotification);
+
+    return () => {
+      socket.off("newAssignment", handleRealtimeNotification);
+      socket.off("newNotification", handleRealtimeNotification);
+    };
   }, [driverId]);
 
 
@@ -77,7 +76,7 @@ export default function DriverNotifications({ driverId }) {
 
   return (
     <div className="relative select-none" ref={dropdownRef}>
-      {}
+      {/* Phần giao diện */}
       <motion.button
         whileTap={{ scale: 0.9 }}
         animate={hasNew ? { rotate: [0, -15, 15, -15, 15, 0] } : {}}
@@ -102,7 +101,7 @@ export default function DriverNotifications({ driverId }) {
         )}
       </motion.button>
 
-      {}
+      {/* Phần giao diện */}
       <AnimatePresence>
         {show && (
           <motion.div

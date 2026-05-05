@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+﻿import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   FaTruckMoving,
@@ -17,6 +17,7 @@ export default function Service() {
     AOS.init({ duration: 800, once: true });
     window.scrollTo(0, 0);
   }, []);
+
 
   const services = [
     {
@@ -63,9 +64,9 @@ export default function Service() {
 
   return (
     <div className="font-sans bg-slate-50 text-slate-700">
-      {}
+      {/* Khối nội dung */}
       <section className="relative py-24 bg-[#113e48] text-white overflow-hidden">
-        {}
+        {/* Phần giao diện */}
         <div
           className="absolute inset-0 opacity-10"
           style={{
@@ -101,7 +102,7 @@ export default function Service() {
         </div>
       </section>
 
-      {}
+      {/* Khối nội dung */}
       <section className="py-20 px-6 max-w-7xl mx-auto -mt-20 relative z-20">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {services.map((item, index) => (
@@ -111,7 +112,7 @@ export default function Service() {
               data-aos="fade-up"
               data-aos-delay={index * 100}
             >
-              {}
+              {/* Phần giao diện */}
               <div className="flex items-center justify-between mb-6">
                 <div
                   className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl transition-colors duration-300
@@ -149,7 +150,7 @@ export default function Service() {
                 </span>
               </div>
 
-              {}
+              {/* Tiêu đề nội dung */}
               <h3 className="text-xl font-bold text-[#113e48] mb-3 group-hover:text-orange-600 transition-colors">
                 {item.title}
               </h3>
@@ -157,7 +158,7 @@ export default function Service() {
                 {item.desc}
               </p>
 
-              {}
+              {/* Phần giao diện */}
               <Link
                 to={item.link}
                 className="inline-flex items-center gap-2 font-bold text-sm text-[#113e48] hover:text-orange-600 hover:gap-3 transition-all mt-auto"
@@ -167,7 +168,7 @@ export default function Service() {
             </div>
           ))}
 
-          {}
+          {/* Phần giao diện */}
           <div
             className="bg-gradient-to-br from-orange-500 to-red-500 rounded-3xl p-8 shadow-xl text-white flex flex-col justify-center items-center text-center group h-full"
             data-aos="fade-up"
@@ -188,7 +189,7 @@ export default function Service() {
         </div>
       </section>
 
-      {}
+      {/* Khối nội dung */}
       <section className="py-20 bg-white border-t border-gray-100">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <h2 className="text-3xl font-extrabold text-[#113e48] mb-6">

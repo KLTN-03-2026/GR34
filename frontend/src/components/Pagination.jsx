@@ -1,11 +1,7 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-/**
- * Component Phân trang tái sử dụng
- * @param {number} currentPage
- * @param {number} totalPages
- * @param {function} onPageChange
- */
+
+// Component phân trang
 export default function Pagination({ currentPage, totalPages, onPageChange }) {
   if (totalPages <= 1) return null;
 

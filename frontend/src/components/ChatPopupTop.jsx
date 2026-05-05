@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef } from "react";
 import {
   FaTimes,
   FaMinus,
@@ -85,7 +85,7 @@ export default function ChatPopupTop({ onClose }) {
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
       className="bg-white rounded-t-xl shadow-2xl flex flex-col overflow-hidden border border-gray-200 font-sans"
     >
-      {}
+      {/* Phần giao diện */}
       <div
         className="bg-gradient-to-r from-[#113e48] to-blue-500 text-white px-4 py-3 flex justify-between items-center cursor-pointer select-none"
         onClick={() => setCollapsed(!collapsed)}
@@ -121,7 +121,7 @@ export default function ChatPopupTop({ onClose }) {
         </div>
       </div>
 
-      {}
+      {/* Render điều kiện */}
       {!collapsed && (
         <>
           <div className="flex-1 p-4 overflow-y-auto bg-slate-50 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
@@ -248,7 +248,7 @@ export default function ChatPopupTop({ onClose }) {
             <div ref={messagesEndRef} />
           </div>
 
-          {}
+          {/* Phần giao diện */}
           <div className="p-3 bg-white border-t border-gray-100">
             <div className="relative flex items-center bg-gray-100 rounded-full px-4 py-2 border border-transparent focus-within:bg-white focus-within:ring-1 focus-within:ring-orange-500 transition-all">
               <input

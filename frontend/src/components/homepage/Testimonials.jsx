@@ -1,5 +1,6 @@
-import React from "react";
+﻿import React from "react";
 import { FaStar, FaQuoteLeft, FaBoxOpen } from "react-icons/fa";
+
 
 const testimonialsData = [
   {
@@ -34,13 +35,15 @@ const testimonialsData = [
   },
 ];
 
+
 const RatingStars = ({ rating }) => (
   <div className="flex gap-1 text-yellow-400 mb-3 text-sm">
     {" "}
-    {}
+    {/* Danh sách render động */}
     {[...Array(5)].map((_, i) => (
       <FaStar
         key={i}
+
         className={i < rating ? "opacity-100" : "text-gray-300"}
       />
     ))}
@@ -51,26 +54,26 @@ export default function TestimonialsSection() {
   return (
     <section className="py-20 bg-white font-sans">
       <div className="max-w-7xl mx-auto px-6">
-        {}
+        {/* Phần giao diện */}
         <div className="mb-12" data-aos="fade-up">
-          {}
+          {/* Phần giao diện */}
           <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-600 px-4 py-2 rounded-full font-bold text-sm uppercase tracking-wide mb-4 shadow-sm border border-orange-200">
             <FaBoxOpen /> <span>Phản hồi</span>
           </div>
 
-          {}
+          {/* Tiêu đề nội dung */}
           <h2 className="text-3xl md:text-5xl font-extrabold text-[#113e48] mb-4 uppercase tracking-tight">
             ĐÁNH GIÁ TỪ KHÁCH HÀNG
           </h2>
 
-          {}
+          {/* Phần giao diện */}
           <p className="text-gray-500 max-w-2xl text-lg">
             Những chia sẻ chân thực từ khách hàng đã sử dụng dịch vụ SpeedyShip
             là minh chứng rõ nhất cho chất lượng và cam kết của chúng tôi.
           </p>
         </div>
 
-        {}
+        {/* Phần giao diện */}
         <div className="grid md:grid-cols-3 gap-8">
           {testimonialsData.map((item, i) => (
             <div
@@ -79,9 +82,9 @@ export default function TestimonialsSection() {
               data-aos="fade-up"
               data-aos-delay={i * 100}
             >
-              {}
+              {/* Phần giao diện */}
               <div className="flex items-start gap-4 mb-4">
-                {}
+                {/* Phần giao diện */}
                 <FaQuoteLeft className="text-4xl text-gray-200 shrink-0 group-hover:text-orange-200 transition-colors" />
 
                 <div>
@@ -92,12 +95,12 @@ export default function TestimonialsSection() {
                 </div>
               </div>
 
-              {}
+              {/* Phần giao diện */}
               <p className="text-gray-600 text-sm leading-relaxed mb-8 min-h-[80px]">
                 "{item.content}"
               </p>
 
-              {}
+              {/* Phần giao diện */}
               <div className="flex items-center gap-3 pt-6 border-t border-gray-200">
                 <img
                   src={item.avatar}

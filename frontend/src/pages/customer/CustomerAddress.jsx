@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import API from "../../services/api";
 import toast from "react-hot-toast";
 import {
@@ -22,10 +22,12 @@ export default function CustomerAddress() {
   const [addresses, setAddresses] = useState([]);
   const [loading, setLoading] = useState(true);
 
+
   const [showModal, setShowModal] = useState(false);
   const [showMap, setShowMap] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+
 
   const [formData, setFormData] = useState({
     name: "",
@@ -41,7 +43,8 @@ export default function CustomerAddress() {
   const customerId =
     localStorage.getItem("customer_id") || localStorage.getItem("userId");
 
-  // Tải danh sách địa chỉ
+
+// Tải danh sách địa chỉ
   const fetchAddresses = async () => {
     try {
       const res = await API.get(`/addresses/${customerId}`);
@@ -56,6 +59,7 @@ export default function CustomerAddress() {
   useEffect(() => {
     if (customerId) fetchAddresses();
   }, [customerId]);
+
 
   const openModal = (address = null) => {
     if (address) {
@@ -79,7 +83,7 @@ export default function CustomerAddress() {
     setShowModal(true);
   };
 
-  // Xử lý xóa dữ liệu
+// Xử lý xóa dữ liệu
   const handleDelete = async (id) => {
     if (!window.confirm("Bạn có chắc chắn muốn xóa địa chỉ này?")) return;
     try {
@@ -91,7 +95,7 @@ export default function CustomerAddress() {
     }
   };
 
-  // Xử lý submit form
+// Xử lý submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -142,7 +146,7 @@ export default function CustomerAddress() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500 pb-10">
-      {}
+      {/* Phần giao diện */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
         <div>
           <h1 className="text-xl font-bold text-[#113e48] flex items-center gap-2">
@@ -160,7 +164,7 @@ export default function CustomerAddress() {
         </button>
       </div>
 
-      {}
+      {/* Phần giao diện */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {addresses.map((addr) => (
           <div
@@ -216,7 +220,7 @@ export default function CustomerAddress() {
         </div>
       </div>
 
-      {}
+      {/* Render điều kiện */}
       {showModal && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
           <div className="bg-white w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
@@ -270,14 +274,14 @@ export default function CustomerAddress() {
                 </div>
               </div>
 
-              {}
+              {/* Phần giao diện */}
               <div className="bg-blue-50/50 p-5 rounded-2xl border border-blue-100 space-y-4">
                 <div className="flex justify-between items-center">
                   <label className="text-sm font-bold text-[#113e48] flex items-center gap-2">
                     <MapPin size={18} className="text-blue-500" /> Vị trí địa
                     chỉ
                   </label>
-                  {}
+                  {/* Nút hành động */}
                   <button
                     type="button"
                     onClick={() => setShowMap(true)}
@@ -309,7 +313,7 @@ export default function CustomerAddress() {
                   />
                 </div>
 
-                {}
+                {/* Render điều kiện */}
                 {geo.lat && (
                   <div className="flex items-center gap-1 text-[11px] text-green-600 font-bold px-1">
                     <Check size={14} /> Đã xác định tọa độ ({geo.lat.toFixed(4)}
@@ -382,7 +386,7 @@ export default function CustomerAddress() {
         </div>
       )}
 
-      {}
+      {/* Phần giao diện */}
       <LocationMapModal
         isOpen={showMap}
         onClose={() => setShowMap(false)}

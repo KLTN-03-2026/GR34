@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { useChat } from "../../hooks/useChat.js";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -57,10 +57,10 @@ export default function TrackingMiniPanel({
         relative overflow-hidden
       "
     >
-      {}
+      {/* Phần giao diện */}
       <div className="absolute top-0 right-0 w-40 h-40 bg-orange-500/20 rounded-full blur-[50px] pointer-events-none -translate-y-1/2 translate-x-1/2"></div>
 
-      {}
+      {/* Phần giao diện */}
       <div className="relative z-10 text-center space-y-1 mb-2">
         <h2 className="text-xl font-bold text-white flex items-center justify-center gap-2">
           <FontAwesomeIcon
@@ -70,7 +70,7 @@ export default function TrackingMiniPanel({
           Tra cứu đơn hàng
         </h2>
 
-        {}
+        {/* Phần giao diện */}
         <div className="h-6 flex items-center justify-center overflow-hidden">
           <AnimatePresence mode="wait">
             <motion.p
@@ -96,7 +96,7 @@ export default function TrackingMiniPanel({
                       focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all shadow-inner text-sm"
         />
 
-        {}
+        {/* Nút hành động */}
         <button
           onClick={handleTrack}
           disabled={loading}
@@ -126,7 +126,7 @@ export default function TrackingMiniPanel({
         </button>
       </div>
 
-      {}
+      {/* Phần giao diện */}
       <AnimatePresence>
         {error && (
           <motion.div
@@ -142,7 +142,7 @@ export default function TrackingMiniPanel({
         )}
       </AnimatePresence>
 
-      {}
+      {/* Phần giao diện */}
       <AnimatePresence>
         {shipment && (
           <motion.div
@@ -202,7 +202,7 @@ export default function TrackingMiniPanel({
         )}
       </AnimatePresence>
 
-      {}
+      {/* Phần giao diện */}
       <div className="flex justify-between items-center border-t border-white/10 pt-4 text-[11px] text-gray-400 relative z-10">
         <span>Gặp khó khăn?</span>
         <button

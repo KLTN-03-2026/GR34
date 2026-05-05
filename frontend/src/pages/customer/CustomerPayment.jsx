@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import API from "../../services/api";
 import toast from "react-hot-toast";
@@ -18,16 +18,19 @@ export default function CustomerPayment() {
   const location = useLocation();
   const navigate = useNavigate();
 
+
   const { shipment_id, amount, cod } = location.state || {};
 
   const [paymentMethod, setPaymentMethod] = useState("Wallet");
   const [loading, setLoading] = useState(false);
+
 
   const [walletBalance, setWalletBalance] = useState(0);
   const [loadingWallet, setLoadingWallet] = useState(true);
   const [showMomoPopup, setShowMomoPopup] = useState(false);
   const [momoUrl, setMomoUrl] = useState("");
   const checkIntervalRef = useRef(null);
+
 
   const getUserId = () => {
     const userStr = localStorage.getItem("user");
@@ -42,12 +45,14 @@ export default function CustomerPayment() {
   };
   const currentUserId = getUserId();
 
+
   useEffect(() => {
     if (!shipment_id || !amount) {
       toast.error("Không tìm thấy thông tin đơn hàng!");
       navigate("/customer/create-order");
       return;
     }
+
 
     if (currentUserId) {
       API.get(`/wallet/${currentUserId}`)
@@ -63,18 +68,21 @@ export default function CustomerPayment() {
     };
   }, []);
 
-  // Xử lý thanh toán
+
+// Xử lý thanh toán
   const handlePayment = async () => {
     if (!currentUserId) return toast.error("Vui lòng đăng nhập lại.");
     setLoading(true);
 
     try {
+
       if (paymentMethod === "Wallet") {
         if (walletBalance < Number(amount)) {
           toast.error("Số dư ví không đủ. Vui lòng nạp thêm!");
           setLoading(false);
           return;
         }
+
 
         await API.post("/payments/wallet-pay", {
           shipment_id: shipment_id,
@@ -84,9 +92,12 @@ export default function CustomerPayment() {
 
         toast.success("Thanh toán ví thành công!");
         navigate(
-          `/customer/payment-success?orderId=SHIP${shipment_id}&resultCode=0&type=shipment`,
+          `/customer/payment-success?orderId=SHIP${shipment_id}&resultCode=0&type=shipment`
         );
-      } else if (paymentMethod === "Momo") {
+      }
+
+
+      else if (paymentMethod === "Momo") {
         const res = await API.post("/payments/momo", {
           shipment_id: shipment_id,
           customer_id: Number(currentUserId),
@@ -101,7 +112,10 @@ export default function CustomerPayment() {
           toast.error("Lỗi lấy link thanh toán MoMo");
           setLoading(false);
         }
-      } else {
+      }
+
+
+      else {
         await API.post("/payments", {
           shipment_id: shipment_id,
           customer_id: Number(currentUserId),
@@ -109,7 +123,7 @@ export default function CustomerPayment() {
           method: "COD",
         });
         navigate(
-          `/customer/payment-success?orderId=SHIP${shipment_id}&resultCode=0&type=shipment`,
+          `/customer/payment-success?orderId=SHIP${shipment_id}&resultCode=0&type=shipment`
         );
       }
     } catch (err) {
@@ -117,6 +131,7 @@ export default function CustomerPayment() {
       setLoading(false);
     }
   };
+
 
   const startCheckingPayment = () => {
     if (checkIntervalRef.current) clearInterval(checkIntervalRef.current);
@@ -127,7 +142,7 @@ export default function CustomerPayment() {
         const payment = res.data.find(
           (p) =>
             Number(p.shipment_id) === Number(shipment_id) &&
-            (p.status === "completed" || p.status === "success"),
+            (p.status === "completed" || p.status === "success")
         );
 
         if (payment) {
@@ -137,10 +152,11 @@ export default function CustomerPayment() {
           navigate(
             `/customer/payment-success?orderId=${
               payment.order_id || "UNKNOWN"
-            }&resultCode=0&type=shipment`,
+            }&resultCode=0&type=shipment`
           );
         }
-      } catch (err) {}
+      } catch (err) {
+      }
     }, 3000);
   };
 
@@ -155,7 +171,7 @@ export default function CustomerPayment() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] py-10 px-4 flex items-center justify-center animate-in fade-in duration-500 relative">
       <div className="max-w-4xl w-full grid grid-cols-1 md:grid-cols-3 gap-8">
-        {}
+        {/* Phần giao diện */}
         <div className="md:col-span-2 space-y-6">
           <button
             onClick={() => navigate(-1)}
@@ -170,7 +186,7 @@ export default function CustomerPayment() {
             </h2>
 
             <div className="space-y-4">
-              {}
+              {/* Phần giao diện */}
               <div
                 onClick={() => setPaymentMethod("Wallet")}
                 className={`p-4 rounded-xl border-2 cursor-pointer transition-all flex items-center justify-between group ${
@@ -212,7 +228,7 @@ export default function CustomerPayment() {
                 </div>
               </div>
 
-              {}
+              {/* Phần giao diện */}
               <div
                 onClick={() => setPaymentMethod("Momo")}
                 className={`p-4 rounded-xl border-2 cursor-pointer transition-all flex items-center justify-between group ${
@@ -245,7 +261,7 @@ export default function CustomerPayment() {
                 </div>
               </div>
 
-              {}
+              {/* Phần giao diện */}
               <div
                 onClick={() => setPaymentMethod("COD")}
                 className={`p-4 rounded-xl border-2 cursor-pointer transition-all flex items-center justify-between group ${
@@ -281,7 +297,7 @@ export default function CustomerPayment() {
           </div>
         </div>
 
-        {}
+        {/* Phần giao diện */}
         <div className="md:col-span-1">
           <div className="bg-white p-6 rounded-2xl shadow-lg border border-blue-100 sticky top-10">
             <h3 className="text-lg font-bold text-[#113e48] mb-4 flex items-center gap-2">
@@ -309,7 +325,7 @@ export default function CustomerPayment() {
               </div>
             </div>
 
-            {}
+            {/* Render điều kiện */}
             {paymentMethod === "Wallet" && walletBalance < Number(amount) && (
               <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-lg text-xs text-red-600 font-medium text-center">
                 Số dư ví không đủ. Vui lòng nạp thêm.
@@ -326,8 +342,8 @@ export default function CustomerPayment() {
                 paymentMethod === "Momo"
                   ? "bg-pink-600 hover:bg-pink-700"
                   : paymentMethod === "Wallet"
-                    ? "bg-orange-600 hover:bg-orange-700"
-                    : "bg-green-600 hover:bg-green-700"
+                  ? "bg-orange-600 hover:bg-orange-700"
+                  : "bg-green-600 hover:bg-green-700"
               }`}
             >
               {loading ? (
@@ -348,7 +364,7 @@ export default function CustomerPayment() {
         </div>
       </div>
 
-      {}
+      {/* Render điều kiện */}
       {showMomoPopup && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-[9999]">
           <div className="bg-white rounded-2xl shadow-2xl p-2 w-full max-w-5xl h-[85vh] relative flex flex-col items-center">

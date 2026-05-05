@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
+﻿import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import io from "socket.io-client";
 import {
@@ -81,7 +81,7 @@ export default function DispatcherLayout() {
 
   return (
     <div className="flex h-screen bg-[#F8FAFC] overflow-hidden font-sans">
-      {}
+      {/* Render điều kiện */}
       {isSidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-30 lg:hidden"
@@ -89,7 +89,7 @@ export default function DispatcherLayout() {
         />
       )}
 
-      {}
+      {/* Phần giao diện */}
       <aside
         className={`
         fixed lg:static inset-y-0 left-0 z-40 w-72 bg-[#113e48] text-white flex flex-col shadow-2xl transition-transform duration-300
@@ -98,17 +98,17 @@ export default function DispatcherLayout() {
         }
       `}
       >
-        {}
+        {/* Phần giao diện */}
         <div className="h-20 flex items-center px-8 border-b border-white/10 bg-[#0d2f36]">
           <div
             className="flex items-center gap-2 cursor-pointer"
             onClick={() => navigate("/")}
           >
-            <div className="bg-orange-500 p-1.5 rounded-lg shadow-lg shadow-orange-500/20">
+            <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center shadow-[0_0_0_3px_rgba(255,255,255,0.15)] shrink-0 overflow-hidden">
               <img
                 src="/assets/logo/logoSpeedyShip.png"
                 alt="Logo"
-                className="w-6 h-6 object-contain brightness-0 invert"
+                className="w-full h-full object-contain scale-125"
               />
             </div>
             <span className="text-xl font-extrabold tracking-tight">
@@ -117,7 +117,7 @@ export default function DispatcherLayout() {
           </div>
         </div>
 
-        {}
+        {/* Phần giao diện */}
         <div className="flex-1 overflow-y-auto py-8 px-4 space-y-1 custom-scrollbar">
           <p className="px-4 mb-4 text-xs font-bold text-blue-200/60 uppercase tracking-widest">
             Điều hành
@@ -140,7 +140,7 @@ export default function DispatcherLayout() {
               <Phone size={20} /> <span>Liên hệ khách hàng</span>
             </NavLink>
 
-            {}
+            {/* Thanh điều hướng */}
             <NavLink to="/dispatcher/failed-orders" className={({ isActive }) => `
               relative flex items-center gap-3 px-4 py-3.5 text-sm font-medium rounded-xl transition-all duration-300 group
               ${
@@ -175,7 +175,7 @@ export default function DispatcherLayout() {
           </nav>
         </div>
 
-        {}
+        {/* Phần giao diện */}
         <div className="p-4 bg-[#0d2f36] border-t border-white/5">
           <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
             <div className="flex items-center gap-3 overflow-hidden">
@@ -201,9 +201,9 @@ export default function DispatcherLayout() {
         </div>
       </aside>
 
-      {}
+      {/* Phần giao diện */}
       <div className="flex-1 flex flex-col min-w-0">
-        {}
+        {/* Phần giao diện */}
         <header className="h-20 bg-white shadow-sm border-b border-gray-100 flex items-center justify-between px-6 lg:px-10 z-40 relative">
           <div className="flex items-center gap-4">
             <button
@@ -223,7 +223,7 @@ export default function DispatcherLayout() {
           </div>
 
           <div className="flex items-center gap-3 sm:gap-6">
-            {}
+            {/* Phần giao diện */}
             <div className="relative">
               <DispatcherNotifications dispatcherId={dispatcherId} />
             </div>
@@ -240,7 +240,7 @@ export default function DispatcherLayout() {
           </div>
         </header>
 
-        {}
+        {/* Phần giao diện */}
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-[#F8FAFC] p-6 lg:p-10 scroll-smooth">
           <div className="max-w-7xl mx-auto min-h-full">
             <Outlet />

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useChat } from "../hooks/useChat";
 
@@ -75,8 +75,8 @@ export default function ChatLayout() {
         </AnimatePresence>
       </div>
 
-      {}
-      {}
+      {/* Phần giao diện */}
+
       <FloatingActions
         onOpenChatTop={() => handleOpenChat("bot")}
         onOpenChatBubble={() => handleOpenChat("support")}

@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { motion } from "framer-motion";
 
 
@@ -50,9 +50,9 @@ export default function PartnerCarousel({
         Đối tác tin cậy
       </p>
 
-      {}
+      {/* Phần giao diện */}
       <div className="relative w-full overflow-hidden">
-        {}
+        {/* Phần giao diện */}
         <div className="absolute top-0 left-0 w-8 h-full bg-gradient-to-r from-white to-transparent z-10 pointer-events-none"></div>
         <div className="absolute top-0 right-0 w-8 h-full bg-gradient-to-l from-white to-transparent z-10 pointer-events-none"></div>
 
@@ -66,7 +66,7 @@ export default function PartnerCarousel({
               repeat: Infinity,
             }}
           >
-            {}
+            {/* Danh sách render động */}
             {[...partners, ...partners, ...partners].map((logo, index) => (
               <div
                 key={index}

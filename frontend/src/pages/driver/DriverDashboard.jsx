@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+﻿import { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { io } from "socket.io-client";
 import toast, { Toaster } from "react-hot-toast";
@@ -227,7 +227,7 @@ export default function DriverDashboard() {
         </div>
       </div>
 
-      {}
+      {/* Phần giao diện */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -271,7 +271,7 @@ export default function DriverDashboard() {
         />
       </div>
 
-      {}
+      {/* Phần giao diện */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="p-4 border-b border-gray-100 flex justify-between items-center">
           <h3 className="font-bold text-gray-800 flex items-center gap-2">
@@ -279,7 +279,7 @@ export default function DriverDashboard() {
           </h3>
         </div>
 
-        {}
+        {/* Phần giao diện */}
         <div className="h-[300px] w-full relative bg-gray-100">
           {driverLocation ? (
             <Map
@@ -311,7 +311,7 @@ export default function DriverDashboard() {
         </div>
       </div>
 
-      {}
+      {/* Phần giao diện */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 lg:p-6">
         <h2 className="text-lg font-bold text-gray-800 mb-4">
           Đơn hàng gần đây

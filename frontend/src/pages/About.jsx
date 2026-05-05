@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+﻿import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   FaShippingFast,
@@ -15,11 +15,13 @@ import "aos/dist/aos.css";
 
 // Giới thiệu về SpeedyShip
 export default function About() {
+
+
   return (
     <div className="bg-white font-sans overflow-hidden">
-      {}
+      {/* Khối nội dung */}
       <section className="relative py-32 bg-[#113e48] text-white overflow-hidden">
-        {}
+        {/* Phần giao diện */}
         <div className="absolute inset-0 opacity-10 pointer-events-none">
           <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
             <pattern
@@ -39,7 +41,7 @@ export default function About() {
           </svg>
         </div>
 
-        {}
+        {/* Phần giao diện */}
         <div className="relative z-10 max-w-7xl mx-auto px-6 text-center">
           <span
             className="inline-block py-1.5 px-4 rounded-full bg-white/10 border border-white/20 text-orange-400 text-sm font-bold mb-6 tracking-widest uppercase backdrop-blur-sm"
@@ -68,7 +70,7 @@ export default function About() {
         </div>
       </section>
 
-      {}
+      {/* Khối nội dung */}
       <section className="py-12 -mt-20 relative z-20 px-6">
         <div className="max-w-6xl mx-auto bg-white rounded-2xl shadow-2xl shadow-[#113e48]/15 border border-gray-100 p-10">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center divide-x divide-gray-100">
@@ -107,12 +109,12 @@ export default function About() {
         </div>
       </section>
 
-      {}
+      {/* Khối nội dung */}
       <section className="py-24 max-w-7xl mx-auto px-6 space-y-32">
-        {}
+        {/* Phần giao diện */}
         <div className="grid md:grid-cols-2 gap-16 items-center">
           <div className="relative" data-aos="fade-right">
-            {}
+            {/* Phần giao diện */}
             <div className="absolute -top-6 -left-6 w-32 h-32 bg-orange-100 rounded-full z-0 mix-blend-multiply filter blur-xl opacity-70"></div>
             <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-blue-100 rounded-full z-0 mix-blend-multiply filter blur-xl opacity-70"></div>
 
@@ -121,8 +123,8 @@ export default function About() {
               alt="Mission"
               className="relative z-10 rounded-2xl shadow-xl w-full object-cover h-[450px]"
             />
-            {}
-            {}
+            {/* Phần giao diện */}
+
           </div>
 
           <div data-aos="fade-left">
@@ -156,7 +158,7 @@ export default function About() {
           </div>
         </div>
 
-        {}
+        {/* Phần giao diện */}
         <div className="grid md:grid-cols-2 gap-16 items-center">
           <div className="order-2 md:order-1" data-aos="fade-right">
             <h3 className="text-blue-600 font-bold uppercase tracking-widest text-sm mb-3">
@@ -190,9 +192,9 @@ export default function About() {
         </div>
       </section>
 
-      {}
+      {/* Khối nội dung */}
       <section className="bg-slate-50 py-24 relative overflow-hidden">
-        {}
+        {/* Phần giao diện */}
         <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-orange-50 to-transparent opacity-50 pointer-events-none"></div>
 
         <div className="max-w-7xl mx-auto px-6 relative z-10">
@@ -236,7 +238,7 @@ export default function About() {
                 data-aos="fade-up"
                 data-aos-delay={i * 100}
               >
-                {}
+                {/* Phần giao diện */}
                 <div
                   className={`w-16 h-16 rounded-xl flex items-center justify-center text-3xl mb-6 transition-all duration-300 
                   ${
@@ -267,9 +269,9 @@ export default function About() {
         </div>
       </section>
 
-      {}
+      {/* Khối nội dung */}
       <section className="py-24 bg-[#113e48] text-white text-center px-6 relative overflow-hidden">
-        {}
+        {/* Phần giao diện */}
         <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
           <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
             <pattern

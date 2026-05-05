@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import API from "../services/api";
@@ -83,13 +83,13 @@ export default function Login() {
         transition={{ duration: 0.5 }}
         className="bg-white w-full max-w-5xl rounded-3xl shadow-2xl flex overflow-hidden min-h-[600px]"
       >
-        {}
+        {/* Phần giao diện */}
         <div className="w-full md:w-1/2 p-8 md:p-12 bg-white flex flex-col justify-center relative">
-          <div className="mb-6">
+          <div className="mb-6 flex flex-col items-center md:items-start">
             <img
               src="/assets/logo/logoSpeedyShip.png"
               alt="SpeedyShip Logo"
-              className="w-16 h-16 object-contain mb-4"
+              className="w-32 h-32 md:w-40 md:h-40 object-contain mb-6 drop-shadow-lg"
             />
             <h1 className="text-2xl font-extrabold text-[#113e48] mb-1">
               Chào mừng trở lại!
@@ -106,7 +106,7 @@ export default function Login() {
               </div>
             )}
 
-            {}
+            {/* Phần giao diện */}
             <div className="space-y-1">
               <label className="text-xs font-bold text-[#113e48] ml-1">
                 Email
@@ -126,7 +126,7 @@ export default function Login() {
               </div>
             </div>
 
-            {}
+            {/* Phần giao diện */}
             <div className="space-y-1">
               <div className="flex justify-between items-center ml-1">
                 <label className="text-xs font-bold text-[#113e48]">
@@ -186,13 +186,13 @@ export default function Login() {
             </p>
           </div>
 
-          {}
+          {/* Phần giao diện */}
           <div className="border-t border-gray-100 pt-2">
             <PartnerCarousel />
           </div>
         </div>
 
-        {}
+        {/* Phần giao diện */}
         <div className="hidden md:flex w-1/2 relative bg-[#113e48] flex-col justify-center p-12 text-white overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl translate-x-1/2 -translate-y-1/2"></div>
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-orange-500/10 rounded-full blur-3xl -translate-x-1/2 translate-y-1/2"></div>

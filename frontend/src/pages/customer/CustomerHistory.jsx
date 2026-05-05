@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+﻿import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../../services/api";
 import toast, { Toaster } from "react-hot-toast";
@@ -23,75 +23,25 @@ import {
 import Pagination from "../../components/Pagination";
 
 const STATUS_OPTIONS = [
-  {
-    value: "all",
-    label: "Tất cả trạng thái",
-    icon: Filter,
-    color: "text-gray-500",
-    bg: "bg-gray-100",
-  },
-  {
-    value: "pending",
-    label: "Chờ xử lý",
-    icon: Clock,
-    color: "text-yellow-600",
-    bg: "bg-yellow-100",
-  },
-  {
-    value: "assigned",
-    label: "Đã phân công",
-    icon: ClipboardList,
-    color: "text-gray-600",
-    bg: "bg-gray-100",
-  },
-  {
-    value: "picking",
-    label: "Đang lấy hàng",
-    icon: PackageOpen,
-    color: "text-orange-600",
-    bg: "bg-orange-100",
-  },
-  {
-    value: "delivering",
-    label: "Đang giao hàng",
-    icon: Truck,
-    color: "text-blue-600",
-    bg: "bg-blue-100",
-  },
-  {
-    value: "completed",
-    label: "Hoàn thành",
-    icon: CheckCircle,
-    color: "text-green-600",
-    bg: "bg-green-100",
-  },
-  {
-    value: "failed",
-    label: "Giao thất bại",
-    icon: AlertTriangle,
-    color: "text-red-600",
-    bg: "bg-red-100",
-  },
-  {
-    value: "canceled",
-    label: "Đã hủy",
-    icon: Ban,
-    color: "text-gray-500",
-    bg: "bg-gray-100",
-  },
+  { value: "all", label: "Tất cả trạng thái", icon: Filter, color: "text-gray-500", bg: "bg-gray-100" },
+  { value: "pending", label: "Chờ xử lý", icon: Clock, color: "text-yellow-600", bg: "bg-yellow-100" },
+  { value: "assigned", label: "Đã phân công", icon: ClipboardList, color: "text-gray-600", bg: "bg-gray-100" },
+  { value: "picking", label: "Đang lấy hàng", icon: PackageOpen, color: "text-orange-600", bg: "bg-orange-100" },
+  { value: "delivering", label: "Đang giao hàng", icon: Truck, color: "text-blue-600", bg: "bg-blue-100" },
+  { value: "completed", label: "Hoàn thành", icon: CheckCircle, color: "text-green-600", bg: "bg-green-100" },
+  { value: "failed", label: "Giao thất bại", icon: AlertTriangle, color: "text-red-600", bg: "bg-red-100" },
+  { value: "canceled", label: "Đã hủy", icon: Ban, color: "text-gray-500", bg: "bg-gray-100" },
 ];
+
 
 function StatusFilterDropdown({ value, onChange }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
-  const selected =
-    STATUS_OPTIONS.find((o) => o.value === value) || STATUS_OPTIONS[0];
+  const selected = STATUS_OPTIONS.find((o) => o.value === value) || STATUS_OPTIONS[0];
   const SelectedIcon = selected.icon;
 
   useEffect(() => {
-    const handleClick = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
-    };
+    const handleClick = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
@@ -108,10 +58,7 @@ function StatusFilterDropdown({ value, onChange }) {
           </span>
           <span>{selected.label}</span>
         </div>
-        <ChevronDown
-          size={14}
-          className={`text-gray-400 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
-        />
+        <ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
       </button>
 
       {open && (
@@ -122,25 +69,14 @@ function StatusFilterDropdown({ value, onChange }) {
             return (
               <button
                 key={opt.value}
-                onClick={() => {
-                  onChange(opt.value);
-                  setOpen(false);
-                }}
+                onClick={() => { onChange(opt.value); setOpen(false); }}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm transition-colors hover:bg-orange-50 ${isActive ? "bg-orange-50/60 font-semibold" : ""}`}
               >
-                <span
-                  className={`p-1.5 rounded-lg ${opt.bg} ${opt.color} flex-shrink-0`}
-                >
+                <span className={`p-1.5 rounded-lg ${opt.bg} ${opt.color} flex-shrink-0`}>
                   <Icon size={13} />
                 </span>
-                <span
-                  className={isActive ? "text-orange-700" : "text-gray-700"}
-                >
-                  {opt.label}
-                </span>
-                {isActive && (
-                  <span className="ml-auto w-1.5 h-1.5 rounded-full bg-orange-500" />
-                )}
+                <span className={isActive ? "text-orange-700" : "text-gray-700"}>{opt.label}</span>
+                {isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-orange-500" />}
               </button>
             );
           })}
@@ -157,6 +93,7 @@ export default function CustomerHistory() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+
 
   const [page, setPage] = useState(1);
   const itemsPerPage = 8;
@@ -180,19 +117,22 @@ export default function CustomerHistory() {
       .finally(() => setLoading(false));
   }, [customerId]);
 
+
   useEffect(() => {
     let result = shipments;
+
 
     if (filterStatus !== "all") {
       result = result.filter((s) => s.status === filterStatus);
     }
+
 
     if (search) {
       const keyword = search.toLowerCase();
       result = result.filter(
         (s) =>
           s.tracking_code?.toLowerCase().includes(keyword) ||
-          s.receiver_name?.toLowerCase().includes(keyword),
+          s.receiver_name?.toLowerCase().includes(keyword)
       );
     }
 
@@ -200,14 +140,16 @@ export default function CustomerHistory() {
     setPage(1);
   }, [filterStatus, search, shipments]);
 
+
   const totalPages = Math.ceil(filtered.length / itemsPerPage);
   const startIndex = (page - 1) * itemsPerPage;
   const currentShipments = filtered.slice(
     startIndex,
-    startIndex + itemsPerPage,
+    startIndex + itemsPerPage
   );
 
-  // Tạo badge hiển thị trạng thái
+
+// Tạo badge hiển thị trạng thái
   const getStatusBadge = (status) => {
     const config = {
       pending: {
@@ -268,7 +210,7 @@ export default function CustomerHistory() {
     <div className="animate-in fade-in duration-500 space-y-6 pb-10">
       <Toaster position="top-right" />
 
-      {}
+      {/* Phần giao diện */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
         <div>
           <h1 className="text-xl font-extrabold text-[#113e48] flex items-center gap-2">
@@ -280,7 +222,7 @@ export default function CustomerHistory() {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-          {}
+          {/* Phần giao diện */}
           <div className="relative group">
             <Search
               className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-orange-500 transition-colors"
@@ -295,18 +237,12 @@ export default function CustomerHistory() {
             />
           </div>
 
-          {}
-          <StatusFilterDropdown
-            value={filterStatus}
-            onChange={(v) => {
-              setFilterStatus(v);
-              setPage(1);
-            }}
-          />
+          {/* Phần giao diện */}
+          <StatusFilterDropdown value={filterStatus} onChange={(v) => { setFilterStatus(v); setPage(1); }} />
         </div>
       </div>
 
-      {}
+      {/* Phần giao diện */}
       <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
@@ -393,6 +329,7 @@ export default function CustomerHistory() {
                             title="Hủy đơn"
                             onClick={() => {
                               if (confirm("Bạn chắc chắn muốn hủy đơn này?")) {
+
                                 toast.success("Đã gửi yêu cầu hủy đơn");
                               }
                             }}
@@ -409,7 +346,7 @@ export default function CustomerHistory() {
           </table>
         </div>
 
-        {}
+        {/* Phần giao diện */}
         <Pagination
           currentPage={page}
           totalPages={totalPages}

@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+﻿import { useEffect, useState, useMemo } from "react";
 import API from "../../services/api";
 import {
   PhoneCall,
@@ -104,7 +104,7 @@ export default function DispatcherContactsPro() {
   return (
     <div className="min-h-screen bg-slate-50/50 p-6 font-sans pb-32">
       <div className="max-w-6xl mx-auto space-y-6">
-        {}
+        {/* Phần giao diện */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h1 className="text-2xl font-extrabold text-slate-800 flex items-center gap-2">
@@ -126,9 +126,9 @@ export default function DispatcherContactsPro() {
           </button>
         </div>
 
-        {}
+        {/* Phần giao diện */}
         <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row gap-4 items-center">
-          {}
+          {/* Phần giao diện */}
           <div className="relative w-full md:w-96 group">
             <Search
               className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors"
@@ -143,7 +143,7 @@ export default function DispatcherContactsPro() {
             />
           </div>
 
-          {}
+          {/* Phần giao diện */}
           <div className="flex p-1 bg-slate-100 rounded-xl w-full md:w-auto">
             {[
               { id: "all", label: "Tất cả" },
@@ -165,7 +165,7 @@ export default function DispatcherContactsPro() {
           </div>
         </div>
 
-        {}
+        {/* Phần giao diện */}
         <div className="grid grid-cols-1 gap-4">
           {loading ? (
             <div className="text-center py-12 text-slate-400">
@@ -182,7 +182,7 @@ export default function DispatcherContactsPro() {
                 }`}
               >
                 <div className="flex flex-col md:flex-row gap-6">
-                  {}
+                  {/* Phần giao diện */}
                   <div className="flex-1">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-3">
@@ -208,7 +208,7 @@ export default function DispatcherContactsPro() {
                         </div>
                       </div>
 
-                      {}
+                      {/* Phần giao diện */}
                       <span
                         className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide flex items-center gap-1.5 ${
                           c.status === "resolved"
@@ -265,7 +265,7 @@ export default function DispatcherContactsPro() {
                     </div>
                   </div>
 
-                  {}
+                  {/* Phần giao diện */}
                   <div className="flex md:flex-col justify-end gap-3 border-t md:border-t-0 md:border-l border-slate-100 pt-4 md:pt-0 md:pl-6 min-w-[140px]">
                     {c.status !== "resolved" ? (
                       <>
@@ -305,11 +305,11 @@ export default function DispatcherContactsPro() {
         </div>
       </div>
 
-      {}
+      {/* Render điều kiện */}
       {showNoteModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex justify-center items-center z-50 animate-in fade-in duration-200">
           <div className="bg-white p-0 rounded-2xl shadow-2xl w-[90%] max-w-md relative overflow-hidden animate-in zoom-in-95 duration-200">
-            {}
+            {/* Phần giao diện */}
             <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-5 text-white flex justify-between items-center">
               <h2 className="text-lg font-bold flex items-center gap-2">
                 <CheckCircle className="text-green-300" /> Xác nhận xử lý
@@ -322,7 +322,7 @@ export default function DispatcherContactsPro() {
               </button>
             </div>
 
-            {}
+            {/* Phần giao diện */}
             <div className="p-6">
               <label className="block text-sm font-bold text-slate-700 mb-2">
                 Ghi chú kết quả:
@@ -341,7 +341,7 @@ export default function DispatcherContactsPro() {
               </p>
             </div>
 
-            {}
+            {/* Phần giao diện */}
             <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
               <button
                 onClick={closeNoteModal}

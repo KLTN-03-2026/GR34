@@ -25,6 +25,7 @@ body,
   animation: zoomPop 0.28s ease-out;
 }
 
+
 @keyframes collapseChat {
   0% {
     opacity: 1;
@@ -39,6 +40,7 @@ body,
   animation: collapseChat 0.25s ease-out forwards;
 }
 
+
 @keyframes msgIn {
   0% {
     opacity: 0;
@@ -52,6 +54,7 @@ body,
 .msg-anim {
   animation: msgIn 0.23s ease-out;
 }
+
 
 @keyframes pulseGlow {
   0% {
@@ -68,6 +71,7 @@ body,
   animation: pulseGlow 2s infinite;
 }
 
+
 @keyframes slideUp {
   0% {
     opacity: 0;
@@ -81,6 +85,7 @@ body,
 .animate-slide-up {
   animation: slideUp 0.35s ease-out;
 }
+
 
 @keyframes spinBounce {
   0% {
@@ -186,11 +191,12 @@ body,
   padding: 0 15px;
 }
 
+
 .sub-title {
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #ff6600;
+  color: #ff6600; 
   font-weight: 600;
   text-transform: uppercase;
   margin-bottom: 10px;
@@ -208,6 +214,7 @@ body,
   line-height: 1.6;
 }
 
+
 .achieve-about {
   display: flex;
   gap: 20px;
@@ -217,8 +224,8 @@ body,
 .achieve-icon {
   width: 50px;
   height: 50px;
-  background-color: #e6f4f1;
-  color: #00a99d;
+  background-color: #e6f4f1; 
+  color: #00a99d; 
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -232,6 +239,7 @@ body,
   font-weight: 600;
   margin-bottom: 10px;
 }
+
 
 .th-btn {
   display: inline-flex;
@@ -250,6 +258,7 @@ body,
   background-color: #e65c00;
 }
 
+
 .img-box3 {
   position: relative;
 }
@@ -258,6 +267,7 @@ body,
   width: 100%;
   border-radius: 10px;
 }
+
 
 .about-counter1 {
   position: absolute;
@@ -284,6 +294,7 @@ body,
   color: #1a1a1a;
 }
 
+
 @media (max-width: 768px) {
   .elementor-col-50 {
     width: 100%;
@@ -305,7 +316,7 @@ body,
 .radar-core {
   width: 12px;
   height: 12px;
-  background: #f97316;
+  background: #f97316; 
   border-radius: 50%;
   z-index: 2;
   box-shadow: 0 0 10px #f97316;

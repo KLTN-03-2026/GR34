@@ -25,27 +25,31 @@ import {
   MapPin,
 } from "lucide-react";
 
+
+// Token Mapbox dùng cho bản đồ
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 
+
+// Component marker tùy chỉnh trên bản đồ với hiệu ứng ping và mũi tên
 const CustomMarker = ({ icon, bgColor, ringColor, onClick }) => {
   return (
     <div
       onClick={onClick}
       className="relative w-10 h-10 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform duration-200"
     >
-      {}
+      {/* Vòng ping animation */}
       <div
         className={`absolute inset-0 rounded-full opacity-30 animate-ping ${ringColor}`}
       ></div>
 
-      {}
+      {/* Icon trung tâm marker */}
       <div
         className={`relative z-10 w-10 h-10 flex items-center justify-center rounded-full text-white shadow-xl border-2 border-white ${bgColor}`}
       >
         {icon}
       </div>
 
-      {}
+      {/* Mũi tên nhỏ phía dưới marker */}
       <div
         className={`absolute -bottom-1 w-3 h-3 transform rotate-45 ${bgColor} border-r-2 border-b-2 border-white z-0`}
       ></div>
@@ -53,6 +57,8 @@ const CustomMarker = ({ icon, bgColor, ringColor, onClick }) => {
   );
 };
 
+
+// Component timeline theo dõi trạng thái giao hàng của đơn
 function TrackingTimeline({ status }) {
   const steps = [
     { key: "pending", label: "Đã đặt hàng", icon: <Package size={18} /> },
@@ -112,8 +118,8 @@ function TrackingTimeline({ status }) {
                     isCurrent && isFailed
                       ? "border-red-500 text-red-600 shadow-md scale-110"
                       : isCompleted
-                        ? "border-green-500 text-green-600 shadow-md bg-green-50"
-                        : "border-gray-200 text-gray-300"
+                      ? "border-green-500 text-green-600 shadow-md bg-green-50"
+                      : "border-gray-200 text-gray-300"
                   }
                 `}
               >
@@ -139,6 +145,7 @@ function TrackingTimeline({ status }) {
   );
 }
 
+
 // Chi tiết đơn hàng khách hàng
 export default function CustomerShipmentDetail() {
   const { id } = useParams();
@@ -151,8 +158,11 @@ export default function CustomerShipmentDetail() {
   const [loading, setLoading] = useState(true);
   const [popupInfo, setPopupInfo] = useState(null);
 
+
+  // Gọi API OSRM để vẽ tuyến đường giữa 2 tọa độ, xử lý đi liên tỉnh qua điểm trung gian
   const fetchRouteOSRM = async (start, end) => {
     if (!start || !end) return null;
+
 
     const startStr = `${start[1]},${start[0]}`;
     const endStr = `${end[1]},${end[0]}`;
@@ -170,15 +180,18 @@ export default function CustomerShipmentDetail() {
       const res = await fetch(url);
       const data = await res.json();
       if (data.code === "Ok" && data.routes.length > 0) {
+
         return {
           type: "Feature",
           geometry: data.routes[0].geometry,
         };
       }
-    } catch (error) {}
+    } catch (error) {
+    }
     return null;
   };
 
+  // Khởi tạo AOS và tải chi tiết đơn hàng, tuyến đường khi đang giao
   useEffect(() => {
     AOS.init({ duration: 600, easing: "ease-out-cubic", once: true });
 
@@ -202,6 +215,7 @@ export default function CustomerShipmentDetail() {
         if (pickup && delivery) {
           setWaypoints([pickup, delivery]);
 
+
           if (data.status === "picking" || data.status === "delivering") {
             const geoJson = await fetchRouteOSRM(pickup, delivery);
             setRouteGeoJSON(geoJson);
@@ -218,14 +232,18 @@ export default function CustomerShipmentDetail() {
     fetchDetail();
   }, [id]);
 
+
+  // Tự động fit bản đồ vào vùng chứa tuyến đường hoặc các waypoint
   useEffect(() => {
     if (!mapRef.current) return;
+
 
     let features = [];
 
     if (routeGeoJSON) {
       features.push(routeGeoJSON);
     } else if (waypoints.length > 0) {
+
       waypoints.forEach((pt) => {
         features.push({
           type: "Feature",
@@ -247,7 +265,7 @@ export default function CustomerShipmentDetail() {
           [minLng, minLat],
           [maxLng, maxLat],
         ],
-        { padding: 80, duration: 1000 },
+        { padding: 80, duration: 1000 }
       );
     }
   }, [routeGeoJSON, waypoints, shipment]);
@@ -268,13 +286,14 @@ export default function CustomerShipmentDetail() {
   if (!shipment)
     return <div className="p-10 text-center">Không tìm thấy đơn hàng</div>;
 
+
   const driverPos = shipment.driver_lat
     ? [Number(shipment.driver_lat), Number(shipment.driver_lng)]
     : waypoints[0];
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-10 font-sans animate-in fade-in duration-500">
-      {}
+      {/* Thanh header: nút quay lại và mã vận đơn */}
       <div className="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-[50] px-6 py-4 flex items-center gap-4">
         <button
           onClick={() => navigate(-1)}
@@ -297,7 +316,7 @@ export default function CustomerShipmentDetail() {
       </div>
 
       <div className="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {}
+        {/* Cột trái: timeline, địa chỉ, thanh toán, thông tin tài xế */}
         <div className="lg:col-span-1 space-y-6">
           <div
             className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100"
@@ -314,7 +333,7 @@ export default function CustomerShipmentDetail() {
             data-aos="fade-up"
             data-aos-delay="100"
           >
-            {}
+            {/* Thông tin điểm lấy hàng và giao hàng */}
             <div className="flex gap-4 relative">
               <div className="flex flex-col items-center">
                 <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
@@ -339,7 +358,7 @@ export default function CustomerShipmentDetail() {
                 </div>
               </div>
             </div>
-            {}
+            {/* Điểm giao hàng */}
             <div className="flex gap-4 relative">
               <div className="flex flex-col items-center">
                 <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
@@ -408,7 +427,9 @@ export default function CustomerShipmentDetail() {
           </div>
 
           {shipment.driver_name ? (
-            <div className="bg-[#113e48] p-5 rounded-2xl text-white shadow-lg relative overflow-hidden group">
+            <div
+              className="bg-[#113e48] p-5 rounded-2xl text-white shadow-lg relative overflow-hidden group"
+            >
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 group-hover:bg-white/20 transition-all"></div>
               <div className="relative z-10 flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-orange-500 flex items-center justify-center text-xl font-bold border-2 border-white/20">
@@ -419,20 +440,16 @@ export default function CustomerShipmentDetail() {
                     Tài xế phụ trách
                   </p>
                   <p className="font-bold text-lg">{shipment.driver_name}</p>
-                  <div className="flex flex-col gap-1.5 mt-2">
-                    <p className="text-sm text-blue-100 flex items-center gap-2">
-                      <Phone size={14} className="text-orange-400" />{" "}
-                      {shipment.driver_phone || "Đang cập nhật SĐT"}
-                    </p>
-                    <p className="text-sm text-blue-100 flex items-center gap-2">
-                      <Truck size={14} className="text-orange-400" /> Biển số:{" "}
-                      <span className="font-bold text-white tracking-wider">
-                        {shipment.plate_number || "Đang cập nhật"}
-                      </span>
-                    </p>
+                    <div className="flex flex-col gap-1.5 mt-2">
+                      <p className="text-sm text-blue-100 flex items-center gap-2">
+                        <Phone size={14} className="text-orange-400" /> {shipment.driver_phone || "Đang cập nhật SĐT"}
+                      </p>
+                      <p className="text-sm text-blue-100 flex items-center gap-2">
+                        <Truck size={14} className="text-orange-400" /> Biển số: <span className="font-bold text-white tracking-wider">{shipment.plate_number || "Đang cập nhật"}</span>
+                      </p>
+                    </div>
                   </div>
-                </div>
-                {shipment.driver_phone && (
+                  {shipment.driver_phone && (
                   <a
                     href={`tel:${shipment.driver_phone}`}
                     className="bg-green-500 hover:bg-green-600 p-3 rounded-full shadow-lg transition-transform hover:scale-110"
@@ -443,7 +460,9 @@ export default function CustomerShipmentDetail() {
               </div>
             </div>
           ) : (
-            <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
+            <div
+              className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4"
+            >
               <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-gray-400">
                 <Truck size={20} />
               </div>
@@ -451,15 +470,13 @@ export default function CustomerShipmentDetail() {
                 <p className="text-xs text-gray-400 uppercase font-bold mb-0.5">
                   Tài xế phụ trách
                 </p>
-                <p className="font-bold text-gray-400 italic text-sm">
-                  Chưa phân công tài xế
-                </p>
+                <p className="font-bold text-gray-400 italic text-sm">Chưa phân công tài xế</p>
               </div>
             </div>
           )}
         </div>
 
-        {}
+        {/* Cột phải: bản đồ Mapbox hiển thị tuyến đường giao hàng */}
         <div
           className="lg:col-span-2 h-[600px] lg:h-auto min-h-[500px] bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden relative z-0"
           data-aos="fade-left"
@@ -475,10 +492,10 @@ export default function CustomerShipmentDetail() {
             mapStyle="mapbox://styles/mapbox/streets-v12"
             mapboxAccessToken={MAPBOX_TOKEN}
           >
-            {}
+            {/* Control zoom bản đồ */}
             <NavigationControl position="bottom-right" />
 
-            {}
+            {/* Layer tuyến đường giao hàng */}
             {routeGeoJSON && (
               <Source id="route" type="geojson" data={routeGeoJSON}>
                 <Layer
@@ -497,7 +514,7 @@ export default function CustomerShipmentDetail() {
               </Source>
             )}
 
-            {}
+            {/* Marker điểm lấy hàng (màu xanh) */}
             {waypoints[0] && (
               <Marker
                 longitude={waypoints[0][1]}
@@ -522,7 +539,7 @@ export default function CustomerShipmentDetail() {
               </Marker>
             )}
 
-            {}
+            {/* Marker điểm giao hàng (màu cam) */}
             {waypoints[1] && (
               <Marker
                 longitude={waypoints[1][1]}
@@ -547,7 +564,7 @@ export default function CustomerShipmentDetail() {
               </Marker>
             )}
 
-            {}
+            {/* Marker vị trí tài xế — chỉ hiển khi đang lấy/giao hàng */}
             {(shipment.status === "picking" ||
               shipment.status === "delivering") &&
               shipment.driver_lat && (
@@ -574,7 +591,7 @@ export default function CustomerShipmentDetail() {
                 </Marker>
               )}
 
-            {}
+            {/* Popup thông tin khi click vào marker */}
             {popupInfo && (
               <Popup
                 anchor="top"
@@ -594,7 +611,7 @@ export default function CustomerShipmentDetail() {
             )}
           </Map>
 
-          {}
+          {/* Overlay trạng thái hiện tại trên bản đồ — chỉ hiển trên mobile */}
           <div className="lg:hidden absolute top-4 left-4 right-4 bg-white/90 backdrop-blur p-3 rounded-xl shadow-lg border border-gray-100 z-[40]">
             <p className="text-xs font-bold text-gray-500 uppercase">
               Trạng thái hiện tại
@@ -603,8 +620,8 @@ export default function CustomerShipmentDetail() {
               {shipment.status === "delivering"
                 ? "🚚 Đang giao hàng"
                 : shipment.status === "completed"
-                  ? "Giao thành công"
-                  : "📦 " + shipment.status}
+                ? "Giao thành công"
+                : "📦 " + shipment.status}
             </p>
           </div>
         </div>

@@ -15,6 +15,7 @@ import {
 export default function PaymentResult() {
   const [params] = useSearchParams();
 
+
   const orderId = params.get("orderId");
   const resultCode = params.get("resultCode");
   const type = params.get("type");
@@ -23,9 +24,11 @@ export default function PaymentResult() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+
     const timer = setTimeout(() => setIsLoading(false), 1000);
     return () => clearTimeout(timer);
   }, []);
+
 
   const backLink = type === "wallet" ? "/customer/wallet" : "/customer/history";
   const backLabel =

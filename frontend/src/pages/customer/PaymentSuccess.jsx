@@ -1,4 +1,4 @@
-import { useSearchParams, Link } from "react-router-dom";
+﻿import { useSearchParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { CheckCircle, XCircle, Loader2 } from "lucide-react";
@@ -46,7 +46,7 @@ export default function PaymentSuccess() {
           </>
         ) : (
           <>
-            {}
+            {/* Phần giao diện */}
             <div className="flex justify-center mb-5">
               {isSuccess ? (
                 <motion.div
@@ -67,7 +67,7 @@ export default function PaymentSuccess() {
               )}
             </div>
 
-            {}
+            {/* Tiêu đề nội dung */}
             <h1
               className={`text-3xl font-extrabold mb-3 ${
                 isSuccess ? "text-green-600" : "text-red-600"
@@ -85,7 +85,7 @@ export default function PaymentSuccess() {
                 : "Vui lòng kiểm tra lại hoặc thử lại sau."}
             </p>
 
-            {}
+            {/* Phần giao diện */}
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Link
                 to="/customer/history"
