@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 
-// 👇 ĐỔI TÊN Ở ĐÂY: từ 'authMiddleware' thành 'verifyToken'
+
+// Xác thực token JWT
 export const verifyToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
 
@@ -13,10 +14,10 @@ export const verifyToken = (req, res, next) => {
   const token = authHeader.split(" ")[1];
 
   try {
-    // Lưu ý: Đảm bảo secret key khớp với file authController (nên dùng biến môi trường hoặc chuỗi cứng giống nhau)
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET || "secret-key");
 
-    req.user = decoded; // gắn user vào request
+    req.user = decoded;
     return next();
   } catch (error) {
     if (error.name === "TokenExpiredError") {

@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+// Token Mapbox để geocode địa chỉ và tính tuyến đường
 const MAPBOX_TOKEN = process.env.VITE_MAPBOX_TOKEN;
 
 const PROVINCES = [
@@ -20,6 +21,7 @@ const PROVINCES = [
   "Vĩnh Phúc", "Yên Bái",
 ];
 
+// Trích xuất tên tỉnh/thành phố từ chuỗi địa chỉ bằng cách só sánh danh sách tỉnh
 const extractProvinceFromText = (address) => {
   if (!address) return null;
   const lower = address.toLowerCase();
@@ -32,6 +34,7 @@ const extractProvinceFromText = (address) => {
 };
 
 const shippingController = {
+// Tính phí vận chuyển dựa trên khoảng cách Mapbox, khối lượng, loại dịch vụ và COD
   calculateFee: async (req, res) => {
     try {
       if (!MAPBOX_TOKEN) {

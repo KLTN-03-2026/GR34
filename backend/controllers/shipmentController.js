@@ -62,6 +62,7 @@ export const getShipmentById = async (req, res) => {
 };
 
 
+// Xác định vùng (prefix + region_id) từ địa chỉ giao hàng để sinh tracking code
 const getRegionInfoFromAddress = (address) => {
   if (!address) return { prefix: "SP", region_id: "OTHER" };
 
@@ -210,6 +211,7 @@ export const createShipment = async (req, res) => {
 };
 
 
+// Cập nhật thông tin đơn hàng theo ID (admin)
 export const updateShipment = async (req, res) => {
   try {
     const { id } = req.params;
@@ -316,6 +318,7 @@ export const assignShipment = async (req, res) => {
 };
 
 
+// Tìm đơn hàng theo mã tracking code (nội bộ, yêu cầu xác thực)
 export const getShipmentByCode = async (req, res) => {
   try {
     const { code } = req.params;
@@ -334,6 +337,7 @@ export const getShipmentByCode = async (req, res) => {
 };
 
 
+// Tra cứu đơn hàng công khai theo tracking code, xác thực 4 số cuối SĐT người nhận
 export const getShipmentByCodePublic = async (req, res) => {
   try {
     const { code } = req.params;

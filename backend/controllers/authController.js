@@ -59,10 +59,10 @@ export const login = async (req, res) => {
     const user = users[0];
 
 
-    if (user.status && user.status.toLowerCase() === "inactive") {
+    if (user.status && (user.status.toLowerCase() === "inactive" || user.status.toLowerCase() === "blocked")) {
       return res.status(403).json({
         message:
-          "Tài khoản của bạn đã bị vô hiệu hóa, vui lòng liên hệ quản trị viên.",
+          "Tài khoản của bạn đã bị khóa, vui lòng liên hệ quản trị viên.",
       });
     }
 
@@ -109,6 +109,7 @@ export const login = async (req, res) => {
 };
 
 
+// Tạo và gửi mã OTP 6 số về email để xác thực trước khi đăng ký
 export const sendOtp = async (req, res) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ message: "Thiếu email" });
@@ -164,6 +165,7 @@ export const sendOtp = async (req, res) => {
 };
 
 
+// Xác thực mã OTP — kiểm tra thời hạn và tính đúng đắn của mã
 export const verifyOtp = async (req, res) => {
   const { email, otp } = req.body;
 

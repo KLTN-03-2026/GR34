@@ -2,6 +2,7 @@ import pool from "../config/db.js";
 import bcrypt from "bcryptjs";
 
 
+// Lấy hồ sơ khách hàng kèm số dư ví, tổng đơn hàng và xếp hạng thành viên
 export const getCustomerProfile = async (req, res) => {
   try {
     const userId = req.params.id;
@@ -48,6 +49,7 @@ export const getCustomerProfile = async (req, res) => {
 };
 
 
+// Cập nhật thông tin hồ sơ khách hàng (tên, SĐT, địa chỉ, avatar)
 export const updateCustomerProfile = async (req, res) => {
   const { name, email, phone, address, avatar } = req.body;
   const userId = req.params.id;
@@ -154,9 +156,17 @@ export const createShipment = async (req, res) => {
 // Lấy đơn hàng của khách hàng
 export const getShipmentsByCustomer = async (req, res) => {
   try {
-    const [rows] = await pool.query(
-      "SELECT * FROM shipments WHERE customer_id = ? ORDER BY created_at DESC",
-      [req.params.customer_id]
+      const [rows] = await pool.query(
+        `SELECT s.*, 
+                d.name AS driver_name, 
+                d.phone AS driver_phone,
+                d.license_no AS plate_number
+         FROM shipments s 
+         LEFT JOIN assignments a ON s.id = a.shipment_id 
+         LEFT JOIN drivers d ON a.driver_id = d.id 
+         WHERE s.customer_id = ? 
+         ORDER BY s.created_at DESC`,
+        [req.params.customer_id]
     );
     res.json(rows);
   } catch (err) {
@@ -180,6 +190,7 @@ export const createFeedback = async (req, res) => {
 };
 
 
+// Tra cứu trạng thái đơn hàng theo tracking code, hỗ trợ cả khách đăng nhập và khách vãng lai
 export const trackShipment = async (req, res) => {
   try {
     const { code } = req.params;
@@ -237,12 +248,15 @@ export const trackShipment = async (req, res) => {
   }
 };
 
+// Lấy chi tiết đơn hàng kèm thông tin tài xế và vị trí GPS
 export const getShipmentDetail = async (req, res) => {
   try {
     const [rows] = await pool.query(
       `SELECT 
           s.*, 
           d.name AS driver_name,
+          d.phone AS driver_phone,
+          d.license_no AS plate_number,
           d.latitude AS driver_lat,
           d.longitude AS driver_lng
         FROM shipments s

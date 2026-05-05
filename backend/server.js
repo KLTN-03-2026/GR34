@@ -36,6 +36,7 @@ import newsRoutes from "./routes/newsRoutes.js";
 import driverApplicationRoutes from "./routes/driverApplicationRoutes.js";
 
 dotenv.config();
+// Khởi tạo Express app và cấu hình middleware
 const app = express();
 
 app.use(
@@ -55,6 +56,7 @@ app.use(express.urlencoded({ limit: "50mb", extended: true }));
 app.use(cookieParser({ limit: "50mb", extended: true }));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
+// Kiểm tra kết nối database khi server khởi động
 pool
   .query("SELECT 1")
   .then(() => console.log("MySQL đã kết nối CSDL thành công!"))
@@ -74,6 +76,7 @@ const io = new Server(server, {
   },
 });
 
+// Khởi động Socket.IO và export các hàm gửi thông báo real-time
 const socketService = initSocket(io, pool);
 
 export const {
@@ -82,6 +85,7 @@ export const {
   sendNotificationToCustomer,
 } = socketService;
 
+// Đăng ký tất cả route API
 app.use("/api/auth", authRoutes);
 app.use("/api/auth", passRoutes);
 app.use("/api/drivers", driverRoutes);

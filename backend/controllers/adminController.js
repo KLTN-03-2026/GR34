@@ -36,11 +36,18 @@ export const getAdminStats = async (req, res) => {
 
 
     const [topDrivers] = await db.query(`
-      SELECT name, COUNT(a.id) AS deliveries
+      SELECT 
+        d.id, 
+        d.name, 
+        COUNT(a.id) AS total_assignments,
+        COUNT(CASE WHEN s.status IN ('delivered', 'completed') THEN 1 END) AS completed_deliveries,
+        ROUND(COUNT(CASE WHEN s.status IN ('delivered', 'completed') THEN 1 END) * 100.0 / COUNT(a.id), 1) AS completion_rate
       FROM drivers d
       JOIN assignments a ON d.id = a.driver_id
+      JOIN shipments s ON a.shipment_id = s.id
       GROUP BY d.id
-      ORDER BY deliveries DESC
+      HAVING total_assignments > 0
+      ORDER BY completion_rate DESC, completed_deliveries DESC
       LIMIT 5
     `);
 

@@ -1,7 +1,8 @@
 import express from "express";
-import { askBot } from "../controllers/aiController.js";
+import { askBot, getFaqSuggestions } from "../controllers/aiController.js";
 
 const router = express.Router();
 router.post("/ask", askBot);
+router.get("/faq-suggestions", getFaqSuggestions);
 
 export default router;
