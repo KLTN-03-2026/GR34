@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import API from "../../services/api";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
@@ -33,6 +33,11 @@ const WAREHOUSE = {
   name: "Kho SpeedyShip Đà Nẵng",
   phone: "1900 888 999",
 };
+
+const FORBIDDEN_WORDS = [
+  "chất cấm", "ma túy", "vũ khí", "cháy nổ", "pháo", "súng", 
+  "đạn", "dao", "độc hại", "thuốc phiện", "hàng lậu"
+];
 
 // Form tạo đơn hàng mới
 export default function CustomerCreateShipment() {
@@ -132,8 +137,31 @@ export default function CustomerCreateShipment() {
     serviceType,
   ]);
 
-  const handleChange = (e) =>
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  const handleChange = (e) => {
+    let { name, value } = e.target;
+
+    if (name === "sender_phone" || name === "receiver_phone") {
+      value = value.replace(/\D/g, "");
+    }
+
+    if (name === "quantity" || name === "weight_kg") {
+      if (Number(value) > 100) {
+        toast.error("Quá số kiện hoặc khối lượng cho phép. Vui lòng liên hệ với chúng tôi để tạo đơn hàng lớn!", {
+          id: "limit-toast",
+          style: {
+            background: "#fee2e2",
+            color: "#b91c1c",
+            fontWeight: "bold",
+            border: "1px solid #ef4444",
+          },
+          icon: "🚫",
+        });
+        return;
+      }
+    }
+
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleResetAddress = (type) => {
     if (type === "pickup")
@@ -274,6 +302,34 @@ export default function CustomerCreateShipment() {
     if (!form.pickup_lat || !form.delivery_lat)
       return toast.error("Vui lòng chọn vị trí lấy và giao hàng");
 
+    if (pickupOption === "sender") {
+      if (!form.sender_phone.startsWith("0") || form.sender_phone.length !== 10) {
+        return toast.error("Số điện thoại người gửi phải bắt đầu bằng số 0 và có đúng 10 chữ số!");
+      }
+    }
+
+    if (!form.receiver_phone.startsWith("0") || form.receiver_phone.length !== 10) {
+      return toast.error("Số điện thoại người nhận phải bắt đầu bằng số 0 và có đúng 10 chữ số!");
+    }
+
+    if (Number(form.quantity) > 100 || Number(form.weight_kg) > 100) {
+      return toast.error("Quá số kiện hoặc khối lượng cho phép. Vui lòng liên hệ với chúng tôi để tạo đơn hàng lớn!", {
+        id: "limit-toast",
+        style: { background: "#fee2e2", color: "#b91c1c", fontWeight: "bold", border: "1px solid #ef4444" },
+        icon: "🚫"
+      });
+    }
+
+    const itemNameLower = form.item_name.toLowerCase();
+    const hasForbiddenWord = FORBIDDEN_WORDS.some(word => itemNameLower.includes(word));
+    if (hasForbiddenWord) {
+      return toast.error("Tên hàng hóa chứa từ khóa cấm (vũ khí, chất cháy nổ, ma túy...). Vui lòng kiểm tra lại!", {
+        id: "forbidden-toast",
+        style: { background: "#fee2e2", color: "#b91c1c", fontWeight: "bold", border: "1px solid #ef4444" },
+        icon: "⚠️"
+      });
+    }
+
     setCreating(true);
     try {
       const payload = {
@@ -298,8 +354,9 @@ export default function CustomerCreateShipment() {
       navigate("/customer/payment", {
         state: {
           shipment_id: newShipmentId,
-          amount: estimatedFee,
-          cod: form.cod_amount,
+          amount: estimatedFee + Number(form.cod_amount || 0),
+          shipping_fee: estimatedFee,
+          cod: form.cod_amount || 0,
         },
       });
     } catch (err) {

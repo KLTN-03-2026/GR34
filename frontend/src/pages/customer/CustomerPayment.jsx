@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import API from "../../services/api";
 import toast from "react-hot-toast";
@@ -19,7 +19,7 @@ export default function CustomerPayment() {
   const navigate = useNavigate();
 
 
-  const { shipment_id, amount, cod } = location.state || {};
+  const { shipment_id, amount, shipping_fee, cod } = location.state || {};
 
   const [paymentMethod, setPaymentMethod] = useState("Wallet");
   const [loading, setLoading] = useState(false);
@@ -311,9 +311,15 @@ export default function CustomerPayment() {
                 </span>
               </div>
               <div className="flex justify-between">
+                <span>Phí vận chuyển:</span>
+                <span className="font-medium">
+                  {Number(shipping_fee || 0).toLocaleString()}₫
+                </span>
+              </div>
+              <div className="flex justify-between">
                 <span>COD:</span>
                 <span className="font-medium">
-                  {Number(cod).toLocaleString()}₫
+                  {Number(cod || 0).toLocaleString()}₫
                 </span>
               </div>
               <div className="h-px bg-gray-100 my-2"></div>
