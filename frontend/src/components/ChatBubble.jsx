@@ -16,12 +16,9 @@ export default function ChatBubble({ onClose }) {
   const [collapsed, setCollapsed] = useState(false);
   const [chatId, setChatId] = useState(null);
 
-
   const [showToast, setShowToast] = useState(false);
 
-
   const [isMobile, setIsMobile] = useState(false);
-
 
   const [messages, setMessages] = useState([
     {
@@ -35,17 +32,14 @@ export default function ChatBubble({ onClose }) {
   const [ready, setReady] = useState(false);
   const messagesEndRef = useRef(null);
 
-
   const socketRef = useRef(null);
 
   const userId = localStorage.getItem("userId");
   const role = localStorage.getItem("role");
 
-
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, collapsed]);
-
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -53,7 +47,6 @@ export default function ChatBubble({ onClose }) {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
-
 
   useEffect(() => {
     if (!userId || role !== "customer") {
@@ -106,21 +99,18 @@ export default function ChatBubble({ onClose }) {
     };
 
     const onChatEnded = () => {
-
       setShowToast(true);
 
       setReady(false);
 
       setCollapsed(false);
 
-
       setTimeout(() => {
         onClose();
       }, 4000);
     };
 
-    const onConnectError = (err) => {
-    };
+    const onConnectError = (err) => {};
 
     socket.on("connect", () => {
       socket.emit("startChat", userId);
@@ -145,7 +135,6 @@ export default function ChatBubble({ onClose }) {
       socketRef.current = null;
     };
   }, [userId, role, onClose]);
-
 
   const sendMessage = () => {
     if (!input.trim()) return;
