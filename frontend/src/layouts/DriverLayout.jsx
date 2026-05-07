@@ -1,4 +1,4 @@
-﻿
+
 import { useEffect, useState } from "react";
 import { NavLink, Outlet, useNavigate, useParams } from "react-router-dom";
 import {
@@ -11,6 +11,7 @@ import {
   Menu,
   X,
   User,
+  ChevronRight,
 } from "lucide-react";
 import DriverNotifications from "../components/DriverNotifications";
 
@@ -82,7 +83,7 @@ export default function DriverLayout() {
   if (!driverId) return null;
 
   return (
-    <div className="flex min-h-screen bg-slate-50 relative">
+    <div className="flex h-screen bg-slate-50 relative overflow-hidden">
       {/* Render điều kiện */}
       {isMobileMenuOpen && (
         <div
@@ -148,27 +149,34 @@ export default function DriverLayout() {
         </div>
 
         {/* Phần giao diện */}
-        <div className="p-4 border-t border-blue-700/50 space-y-3 bg-blue-900/50">
-          <button
-            onClick={() => navigate("/")}
-            className="w-full flex items-center justify-center gap-2 bg-blue-800/50 hover:bg-blue-700 text-blue-200 py-2.5 rounded-lg font-medium transition duration-200 border border-blue-700"
-          >
-            <Home size={18} /> Về trang chủ
-          </button>
-
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white py-2.5 rounded-lg font-bold transition duration-200 shadow-md shadow-red-900/20"
-          >
-            <LogOut size={18} /> Đăng xuất
-          </button>
+        <div className="p-4 bg-blue-950 border-t border-white/10 shrink-0">
+          <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors cursor-pointer group">
+            <div className="flex items-center gap-3 overflow-hidden">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-sm font-bold text-white shadow-inner shrink-0">
+                {username.charAt(0).toUpperCase()}
+              </div>
+              <div className="overflow-hidden">
+                <h4 className="text-sm font-bold text-white truncate max-w-[100px] group-hover:text-orange-400 transition-colors">
+                  {username}
+                </h4>
+                <p className="text-[10px] text-blue-200">Tài xế SpeedyShip</p>
+              </div>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="text-blue-200 hover:text-red-400 transition-colors shrink-0"
+              title="Đăng xuất"
+            >
+              <LogOut size={18} />
+            </button>
+          </div>
         </div>
       </aside>
 
       {/* Phần giao diện */}
-      <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden relative">
         {/* Phần giao diện */}
-        <header className="bg-white shadow-sm p-4 flex items-center justify-between sticky top-0 z-30">
+        <header className="bg-white shadow-sm p-4 flex items-center justify-between z-10 shrink-0 border-b border-gray-100">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setIsMobileMenuOpen(true)}
@@ -180,9 +188,16 @@ export default function DriverLayout() {
               SpeedyShip Driver
             </span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 md:gap-4 shrink-0">
             <DriverNotifications driverId={driverId} />
-            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-bold">
+            <div className="hidden md:block h-6 w-[1px] bg-gray-200"></div>
+            <button
+              onClick={() => navigate("/")}
+              className="hidden md:flex items-center gap-1 text-xs font-bold text-slate-600 hover:text-orange-600 transition-colors px-3 py-1.5 rounded-lg hover:bg-slate-100"
+            >
+              Trang chủ <ChevronRight size={14} />
+            </button>
+            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-bold ml-1">
               {username.charAt(0)}
             </div>
           </div>

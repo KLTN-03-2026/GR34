@@ -1,6 +1,8 @@
-﻿import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
+import { useChat } from "../hooks/useChat";
+import ChatBubble from "../components/ChatBubble";
 import API from "../services/api";
 import toast, { Toaster } from "react-hot-toast";
 import {
@@ -11,20 +13,16 @@ import {
   FaPaperPlane,
 } from "react-icons/fa";
 
-
 import Map, { Marker, Popup, NavigationControl } from "react-map-gl";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
-
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
-
 
 const OFFICE_COORDS = {
   lat: 16.0544,
   lng: 108.2022,
 };
-
 
 const OfficeMarker = ({ onClick }) => {
   return (
@@ -51,6 +49,8 @@ const OfficeMarker = ({ onClick }) => {
 // Trang liên hệ
 export default function Contact() {
   const mapRef = useRef(null);
+  const miniBarRef = useRef(null);
+  const imgRef = useRef(null);
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -59,10 +59,38 @@ export default function Contact() {
   });
 
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
   const [showPopup, setShowPopup] = useState(true);
+
+  const { supportOpen, openSupportChat, closeSupportChat } = useChat();
 
   useEffect(() => {
     AOS.init({ duration: 800, once: true });
+    window.scrollTo(0, 0);
+    let rafId;
+    const handleScroll = () => {
+      rafId = requestAnimationFrame(() => {
+        if (!miniBarRef.current) return;
+        const scrollY = window.scrollY;
+        if (scrollY > 380) {
+          miniBarRef.current.style.opacity = "1";
+          miniBarRef.current.style.transform = "translateY(0%)";
+        } else {
+          miniBarRef.current.style.opacity = "0";
+          miniBarRef.current.style.transform = "translateY(-110%)";
+        }
+        if (imgRef.current) {
+          const progress = Math.min(scrollY / 600, 1);
+          imgRef.current.style.transform = `scale(${1 - progress * 0.12})`;
+          imgRef.current.style.opacity = 1 - progress * 0.5;
+        }
+      });
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      cancelAnimationFrame(rafId);
+    };
   }, []);
 
   useEffect(() => {
@@ -74,12 +102,38 @@ export default function Contact() {
     });
   }, []);
 
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    if (name === "phone") {
+      if (!/^\d*$/.test(value)) return;
+      if (value.length > 10) return;
+    }
+    setForm({ ...form, [name]: value });
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
+  };
 
-// Xử lý submit form
+  // Xử lý submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const newErrors = {};
+    if (!form.name.trim()) newErrors.name = "Vui lòng nhập họ và tên.";
+    if (!form.email) {
+      newErrors.email = "Vui lòng nhập email.";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      newErrors.email = "Email không đúng định dạng (VD: abc@gmail.com).";
+    }
+    if (form.phone && !/^0\d{9}$/.test(form.phone)) {
+      newErrors.phone = "SĐT phải bắt đầu bằng 0 và đủ 10 số.";
+    }
+    if (!form.message.trim()) newErrors.message = "Vui lòng nhập nội dung tin nhắn.";
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return toast.error("⚠️ Vui lòng kiểm tra lại thông tin!");
+    }
+    setErrors({});
+
     setLoading(true);
     try {
       await API.post("/contact", form);
@@ -96,49 +150,141 @@ export default function Contact() {
     <div className="font-sans bg-gray-50">
       <Toaster position="top-center" />
 
-      {/* Khối nội dung */}
-      <section className="pt-32 pb-20 bg-[#113e48] text-white text-center relative overflow-hidden">
-        {/* Phần giao diện */}
-        <div className="absolute inset-0 opacity-10 pointer-events-none">
-          <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-            <pattern
-              id="grid-pattern"
-              width="40"
-              height="40"
-              patternUnits="userSpaceOnUse"
-            >
-              <path
-                d="M0 40L40 0H20L0 20M40 40V20L20 40"
-                stroke="currentColor"
-                strokeWidth="1"
-                fill="none"
-              />
-            </pattern>
-            <rect width="100%" height="100%" fill="url(#grid-pattern)" />
-          </svg>
-        </div>
-
-        <div className="relative z-10 px-6">
-          <span
-            className="text-orange-500 font-bold uppercase tracking-widest text-sm mb-4 block"
-            data-aos="fade-down"
-          >
-            Hỗ trợ 24/7
+      {/* Mini-bar */}
+      <div
+        ref={miniBarRef}
+        className="fixed top-[65px] left-0 right-0 z-30 h-16 bg-[#113e48]/97 backdrop-blur-md shadow-xl px-6 flex items-center"
+        style={{
+          opacity: 0,
+          transform: "translateY(-110%)",
+          transition: "opacity 0.4s ease, transform 0.4s ease",
+        }}
+      >
+        <div className="max-w-7xl mx-auto w-full flex items-center justify-between gap-4">
+          <span className="text-orange-300 font-bold text-sm tracking-widest uppercase whitespace-nowrap">
+            📞 Liên Hệ & Hỗ Trợ SpeedyShip
           </span>
-          <h2
-            className="text-4xl md:text-5xl font-extrabold mb-6"
-            data-aos="fade-up"
-          >
-            Liên hệ & Hỗ trợ
-          </h2>
-          <p
-            className="text-gray-300 max-w-2xl mx-auto text-lg leading-relaxed"
-            data-aos="fade-up"
-            data-aos-delay="100"
-          >
-            SpeedyShip Đà Nẵng luôn sẵn sàng lắng nghe và hỗ trợ bạn mọi lúc mọi
-            nơi. Hãy để lại lời nhắn, chúng tôi sẽ phản hồi ngay lập tức.
-          </p>
+          <div className="flex items-center gap-3">
+            {[
+              { num: "24/7", label: "Hỗ trợ" },
+              { num: "1900 888 999", label: "Hotline" },
+              { num: "<1h", label: "Phản hồi" },
+              { num: "100%", label: "Tận tâm" },
+            ].map((s, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-1.5 bg-slate-400/20 backdrop-blur-sm border border-slate-200/20 rounded-full px-3 py-1"
+              >
+                <span className="text-white font-extrabold text-sm leading-none">
+                  {s.num}
+                </span>
+                <span className="text-white/70 text-xs hidden sm:block">
+                  {s.label}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Banner ảnh */}
+      <section className="w-full overflow-hidden banner-entrance">
+        <img
+          ref={imgRef}
+          src="/assets/img/contact_banner.png"
+          alt="Contact Banner"
+          className="w-full block object-contain"
+          style={{
+            transformOrigin: "top center",
+            willChange: "transform, opacity",
+          }}
+        />
+      </section>
+
+      {/* Header section */}
+      <section
+        className="relative overflow-hidden py-20 px-6"
+        style={{
+          background:
+            "linear-gradient(135deg, #0f2027 0%, #113e48 50%, #203a43 100%)",
+        }}
+      >
+        <div className="absolute top-0 right-0 w-80 h-80 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-60 h-60 bg-blue-400/10 rounded-full blur-2xl pointer-events-none" />
+
+        <div className="relative max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+          {/* Trái: tiêu đề */}
+          <div data-aos="fade-right">
+            <span className="inline-block py-1.5 px-4 rounded-full bg-white/10 border border-white/20 text-orange-400 text-sm font-bold mb-6 tracking-widest uppercase backdrop-blur-sm">
+              Hỗ trợ 24/7
+            </span>
+            <h1 className="text-4xl md:text-5xl font-extrabold mb-5 leading-tight text-white">
+              Liên hệ &amp; Hỗ trợ <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-yellow-300">
+                SpeedyShip
+              </span>
+            </h1>
+            <p className="text-gray-300 text-lg leading-relaxed mb-8 max-w-xl">
+              SpeedyShip Đà Nẵng luôn sẵn sàng lắng nghe và hỗ trợ bạn mọi lúc
+              mọi nơi. Hãy để lại lời nhắn, chúng tôi sẽ phản hồi ngay lập tức.
+            </p>
+            <div className="flex flex-wrap gap-4">
+              <button
+                onClick={openSupportChat}
+                className="px-8 py-4 bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-600 hover:to-orange-500 text-white font-bold rounded-full shadow-lg shadow-orange-500/30 hover:-translate-y-1 transition-all flex items-center gap-2"
+              >
+                Gửi tin nhắn ↓
+              </button>
+              <a
+                href="tel:1900888999"
+                className="px-8 py-4 bg-white/10 backdrop-blur-sm border border-white/30 hover:bg-white hover:text-[#113e48] text-white font-bold rounded-full transition-all flex items-center gap-2"
+              >
+                📞 1900 888 999
+              </a>
+            </div>
+          </div>
+
+          {/* Phải: stats cards */}
+          <div className="grid grid-cols-2 gap-4" data-aos="fade-left">
+            {[
+              {
+                num: "24/7",
+                label: "Hỗ trợ",
+                sub: "Luôn sẵn sàng",
+                color: "from-slate-400/25 to-slate-600/15",
+              },
+              {
+                num: "<1h",
+                label: "Phản hồi",
+                sub: "Tốc độ xử lý",
+                color: "from-blue-400/25 to-blue-600/15",
+              },
+              {
+                num: "1900 888 999",
+                label: "Hotline",
+                sub: "Gọi miễn phí",
+                color: "from-indigo-400/25 to-indigo-600/15",
+                small: true,
+              },
+              {
+                num: "100%",
+                label: "Tận tâm",
+                sub: "Cam kết chất lượng",
+                color: "from-slate-500/25 to-blue-700/15",
+              },
+            ].map((s, i) => (
+              <div
+                key={i}
+                className={`bg-gradient-to-br ${s.color} backdrop-blur-md border border-white/10 rounded-2xl p-4 hover:-translate-y-1 transition-all shadow-lg`}
+                data-aos="zoom-in"
+                data-aos-delay={i * 80}
+              >
+                <div className={`font-extrabold text-white mb-1 ${s.small ? "text-lg leading-tight" : "text-2xl"}`}>{s.num}</div>
+                <div className="text-sm font-bold text-white/90">{s.label}</div>
+                <div className="text-xs text-white/60 mt-0.5">{s.sub}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -272,9 +418,13 @@ export default function Contact() {
                 value={form.name}
                 onChange={handleChange}
                 placeholder="Nhập tên của bạn..."
-                className="w-full border border-gray-200 bg-gray-50 p-3.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
-                required
+                className={`w-full border bg-gray-50 p-3.5 rounded-xl focus:outline-none focus:ring-2 transition-all ${
+                  errors.name
+                    ? "border-red-400 focus:ring-red-400/20 focus:border-red-400"
+                    : "border-gray-200 focus:ring-orange-500/20 focus:border-orange-500"
+                }`}
               />
+              {errors.name && <p className="text-red-500 text-xs mt-1.5 flex items-center gap-1">⚠ {errors.name}</p>}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -283,27 +433,38 @@ export default function Contact() {
                   Email *
                 </label>
                 <input
-                  type="email"
+                  type="text"
                   name="email"
                   value={form.email}
                   onChange={handleChange}
                   placeholder="example@email.com"
-                  className="w-full border border-gray-200 bg-gray-50 p-3.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
-                  required
+                  className={`w-full border bg-gray-50 p-3.5 rounded-xl focus:outline-none focus:ring-2 transition-all ${
+                    errors.email
+                      ? "border-red-400 focus:ring-red-400/20 focus:border-red-400"
+                      : "border-gray-200 focus:ring-orange-500/20 focus:border-orange-500"
+                  }`}
                 />
+                {errors.email && <p className="text-red-500 text-xs mt-1.5 flex items-center gap-1">⚠ {errors.email}</p>}
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Số điện thoại
                 </label>
                 <input
-                  type="tel"
+                  type="text"
                   name="phone"
                   value={form.phone}
                   onChange={handleChange}
-                  placeholder="0905..."
-                  className="w-full border border-gray-200 bg-gray-50 p-3.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                  placeholder="VD: 0901234567"
+                  maxLength={10}
+                  inputMode="numeric"
+                  className={`w-full border bg-gray-50 p-3.5 rounded-xl focus:outline-none focus:ring-2 transition-all ${
+                    errors.phone
+                      ? "border-red-400 focus:ring-red-400/20 focus:border-red-400"
+                      : "border-gray-200 focus:ring-orange-500/20 focus:border-orange-500"
+                  }`}
                 />
+                {errors.phone && <p className="text-red-500 text-xs mt-1.5 flex items-center gap-1">⚠ {errors.phone}</p>}
               </div>
             </div>
 
@@ -317,9 +478,13 @@ export default function Contact() {
                 value={form.message}
                 onChange={handleChange}
                 placeholder="Bạn cần hỗ trợ vấn đề gì?..."
-                className="w-full border border-gray-200 bg-gray-50 p-3.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all resize-none"
-                required
+                className={`w-full border bg-gray-50 p-3.5 rounded-xl focus:outline-none focus:ring-2 transition-all resize-none ${
+                  errors.message
+                    ? "border-red-400 focus:ring-red-400/20 focus:border-red-400"
+                    : "border-gray-200 focus:ring-orange-500/20 focus:border-orange-500"
+                }`}
               />
+              {errors.message && <p className="text-red-500 text-xs mt-1.5 flex items-center gap-1">⚠ {errors.message}</p>}
             </div>
 
             <button
@@ -366,6 +531,7 @@ export default function Contact() {
           </div>
         </div>
       </section>
+      {supportOpen && <ChatBubble onClose={closeSupportChat} />}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-﻿import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import ChatBubble from "../ChatBubble.jsx";
 import { useState } from "react";
 import { FaRocket, FaComments, FaArrowRight } from "react-icons/fa";
@@ -6,6 +6,18 @@ import { FaRocket, FaComments, FaArrowRight } from "react-icons/fa";
 export default function FinalCTA({ onChat }) {
   const [showChatSupport, setShowChatSupport] = useState(false);
 
+  const navigate = useNavigate();
+
+  const handleCreateOrder = () => {
+    const role = localStorage.getItem("role");
+    if (!role) {
+      navigate("/login");
+    } else if (role !== "customer") {
+      alert("Chức năng tạo đơn hàng chỉ dành cho tài khoản Khách hàng.");
+    } else {
+      navigate("/customer/create-order");
+    }
+  };
 
   const handleChatClick = () => {
     if (onChat) {
@@ -64,14 +76,14 @@ export default function FinalCTA({ onChat }) {
           {/* Phần giao diện */}
           <div className="flex flex-col sm:flex-row gap-4 shrink-0">
             {/* Phần giao diện */}
-            <Link
-              to="/customer/create-order"
+            <button
+              onClick={handleCreateOrder}
               className="group inline-flex items-center justify-center gap-3 px-8 py-4 rounded-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-lg shadow-xl shadow-orange-500/30 transition-all transform hover:-translate-y-1"
             >
               <FaRocket className="group-hover:animate-pulse" />
               <span>Tạo đơn ngay</span>
               <FaArrowRight className="text-sm opacity-70 group-hover:translate-x-1 transition-transform" />
-            </Link>
+            </button>
 
             {/* Nút hành động */}
             <button

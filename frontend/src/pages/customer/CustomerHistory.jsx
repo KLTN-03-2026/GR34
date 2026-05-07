@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../../services/api";
 import toast, { Toaster } from "react-hot-toast";
@@ -278,7 +278,8 @@ export default function CustomerHistory() {
                 currentShipments.map((s) => (
                   <tr
                     key={s.id}
-                    className="hover:bg-gray-50/50 transition-colors group"
+                    onClick={() => navigate(`/customer/history/${s.id}`)}
+                    className="hover:bg-gray-50/50 transition-colors group cursor-pointer"
                   >
                     <td className="px-6 py-4 font-bold text-[#113e48]">
                       {s.tracking_code}
@@ -303,7 +304,10 @@ export default function CustomerHistory() {
                     <td className="px-6 py-4 text-center">
                       <div className="flex justify-start gap-2 w-[72px] mx-auto opacity-80 group-hover:opacity-100 transition-opacity">
                         <button
-                          onClick={() => navigate(`/customer/history/${s.id}`)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/customer/history/${s.id}`);
+                          }}
                           className="p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
                           title="Xem chi tiết"
                         >
@@ -313,9 +317,10 @@ export default function CustomerHistory() {
                         {(s.status === "completed" ||
                           s.status === "delivered") && (
                           <button
-                            onClick={() =>
-                              navigate(`/customer/feedback?shipment_id=${s.id}`)
-                            }
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/customer/feedback?shipment_id=${s.id}`);
+                            }}
                             className="p-2 text-yellow-600 bg-yellow-50 hover:bg-yellow-100 rounded-lg transition-colors"
                             title="Đánh giá"
                           >
@@ -327,7 +332,8 @@ export default function CustomerHistory() {
                           <button
                             className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
                             title="Hủy đơn"
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
                               if (confirm("Bạn chắc chắn muốn hủy đơn này?")) {
 
                                 toast.success("Đã gửi yêu cầu hủy đơn");

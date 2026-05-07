@@ -30,22 +30,24 @@ export const askBot = async (req, res) => {
 
 
     const askTrackingIntent =
-      /(đơn.*đâu|đang ở đâu|tới đâu rồi|đơn hàng của tôi|đơn của tôi)/i;
+      /(đơn.*đâu|đang ở đâu|tới đâu rồi|đơn hàng của tôi|đơn của tôi|tra cứu)/i;
 
-
-
-    const codeMatch = message.toUpperCase().match(/SP[0-9]{6,}/);
-
+    const codeMatch = message.toUpperCase().match(/([A-Z]{2,3}-[0-9]{5,}|SP[0-9]{5,})/);
 
     if (askTrackingIntent.test(msg) && !codeMatch) {
       return res.json({
         reply:
-          "📦 Bạn muốn tra cứu đơn hàng phải không?\nVui lòng cung cấp mã vận đơn (VD: *SP123456*).",
+          "📦 Bạn muốn tra cứu đơn hàng phải không?\nVui lòng cung cấp mã vận đơn kèm câu lệnh (VD: *Tra cứu đơn DN-897658* hoặc *Tra cứu SP123456*).",
       });
     }
 
+    if (codeMatch && !askTrackingIntent.test(msg)) {
+      return res.json({
+        reply: `📦 Hình như bạn đang cung cấp mã vận đơn *${codeMatch[0]}*.\nNếu muốn kiểm tra lộ trình, vui lòng gõ rõ: **Tra cứu đơn hàng ${codeMatch[0]}**`
+      });
+    }
 
-    if (codeMatch) {
+    if (codeMatch && askTrackingIntent.test(msg)) {
       const trackingCode = codeMatch[0];
 
       try {
@@ -53,20 +55,40 @@ export const askBot = async (req, res) => {
           `http://localhost:5000/api/shipments/code/${trackingCode}`
         );
 
-        return res.json({
-          reply: `
-📦 *Kết quả tra cứu đơn ${trackingCode}:*
+        const statusMap = {
+          pending: "Chờ lấy hàng",
+          created: "Chờ lấy hàng",
+          picking: "Đang lấy hàng",
+          delivering: "Đang giao hàng",
+          transit: "Đang giao hàng",
+          shipping: "Đang giao hàng",
+          delivered: "Giao thành công",
+          completed: "Giao thành công",
+          success: "Giao thành công",
+          failed: "Giao thất bại",
+          returning: "Đang hoàn hàng",
+          returned: "Đã hoàn hàng",
+          cancel: "Đã hủy"
+        };
+        const translatedStatus = statusMap[data.status?.toLowerCase()] || data.status;
 
-• Người gửi: ${data.sender_name}
-• Người nhận: ${data.receiver_name}
-• Trạng thái: *${data.status}*
-• Lấy hàng: ${data.pickup_address}
-• Giao đến: ${data.delivery_address}
-🔗 **Theo dõi chi tiết:**
+        return res.json({
+          reply: `🔍 **THÔNG TIN ĐƠN HÀNG: ${trackingCode}**
+━━━━━━━━━━━━━━━━━━
+
+📤 **Gửi từ:** ${data.sender_name}
+📍 ${data.pickup_address}
+
+📥 **Giao đến:** ${data.receiver_name}
+📍 ${data.delivery_address}
+
+🚥 **Trạng thái:** *${translatedStatus}*
+
+━━━━━━━━━━━━━━━━━━
+🗺️ **Xem hành trình GPS trực tiếp tại:**
 http://localhost:5173/tracking?code=${trackingCode}
 
-👉 Cảm ơn bạn đã dùng SpeedyShip!
-`,
+💙 Cảm ơn bạn đã tin dùng SpeedyShip!`,
         });
       } catch (err) {
         return res.json({

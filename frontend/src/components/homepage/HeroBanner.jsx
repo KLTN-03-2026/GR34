@@ -1,4 +1,4 @@
-﻿import { Swiper, SwiperSlide } from "swiper/react";
+import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination, Navigation, EffectFade } from "swiper/modules";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -18,7 +18,6 @@ import { useChat } from "../../hooks/useChat.js";
 export default function HeroBanner() {
   const navigate = useNavigate();
   const { openAIChat } = useChat();
-
 
   const [trackingCode, setTrackingCode] = useState("");
   const [shipment, setShipment] = useState(null);
@@ -45,7 +44,6 @@ export default function HeroBanner() {
     }
   };
 
-
   useEffect(() => {
     if (swiperRef && swiperRef.autoplay) {
       if (shipment || loading || trackingCode.length > 0) {
@@ -65,7 +63,7 @@ export default function HeroBanner() {
 
     try {
       const res = await axios.get(
-        `http://localhost:5000/api/shipments/code/${trackingCode.trim()}`
+        `http://localhost:5000/api/shipments/code/${trackingCode.trim()}`,
       );
       setShipment(res.data);
     } catch (err) {
@@ -78,11 +76,10 @@ export default function HeroBanner() {
   const handleCreateShipment = () => {
     const role = localStorage.getItem("role");
     if (!role || role !== "customer") return navigate("/login");
-    return navigate("/customer/create");
+    return navigate("/customer/create-order");
   };
 
   return (
-
     <section className="relative h-[750px] md:min-h-[80vh]">
       <Swiper
         centeredSlides
@@ -235,21 +232,21 @@ export default function HeroBanner() {
             />
             <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-black/10 to-transparent" />
 
-            <div
+            {/* <div
               className="
-              relative md:absolute md:top-[18%] md:right-[28%] md:-translate-y-1/2
+              relative md:absolute md:top-[20%] md:right-[42%] md:-translate-y-1/2
               w-[90%] md:w-[300px]
               bg-gradient-to-b from-white/65 via-white/20 to-white/5 backdrop-blur-2xl border border-white/30 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.35)]
               p-6 z-30 space-y-2 text-white text-center md:text-left
             "
             >
-              <h1 className="text-2xl md:text-3xl font-extrabold leading-tight text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.35)]">
+              <h1 className="text-2xl md:text-3xl font-extrabold leading-tight text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.15)]">
                 Ship Hàng Thả Ga, Giá Chỉ Từ 15k!
               </h1>
               <p className="text-white text-base md:text-lg font-extrabold leading-tight">
                 Giá rẻ bất ngờ — Chốt đơn ngay chờ chi
               </p>
-            </div>
+            </div> */}
           </section>
         </SwiperSlide>
 
@@ -262,7 +259,7 @@ export default function HeroBanner() {
               className="absolute inset-0 w-full h-full object-cover"
             />
 
-            <div
+            {/* <div
               className="
               relative md:absolute md:right-[1%] md:top-[13%] md:left-[25%] md:-translate-y-1/2
               w-[90%] md:w-[340px]
@@ -276,7 +273,7 @@ export default function HeroBanner() {
               <p className="text-gray-700 text-base md:text-lg font-extrabold leading-tight">
                 Bảo đảm quyền lợi khách hàng.
               </p>
-            </div>
+            </div> */}
           </section>
         </SwiperSlide>
       </Swiper>

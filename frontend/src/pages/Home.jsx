@@ -1,9 +1,9 @@
-﻿import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import HeroBanner from "../components/homepage/HeroBanner";
 
 import RealtimeSection from "../components/homepage/RealtimeSection";
-import Testimonials from "../components/homepage/Testimonials";
+import FAQSection from "../components/homepage/FAQSection";
 import FinalCTA from "../components/homepage/FinalCTA";
 
 import ChatBubble from "../components/ChatBubble";
@@ -63,7 +63,7 @@ export default function Home() {
       {/* Phần giao diện */}
       <RealtimeSection onChatAI={openAIChat} />
 
-      <Testimonials />
+      <FAQSection />
 
       {/* Phần giao diện */}
 

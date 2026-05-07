@@ -1,4 +1,4 @@
-﻿import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import {
   FaBolt,
@@ -15,9 +15,39 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 
 export default function ExpressDelivery() {
+  const imgRef = useRef(null);
+  const miniBarRef = useRef(null);
+
   useEffect(() => {
     AOS.init({ duration: 800, once: true });
     window.scrollTo(0, 0);
+
+    let rafId;
+    const handleScroll = () => {
+      rafId = requestAnimationFrame(() => {
+        const scrollY = window.scrollY;
+        if (imgRef.current) {
+          const scale = Math.max(0.88, 1 - scrollY * 0.00018);
+          const opacity = Math.max(0.45, 1 - scrollY * 0.0014);
+          imgRef.current.style.transform = `scale(${scale})`;
+          imgRef.current.style.opacity = opacity;
+        }
+        if (miniBarRef.current) {
+          if (scrollY > 380) {
+            miniBarRef.current.style.opacity = "1";
+            miniBarRef.current.style.transform = "translateY(0)";
+          } else {
+            miniBarRef.current.style.opacity = "0";
+            miniBarRef.current.style.transform = "translateY(-110%)";
+          }
+        }
+      });
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      cancelAnimationFrame(rafId);
+    };
   }, []);
 
   const servicePackages = [
@@ -65,43 +95,105 @@ export default function ExpressDelivery() {
   return (
     <div className="font-sans bg-slate-50 text-slate-700">
       {/* Khối nội dung */}
-      <section className="relative h-[500px] flex items-center overflow-hidden">
-        {/* Phần giao diện */}
-        <div className="absolute inset-0 z-0">
-          <img
-            src="https://images.unsplash.com/photo-1557166983-5939644443a0?auto=format&fit=crop&w=1920&q=80"
-            alt="Fast Delivery"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#113e48] via-[#113e48]/80 to-transparent"></div>
+      {/* Mini-bar - luôn tồn tại trong DOM, ẩn/hiện qua CSS transform */}
+      <div
+        ref={miniBarRef}
+        className="fixed top-[65px] left-0 right-0 z-30 h-16 bg-[#1a0a00]/95 backdrop-blur-md shadow-xl px-6 flex items-center"
+        style={{
+          opacity: 0,
+          transform: "translateY(-110%)",
+          transition: "opacity 0.4s ease, transform 0.4s ease",
+        }}
+      >
+        <div className="max-w-7xl mx-auto w-full flex items-center justify-between gap-4">
+          {/* Tên dịch vụ */}
+          <span className="text-orange-300 font-bold text-sm tracking-widest uppercase whitespace-nowrap">
+            ⚡ Giao Hàng Hỏa Tốc — Nhanh Như Chớp
+          </span>
+          {/* 4 stat pills */}
+          <div className="flex items-center gap-3">
+            {[
+              { num: "60'", label: "Giao Trong" },
+              { num: "24/7", label: "Hoạt Động" },
+              { num: "100%", label: "Đền Bù" },
+              { num: "VIP", label: "Ưu Tiên" },
+            ].map((s, i) => (
+              <div key={i} className="flex items-center gap-1.5 bg-red-400/20 backdrop-blur-sm border border-red-200/20 rounded-full px-3 py-1">
+                <span className="text-white font-extrabold text-sm leading-none">{s.num}</span>
+                <span className="text-white/70 text-xs hidden sm:block">{s.label}</span>
+              </div>
+            ))}
+          </div>
         </div>
+      </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-6 text-white w-full">
-          <div className="max-w-2xl" data-aos="fade-right">
-            <div className="inline-flex items-center gap-2 py-1 px-4 rounded-full bg-red-600 text-white font-bold text-xs uppercase tracking-wider mb-6 animate-pulse">
-              <FaBolt /> Dịch vụ Premium
+      {/* Banner ảnh - zoom-out mườ́t khi cuộn */}
+      <section className="w-full overflow-hidden banner-entrance">
+        <img
+          ref={imgRef}
+          src="/assets/img/services_expressbanner.png"
+          alt="Fast Delivery"
+          className="w-full block object-contain"
+          style={{ transformOrigin: "top center", willChange: "transform, opacity" }}
+        />
+      </section>
+
+      {/* Tiêu đề trang - section đẹp bên dưới ảnh */}
+      <section className="relative overflow-hidden py-16 px-6" style={{background: "linear-gradient(135deg, #1a0a00 0%, #3d0e00 40%, #6b1a00 100%)"}}>
+        {/* Decorative blobs */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-red-500/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-72 h-72 bg-orange-500/10 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute top-1/2 right-1/4 w-48 h-48 bg-yellow-500/10 rounded-full blur-xl pointer-events-none" />
+
+        <div className="relative max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+          {/* Trái: tiêu đề + nút */}
+          <div data-aos="fade-right">
+            <div className="inline-flex items-center gap-2 py-1.5 px-4 rounded-full bg-red-600/80 text-white font-bold text-xs uppercase tracking-widest mb-6 border border-red-400/40 shadow-lg shadow-red-900/50">
+              <FaBolt className="animate-pulse" /> Dịch vụ Premium
             </div>
-            <h1 className="text-4xl md:text-6xl font-extrabold mb-6 leading-tight">
+            <h1 className="text-4xl md:text-5xl font-extrabold mb-5 leading-tight text-white">
               Giao Hàng Hỏa Tốc <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-yellow-400">
-                Nhanh Như Chớp
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-orange-400 to-yellow-300">
+                Nhanh Như Chớp ⚡
               </span>
             </h1>
-            <p className="text-lg md:text-xl text-gray-200 mb-8 leading-relaxed">
+            <p className="text-red-100/80 text-lg leading-relaxed mb-8 max-w-xl">
               Giải pháp vận chuyển nội thành siêu tốc độ. Cam kết giao nhận đúng
               hẹn từng phút, "cứu nguy" cho các đơn hàng gấp của bạn.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Link
-                to="/customer/create-order"
-                className="px-8 py-4 bg-red-600 hover:bg-red-700 text-white font-bold rounded-full shadow-lg hover:shadow-red-500/40 transition-all flex items-center justify-center gap-2"
+            <Link
+              to="/customer/create-order"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600 text-white px-8 py-4 rounded-full font-bold shadow-lg shadow-red-700/40 hover:-translate-y-1 transition-all"
+            >
+              Đặt xe Hỏa Tốc <FaArrowRight />
+            </Link>
+          </div>
+
+          {/* Phải: stats tốc độ */}
+          <div className="grid grid-cols-2 gap-4" data-aos="fade-left">
+            {[
+              { num: "60'", label: "Giao Trong", sub: "Nội thành tối thiểu", color: "from-red-400/25 to-red-600/15" },
+              { num: "24/7", label: "Hoạt Động", sub: "Không nghỉ lễ", color: "from-orange-400/25 to-orange-600/15" },
+              { num: "100%", label: "Đền Bù", sub: "Nếu giao trễ", color: "from-rose-400/25 to-rose-600/15" },
+              { num: "VIP", label: "Ưu Tiên", sub: "Xử lý hàng đầu", color: "from-red-500/25 to-orange-500/15" },
+            ].map((s, i) => (
+              <div
+                key={i}
+                className={`bg-gradient-to-br ${s.color} backdrop-blur-md border border-white/10 rounded-2xl p-5 hover:-translate-y-1 transition-all duration-300 shadow-lg`}
+                data-aos="zoom-in"
+                data-aos-delay={i * 100}
               >
-                Đặt xe Hỏa Tốc <FaArrowRight />
-              </Link>
-            </div>
+                <div className="text-3xl font-extrabold text-white mb-1">{s.num}</div>
+                <div className="text-sm font-bold text-white/90">{s.label}</div>
+                <div className="text-xs text-white/60 mt-0.5">{s.sub}</div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
+
+
+
 
       {/* Khối nội dung */}
       <section className="py-12 -mt-16 relative z-20 px-6">
@@ -224,12 +316,14 @@ export default function ExpressDelivery() {
       {/* Khối nội dung */}
       <section className="py-20 bg-white">
         <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
-          <div data-aos="fade-right">
+          <div data-aos="fade-right" className="relative overflow-hidden rounded-3xl shadow-2xl group cursor-pointer">
             <img
-              src="https://images.unsplash.com/photo-1616432043562-3671ea2e5242?auto=format&fit=crop&w=800&q=80"
+              src="/assets/img/services_express1.png"
               alt="Driver"
-              className="rounded-3xl shadow-2xl w-full object-cover h-[500px]"
+              className="w-full object-contain bg-white transform group-hover:scale-105 transition-transform duration-700"
             />
+            <div className="absolute inset-0 bg-[#113e48]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 mix-blend-multiply z-10"></div>
+            <div className="absolute top-0 -left-[100%] w-full h-full bg-white/20 skew-x-[45deg] group-hover:left-[100%] transition-all duration-700 ease-in-out z-20"></div>
           </div>
           <div data-aos="fade-left">
             <span className="text-red-600 font-bold uppercase tracking-wider text-sm">

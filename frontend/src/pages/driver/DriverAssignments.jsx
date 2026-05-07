@@ -1,4 +1,4 @@
-﻿
+
 import { useEffect, useState, useMemo, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import API from "../../services/api";
@@ -254,6 +254,11 @@ export default function DriverAssignments() {
 
   const filteredAssignments = useMemo(() => {
     return assignments.filter((a) => {
+      // Ẩn đơn hỏa tốc đã hoàn tất hoặc thất bại
+      if (a.service_type === "fast" && (a.status === "completed" || a.status === "failed")) {
+        return false;
+      }
+
       const matchStatus = filter === "all" || a.status === filter;
       const matchSearch =
         a.tracking_code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -278,7 +283,6 @@ export default function DriverAssignments() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] p-4 lg:p-8 space-y-6 pb-24">
-      <Toaster position="top-center" />
 
       {/* Phần giao diện */}
       <AnimatePresence>

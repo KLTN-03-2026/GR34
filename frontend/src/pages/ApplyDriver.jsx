@@ -1,6 +1,6 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import API from "../services/api";
-import toast from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import AOS from "aos";
 import "aos/dist/aos.css";
 
@@ -19,6 +19,8 @@ import {
 
 // Đăng ký làm tài xế
 export default function ApplyDriver() {
+  const miniBarRef = useRef(null);
+  const imgRef = useRef(null);
 
   const [form, setForm] = useState({
     name: "",
@@ -30,32 +32,81 @@ export default function ApplyDriver() {
   });
 
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     AOS.init({ duration: 900, once: true });
+    window.scrollTo(0, 0);
+    let rafId;
+    const handleScroll = () => {
+      rafId = requestAnimationFrame(() => {
+        if (!miniBarRef.current) return;
+        const scrollY = window.scrollY;
+        if (scrollY > 380) {
+          miniBarRef.current.style.opacity = "1";
+          miniBarRef.current.style.transform = "translateY(0%)";
+        } else {
+          miniBarRef.current.style.opacity = "0";
+          miniBarRef.current.style.transform = "translateY(-110%)";
+        }
+        if (imgRef.current) {
+          const progress = Math.min(scrollY / 600, 1);
+          imgRef.current.style.transform = `scale(${1 - progress * 0.12})`;
+          imgRef.current.style.opacity = 1 - progress * 0.5;
+        }
+      });
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      cancelAnimationFrame(rafId);
+    };
   }, []);
 
   const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+
+    // Chỉ cho nhập số cho phone
+    if (name === "phone") {
+      if (!/^\d*$/.test(value)) return;
+      if (value.length > 10) return;
+    }
+
+    setForm({ ...form, [name]: value });
+
+    // Xóa lỗi khi người dùng bắt đầu sửa
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
-// Xử lý submit form
+  // Xử lý submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!form.name || !form.phone || !form.email || !form.license_plate) {
-      return toast.error("⚠️ Vui lòng nhập đầy đủ thông tin bắt buộc!");
+    const newErrors = {};
+    if (!form.name.trim()) newErrors.name = "Vui lòng nhập họ và tên.";
+    if (!form.phone) {
+      newErrors.phone = "Vui lòng nhập số điện thoại.";
+    } else if (!/^0\d{9}$/.test(form.phone)) {
+      newErrors.phone = "SĐT phải bắt đầu bằng 0 và đủ 10 số.";
     }
+    if (!form.email) {
+      newErrors.email = "Vui lòng nhập email.";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      newErrors.email = "Email không đúng định dạng (VD: abc@gmail.com).";
+    }
+    if (!form.license_plate.trim()) newErrors.license_plate = "Vui lòng nhập biển số xe.";
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return toast.error("⚠️ Vui lòng kiểm tra lại thông tin!");
+    }
+    setErrors({});
 
     try {
       setLoading(true);
 
       const res = await API.post("/drivers/apply", form);
       toast.success(res.data.message);
-
 
       setForm({
         name: "",
@@ -74,43 +125,131 @@ export default function ApplyDriver() {
 
   return (
     <div className="font-sans bg-gray-50 text-slate-800">
-      {/* Khối nội dung */}
-      <section
-        className="relative py-28 bg-[#113e48] text-white overflow-hidden"
-        data-aos="fade-down"
+      <Toaster position="top-center" />
+      {/* Mini-bar */}
+      <div
+        ref={miniBarRef}
+        className="fixed top-[65px] left-0 right-0 z-30 h-16 bg-[#113e48]/97 backdrop-blur-md shadow-xl px-6 flex items-center"
+        style={{
+          opacity: 0,
+          transform: "translateY(-110%)",
+          transition: "opacity 0.4s ease, transform 0.4s ease",
+        }}
       >
-        {/* Phần giao diện */}
-        <div className="absolute inset-0 opacity-10 pointer-events-none">
-          <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-            <pattern
-              id="grid-pattern"
-              width="40"
-              height="40"
-              patternUnits="userSpaceOnUse"
-            >
-              <path
-                d="M0 40L40 0H20L0 20M40 40V20L20 40"
-                stroke="currentColor"
-                strokeWidth="1"
-                fill="none"
-              />
-            </pattern>
-            <rect width="100%" height="100%" fill="url(#grid-pattern)" />
-          </svg>
-        </div>
-
-        <div className="max-w-6xl mx-auto text-center px-6 relative z-10">
-          <span className="inline-block py-1 px-3 rounded-full bg-orange-500/20 border border-orange-500 text-orange-400 text-sm font-bold mb-4 tracking-wider uppercase">
-            Gia nhập đội ngũ
+        <div className="max-w-7xl mx-auto w-full flex items-center justify-between gap-4">
+          <span className="text-orange-300 font-bold text-sm tracking-widest uppercase whitespace-nowrap">
+            🚚 Tuyển Dụng Tài Xế SpeedyShip
           </span>
-          <h1 className="text-4xl md:text-5xl font-extrabold mb-6 leading-tight">
-            TUYỂN DỤNG TÀI XẾ{" "}
-            <span className="text-orange-500">SPEEDYSHIP</span>
-          </h1>
-          <p className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto">
-            Thu nhập ổn định – Thời gian linh hoạt – Môi trường chuyên nghiệp.
-            Cùng chúng tôi vận chuyển niềm tin trên mọi nẻo đường.
-          </p>
+          <div className="flex items-center gap-3">
+            {[
+              { num: "10tr+", label: "Thu nhập" },
+              { num: "24/7", label: "Hỗ trợ" },
+              { num: "Linh", label: "Thời gian" },
+              { num: "1000+", label: "Tài xế" },
+            ].map((s, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-1.5 bg-orange-400/20 backdrop-blur-sm border border-orange-200/20 rounded-full px-3 py-1"
+              >
+                <span className="text-white font-extrabold text-sm leading-none">
+                  {s.num}
+                </span>
+                <span className="text-white/70 text-xs hidden sm:block">
+                  {s.label}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Banner ảnh */}
+      <section className="w-full overflow-hidden banner-entrance">
+        <img
+          ref={imgRef}
+          src="/assets/img/driver_banner.png"
+          alt="Driver Recruitment"
+          className="w-full block object-contain"
+          style={{
+            transformOrigin: "top center",
+            willChange: "transform, opacity",
+          }}
+        />
+      </section>
+
+      {/* Header section */}
+      <section
+        className="relative overflow-hidden py-20 px-6"
+        style={{
+          background:
+            "linear-gradient(135deg, #0f2027 0%, #113e48 50%, #1a3a30 100%)",
+        }}
+      >
+        <div className="absolute top-0 right-0 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-green-500/10 rounded-full blur-2xl pointer-events-none" />
+        <div className="relative max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+          <div data-aos="fade-right">
+            <span className="inline-block py-1 px-3 rounded-full bg-orange-500/20 border border-orange-500 text-orange-400 text-sm font-bold mb-4 tracking-wider uppercase">
+              Gia nhập đội ngũ
+            </span>
+            <h1 className="text-4xl md:text-5xl font-extrabold mb-6 leading-tight text-white">
+              TUYỂN DỤNG TÀI XẾ{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-yellow-300">
+                SPEEDYSHIP
+              </span>
+            </h1>
+            <p className="text-lg text-gray-300 max-w-xl mb-8">
+              Thu nhập ổn định – Thời gian linh hoạt – Môi trường chuyên nghiệp.
+              Cùng chúng tôi vận chuyển niềm tin trên mọi nẻo đường.
+            </p>
+            <a
+              href="#apply-form"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-600 hover:to-orange-500 text-white font-bold rounded-full shadow-lg shadow-orange-500/30 hover:-translate-y-1 transition-all"
+            >
+              <FaTruck /> Nộp hồ sơ ngay
+            </a>
+          </div>
+          <div className="grid grid-cols-2 gap-4" data-aos="fade-left">
+            {[
+              {
+                num: "10-18tr",
+                label: "Thu nhập/tháng",
+                sub: "Tùy năng suất",
+                color: "from-green-400/25 to-green-600/15",
+              },
+              {
+                num: "24/7",
+                label: "Hỗ trợ",
+                sub: "Tài xế luôn có người",
+                color: "from-orange-400/25 to-orange-600/15",
+              },
+              {
+                num: "Linh",
+                label: "Thời gian",
+                sub: "Tự chủ lịch làm",
+                color: "from-amber-400/25 to-amber-600/15",
+              },
+              {
+                num: "1000+",
+                label: "Tài xế",
+                sub: "Đội ngũ hiện tại",
+                color: "from-green-500/25 to-emerald-700/15",
+              },
+            ].map((s, i) => (
+              <div
+                key={i}
+                className={`bg-gradient-to-br ${s.color} backdrop-blur-md border border-white/10 rounded-2xl p-5 hover:-translate-y-1 transition-all shadow-lg`}
+                data-aos="zoom-in"
+                data-aos-delay={i * 100}
+              >
+                <div className="text-2xl font-extrabold text-white mb-1">
+                  {s.num}
+                </div>
+                <div className="text-sm font-bold text-white/90">{s.label}</div>
+                <div className="text-xs text-white/60 mt-0.5">{s.sub}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -162,13 +301,14 @@ export default function ApplyDriver() {
       <section className="py-16 bg-white" data-aos="fade-right">
         <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
           {/* Phần giao diện */}
-          <div className="relative h-96 rounded-2xl overflow-hidden shadow-lg hidden md:block">
+          <div className="relative h-96 rounded-2xl overflow-hidden shadow-lg hidden md:block group cursor-pointer">
             <img
-              src="https://images.unsplash.com/photo-1616432043562-3671ea2e5242?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+              src="/assets/img/applydriver.png"
               alt="Driver"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
             />
-            <div className="absolute inset-0 bg-[#113e48]/20 mix-blend-multiply"></div>
+            <div className="absolute inset-0 bg-[#113e48]/20 mix-blend-multiply opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"></div>
+            <div className="absolute top-0 -left-[100%] w-full h-full bg-white/20 skew-x-[45deg] group-hover:left-[100%] transition-all duration-700 ease-in-out z-20"></div>
           </div>
 
           {/* Phần giao diện */}
@@ -204,7 +344,7 @@ export default function ApplyDriver() {
       </section>
 
       {/* Khối nội dung */}
-      <section className="py-24 bg-gray-50 relative">
+      <section id="apply-form" className="py-24 bg-gray-50 relative scroll-mt-20">
         <div className="max-w-4xl mx-auto px-6" data-aos="fade-up">
           <div className="bg-white p-8 md:p-12 rounded-3xl shadow-2xl shadow-[#113e48]/10 border border-gray-100">
             <div className="text-center mb-10">
@@ -230,8 +370,13 @@ export default function ApplyDriver() {
                   placeholder="Nhập họ tên..."
                   value={form.name}
                   onChange={handleChange}
-                  className="w-full p-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                  className={`w-full p-3.5 bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 transition-all ${
+                    errors.name
+                      ? "border-red-400 focus:ring-red-400/20 focus:border-red-400"
+                      : "border-gray-200 focus:ring-orange-500/20 focus:border-orange-500"
+                  }`}
                 />
+                {errors.name && <p className="text-red-500 text-xs mt-1.5 flex items-center gap-1">⚠ {errors.name}</p>}
               </div>
 
               <div className="col-span-1">
@@ -241,11 +386,18 @@ export default function ApplyDriver() {
                 <input
                   type="text"
                   name="phone"
-                  placeholder="Nhập SĐT..."
+                  placeholder="VD: 0901234567"
                   value={form.phone}
                   onChange={handleChange}
-                  className="w-full p-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                  maxLength={10}
+                  inputMode="numeric"
+                  className={`w-full p-3.5 bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 transition-all ${
+                    errors.phone
+                      ? "border-red-400 focus:ring-red-400/20 focus:border-red-400"
+                      : "border-gray-200 focus:ring-orange-500/20 focus:border-orange-500"
+                  }`}
                 />
+                {errors.phone && <p className="text-red-500 text-xs mt-1.5 flex items-center gap-1">⚠ {errors.phone}</p>}
               </div>
 
               <div className="col-span-1">
@@ -253,13 +405,18 @@ export default function ApplyDriver() {
                   Email *
                 </label>
                 <input
-                  type="email"
+                  type="text"
                   name="email"
-                  placeholder="Nhập email..."
+                  placeholder="VD: abc@gmail.com"
                   value={form.email}
                   onChange={handleChange}
-                  className="w-full p-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                  className={`w-full p-3.5 bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 transition-all ${
+                    errors.email
+                      ? "border-red-400 focus:ring-red-400/20 focus:border-red-400"
+                      : "border-gray-200 focus:ring-orange-500/20 focus:border-orange-500"
+                  }`}
                 />
+                {errors.email && <p className="text-red-500 text-xs mt-1.5 flex items-center gap-1">⚠ {errors.email}</p>}
               </div>
 
               <div className="col-span-1">
@@ -272,8 +429,13 @@ export default function ApplyDriver() {
                   placeholder="VD: 43A-123.45"
                   value={form.license_plate}
                   onChange={handleChange}
-                  className="w-full p-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                  className={`w-full p-3.5 bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 transition-all ${
+                    errors.license_plate
+                      ? "border-red-400 focus:ring-red-400/20 focus:border-red-400"
+                      : "border-gray-200 focus:ring-orange-500/20 focus:border-orange-500"
+                  }`}
                 />
+                {errors.license_plate && <p className="text-red-500 text-xs mt-1.5 flex items-center gap-1">⚠ {errors.license_plate}</p>}
               </div>
 
               <div className="md:col-span-2">
