@@ -1,4 +1,4 @@
-﻿import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import {
   FaNetworkWired,
@@ -18,53 +18,179 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 
 export default function Warehouse() {
+  const imgRef = useRef(null);
+  const miniBarRef = useRef(null);
+
   useEffect(() => {
     AOS.init({ duration: 800, once: true });
     window.scrollTo(0, 0);
+
+    let rafId;
+    const handleScroll = () => {
+      rafId = requestAnimationFrame(() => {
+        const scrollY = window.scrollY;
+        if (imgRef.current) {
+          const scale = Math.max(0.88, 1 - scrollY * 0.00018);
+          const opacity = Math.max(0.45, 1 - scrollY * 0.0014);
+          imgRef.current.style.transform = `scale(${scale})`;
+          imgRef.current.style.opacity = opacity;
+        }
+        if (miniBarRef.current) {
+          if (scrollY > 380) {
+            miniBarRef.current.style.opacity = "1";
+            miniBarRef.current.style.transform = "translateY(0)";
+          } else {
+            miniBarRef.current.style.opacity = "0";
+            miniBarRef.current.style.transform = "translateY(-110%)";
+          }
+        }
+      });
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      cancelAnimationFrame(rafId);
+    };
   }, []);
 
   return (
     <div className="font-sans bg-slate-50 text-slate-700">
       {/* Khối nội dung */}
-      <section className="relative h-[450px] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <img
-            src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1920&q=80"
-            alt="Warehouse Operation"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-[#113e48]/90 mix-blend-multiply"></div>
-        </div>
-
-        <div className="relative z-10 max-w-6xl mx-auto px-6 text-center text-white mt-10">
-          <div data-aos="fade-down">
-            <span className="inline-flex items-center gap-2 py-1 px-4 rounded-full bg-orange-500/20 border border-orange-500 text-orange-400 font-bold text-xs uppercase tracking-wider backdrop-blur-md mb-4">
-              <FaNetworkWired /> Hệ thống Mega Hubs
-            </span>
+      {/* Mini-bar - luôn tồn tại trong DOM, ẩn/hiện qua CSS transform */}
+      <div
+        ref={miniBarRef}
+        className="fixed top-[65px] left-0 right-0 z-30 h-16 bg-[#0f3460]/95 backdrop-blur-md shadow-xl px-6 flex items-center"
+        style={{
+          opacity: 0,
+          transform: "translateY(-110%)",
+          transition: "opacity 0.4s ease, transform 0.4s ease",
+        }}
+      >
+        <div className="max-w-7xl mx-auto w-full flex items-center justify-between gap-4">
+          {/* Tên dịch vụ */}
+          <span className="text-cyan-300 font-bold text-sm tracking-widest uppercase whitespace-nowrap">
+            ↑ Kho Vận Thông Minh ↑
+          </span>
+          {/* 4 stat pills */}
+          <div className="flex items-center gap-3">
+            {[
+              { num: "36+", label: "Hub" },
+              { num: "2M+", label: "Đơn/Ngày" },
+              { num: "100%", label: "Tự Động" },
+              { num: "24/7", label: "Vận Hành" },
+            ].map((s, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-1.5 bg-cyan-400/20 backdrop-blur-sm border border-cyan-200/20 rounded-full px-3 py-1"
+              >
+                <span className="text-white font-extrabold text-sm leading-none">
+                  {s.num}
+                </span>
+                <span className="text-white/70 text-xs hidden sm:block">
+                  {s.label}
+                </span>
+              </div>
+            ))}
           </div>
-          <h1
-            className="text-3xl md:text-5xl font-extrabold mb-4 leading-tight"
-            data-aos="fade-up"
-          >
-            Trung Tâm Khai Thác & <br />
-            <span className="text-orange-500">Lưu Trữ Hàng Hóa Thông Minh</span>
-          </h1>
-          <p
-            className="text-base md:text-lg text-gray-300 max-w-2xl mx-auto mb-8"
-            data-aos="fade-up"
-            data-aos-delay="100"
-          >
-            Hạ tầng kho vận 50.000m² được quy hoạch khoa học, đảm bảo hàng hóa
-            được sắp xếp ngăn nắp, an toàn và dễ dàng truy xuất.
-          </p>
+        </div>
+      </div>
 
-          <div data-aos="fade-up" data-aos-delay="200">
+      {/* Banner ảnh - zoom-out mườ́t khi cuộn */}
+      <section className="w-full overflow-hidden banner-entrance">
+        <img
+          ref={imgRef}
+          src="/assets/img/services_warehousebanner.png"
+          alt="Warehouse Operation"
+          className="w-full block object-contain"
+          style={{
+            transformOrigin: "top center",
+            willChange: "transform, opacity",
+          }}
+        />
+      </section>
+
+      {/* Tiêu đề trang - section đẹp bên dưới ảnh */}
+      <section
+        className="relative overflow-hidden py-16 px-6"
+        style={{
+          background:
+            "linear-gradient(135deg, #0f3460 0%, #16213e 40%, #0d1b2a 100%)",
+        }}
+      >
+        {/* Decorative blobs */}
+        <div className="absolute top-0 right-0 w-80 h-80 bg-cyan-400/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-10 w-60 h-60 bg-teal-400/10 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-32 bg-white/5 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+          {/* Trái: tiêu đề + nút */}
+          <div data-aos="fade-right">
+            <span className="inline-flex items-center gap-2 py-1.5 px-4 rounded-full bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 font-bold text-xs uppercase tracking-widest mb-6">
+              <FaNetworkWired
+                className="animate-spin"
+                style={{ animationDuration: "4s" }}
+              />{" "}
+              Hệ thống Mega Hubs
+            </span>
+            <h1 className="text-3xl md:text-5xl font-extrabold mb-5 leading-tight text-white">
+              Trung Tâm Khai Thác & <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-teal-300">
+                Lưu Trữ Thông Minh
+              </span>
+            </h1>
+            <p className="text-gray-400 text-lg leading-relaxed mb-8 max-w-xl">
+              Hạ tầng kho vận 50.000m² được quy hoạch khoa học, đảm bảo hàng hóa
+              được sắp xếp ngăn nắp, an toàn và dễ dàng truy xuất.
+            </p>
             <Link
               to="/contact"
-              className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-full font-bold transition-all shadow-lg hover:shadow-orange-500/40"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600 text-white px-8 py-4 rounded-full font-bold shadow-lg shadow-cyan-500/30 hover:-translate-y-1 transition-all"
             >
               Liên hệ hợp tác <FaArrowRight />
             </Link>
+          </div>
+
+          {/* Phải: stats cards */}
+          <div className="grid grid-cols-2 gap-4" data-aos="fade-left">
+            {[
+              {
+                num: "36+",
+                label: "Hub Khai Thác",
+                sub: "Toàn quốc",
+                color: "from-cyan-400/25 to-cyan-600/15",
+              },
+              {
+                num: "2M+",
+                label: "Đơn/Ngày",
+                sub: "Năng lực xử lý",
+                color: "from-teal-400/25 to-teal-600/15",
+              },
+              {
+                num: "100%",
+                label: "Tự Động Hóa",
+                sub: "Công nghệ hiện đại",
+                color: "from-sky-400/25 to-sky-600/15",
+              },
+              {
+                num: "24/7",
+                label: "Vận Hành",
+                sub: "Không ngừng nghỉ",
+                color: "from-cyan-500/25 to-teal-700/15",
+              },
+            ].map((s, i) => (
+              <div
+                key={i}
+                className={`bg-gradient-to-br ${s.color} backdrop-blur-md border border-white/10 rounded-2xl p-5 hover:-translate-y-1 transition-all duration-300 shadow-lg`}
+                data-aos="zoom-in"
+                data-aos-delay={i * 100}
+              >
+                <div className="text-3xl font-extrabold text-white mb-1">
+                  {s.num}
+                </div>
+                <div className="text-sm font-bold text-white/90">{s.label}</div>
+                <div className="text-xs text-white/60 mt-0.5">{s.sub}</div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -149,12 +275,16 @@ export default function Warehouse() {
       <section className="py-10 px-6 max-w-7xl mx-auto space-y-20">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div className="relative" data-aos="fade-right">
-            <img
-              src="https://images.unsplash.com/photo-1565514020125-7df36c84c149?auto=format&fit=crop&w=800&q=80"
-              alt="Mega Hub"
-              className="rounded-2xl shadow-xl w-full object-cover h-[400px]"
-            />
-            <div className="absolute -bottom-6 -right-6 bg-white p-4 rounded-xl shadow-lg border-l-4 border-orange-500 hidden md:block">
+            <div className="relative overflow-hidden rounded-2xl shadow-xl group cursor-pointer">
+              <img
+                src="/assets/img/services_warehouse1.png"
+                alt="Mega Hub"
+                className="w-full object-contain bg-white transform group-hover:scale-105 transition-transform duration-700"
+              />
+              <div className="absolute inset-0 bg-[#113e48]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 mix-blend-multiply z-10"></div>
+              <div className="absolute top-0 -left-[100%] w-full h-full bg-white/20 skew-x-[45deg] group-hover:left-[100%] transition-all duration-700 ease-in-out z-20"></div>
+            </div>
+            <div className="absolute -bottom-6 -right-6 bg-white p-4 rounded-xl shadow-lg border-l-4 border-orange-500 hidden md:block z-30">
               <div className="text-sm font-bold text-gray-500">
                 Tốc độ xử lý
               </div>

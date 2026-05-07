@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 
@@ -134,12 +134,14 @@ export default function AboutSection() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: "-100px" }}
               transition={{ duration: 0.8 }}
-              className="relative z-10 rounded-2xl overflow-hidden shadow-2xl border-4 border-white"
+              className="relative z-10 rounded-2xl overflow-hidden shadow-2xl border-4 border-white group cursor-pointer"
             >
               <img
                 src="/assets/img/home1.png"
-                className="w-full h-auto object-cover transform hover:scale-105 transition-transform duration-700"
+                className="w-full h-auto object-cover transform group-hover:scale-105 transition-transform duration-700"
               />
+              <div className="absolute inset-0 bg-[#113e48]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 mix-blend-multiply z-10"></div>
+              <div className="absolute top-0 -left-[100%] w-full h-full bg-white/20 skew-x-[45deg] group-hover:left-[100%] transition-all duration-700 ease-in-out z-20"></div>
             </motion.div>
 
             {/* Phần giao diện */}

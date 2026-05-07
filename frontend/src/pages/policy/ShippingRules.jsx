@@ -1,4 +1,4 @@
-﻿import React, { useEffect } from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   FaShieldAlt,
@@ -53,7 +53,7 @@ export default function ShippingRules() {
   return (
     <div className="font-sans bg-gray-50 text-slate-700">
       {/* Khối nội dung */}
-      <section className="relative py-24 bg-[#113e48] text-white overflow-hidden">
+      <section className="relative py-24 bg-[#113e48] text-white overflow-hidden banner-entrance">
         <div className="absolute inset-0 opacity-10 pointer-events-none">
           <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
             <pattern

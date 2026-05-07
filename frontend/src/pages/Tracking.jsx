@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import API from "../services/api";
 import Map, {
@@ -71,10 +71,36 @@ export default function Tracking() {
 
   const animationRef = useRef(null);
   const mapRef = useRef(null);
+  const miniBarRef = useRef(null);
+  const imgRef = useRef(null);
 
   useEffect(() => {
     AOS.init({ duration: 800, once: true });
     window.scrollTo(0, 0);
+    let rafId;
+    const handleScroll = () => {
+      rafId = requestAnimationFrame(() => {
+        if (!miniBarRef.current) return;
+        const scrollY = window.scrollY;
+        if (scrollY > 380) {
+          miniBarRef.current.style.opacity = "1";
+          miniBarRef.current.style.transform = "translateY(0%)";
+        } else {
+          miniBarRef.current.style.opacity = "0";
+          miniBarRef.current.style.transform = "translateY(-110%)";
+        }
+        if (imgRef.current) {
+          const progress = Math.min(scrollY / 600, 1);
+          imgRef.current.style.transform = `scale(${1 - progress * 0.12})`;
+          imgRef.current.style.opacity = 1 - progress * 0.5;
+        }
+      });
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      cancelAnimationFrame(rafId);
+    };
   }, []);
 
   useEffect(() => {
@@ -91,40 +117,53 @@ export default function Tracking() {
         icon: <FaClock />,
       };
     const s = status.toLowerCase();
-    if (s.includes("pending") || s.includes("created") || s === "chờ lấy hàng")
+    if (s === "pending" || s === "created" || s.includes("chờ lấy"))
       return {
-        text: "Đang chờ lấy hàng",
+        text: "Chờ lấy hàng",
         color: "text-blue-600",
         bg: "bg-blue-50",
         icon: <FaClock />,
       };
-    if (s.includes("picked") || s.includes("taking") || s === "đã lấy hàng")
+    if (s === "picking" || s.includes("picked") || s.includes("taking") || s === "đã lấy hàng")
       return {
-        text: "Đã lấy hàng",
+        text: "Đang lấy hàng",
         color: "text-indigo-600",
         bg: "bg-indigo-50",
         icon: <FaBoxOpen />,
       };
-    if (
-      s.includes("transit") ||
-      s.includes("shipping") ||
-      s === "đang vận chuyển"
-    )
+    if (s === "delivering" || s.includes("transit") || s.includes("shipping") || s === "đang vận chuyển")
       return {
-        text: "Đang vận chuyển",
+        text: "Đang giao hàng",
         color: "text-orange-500",
         bg: "bg-orange-50",
         icon: <FaTruck />,
       };
-    if (
-      s.includes("delivered") ||
-      s.includes("success") ||
-      s.includes("completed")
-    )
+    if (s === "delivered" || s === "completed" || s === "success" || s.includes("giao thành công"))
       return {
         text: "Giao thành công",
         color: "text-green-600",
         bg: "bg-green-50",
+        icon: <FaCheckCircle />,
+      };
+    if (s === "failed" || s.includes("thất bại"))
+      return {
+        text: "Giao thất bại",
+        color: "text-red-500",
+        bg: "bg-red-50",
+        icon: <FaTimesCircle />,
+      };
+    if (s === "returning" || s.includes("hoàn hàng"))
+      return {
+        text: "Đang hoàn hàng",
+        color: "text-purple-600",
+        bg: "bg-purple-50",
+        icon: <FaTruck />,
+      };
+    if (s === "returned" || s.includes("đã hoàn"))
+      return {
+        text: "Đã hoàn hàng",
+        color: "text-purple-700",
+        bg: "bg-purple-50",
         icon: <FaCheckCircle />,
       };
     if (s.includes("cancel") || s === "đã hủy")
@@ -134,6 +173,7 @@ export default function Tracking() {
         bg: "bg-red-50",
         icon: <FaTimesCircle />,
       };
+    // Fallback — vẫn cố dịch một số từ thường gặp
     return {
       text: status,
       color: "text-[#113e48]",
@@ -331,36 +371,74 @@ export default function Tracking() {
 
   return (
     <div className="font-sans bg-slate-50 min-h-screen text-slate-700">
-      {/* Khối nội dung */}
-      <section className="relative pt-24 pb-32 bg-[#113e48] text-white overflow-hidden">
-        <div
-          className="absolute inset-0 opacity-10"
-          style={{
-            backgroundImage: "radial-gradient(#ffffff 1px, transparent 1px)",
-            backgroundSize: "30px 30px",
-          }}
-        ></div>
-        <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
-          <span
-            className="inline-block py-1.5 px-4 rounded-full bg-white/10 border border-white/20 text-orange-400 text-sm font-bold mb-6 uppercase tracking-wider backdrop-blur-md"
-            data-aos="fade-down"
-          >
+      {/* Mini-bar */}
+      <div
+        ref={miniBarRef}
+        className="fixed top-[65px] left-0 right-0 z-30 h-16 bg-[#113e48]/97 backdrop-blur-md shadow-xl px-6 flex items-center"
+        style={{ opacity: 0, transform: "translateY(-110%)", transition: "opacity 0.4s ease, transform 0.4s ease" }}
+      >
+        <div className="max-w-7xl mx-auto w-full flex items-center justify-between gap-4">
+          <span className="text-orange-300 font-bold text-sm tracking-widest uppercase whitespace-nowrap">
+            🔍 Tra Cứu Đơn Hàng — Realtime Tracking
+          </span>
+          <div className="flex items-center gap-3">
+            {[
+              { num: "24/7", label: "Theo dõi" },
+              { num: "GPS", label: "Realtime" },
+              { num: "100%", label: "Minh bạch" },
+              { num: "5M+", label: "Đơn/Năm" },
+            ].map((s, i) => (
+              <div key={i} className="flex items-center gap-1.5 bg-indigo-400/20 backdrop-blur-sm border border-indigo-200/20 rounded-full px-3 py-1">
+                <span className="text-white font-extrabold text-sm leading-none">{s.num}</span>
+                <span className="text-white/70 text-xs hidden sm:block">{s.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Banner ảnh */}
+      <section className="w-full overflow-hidden banner-entrance">
+        <img
+          ref={imgRef}
+          src="/assets/img/tracking_banner.png"
+          alt="Tracking Banner"
+          className="w-full block object-contain"
+          style={{ transformOrigin: "top center", willChange: "transform, opacity" }}
+        />
+      </section>
+
+      {/* Header section */}
+      <section
+        className="relative overflow-hidden py-16 px-6"
+        style={{ background: "linear-gradient(135deg, #0f2027 0%, #113e48 50%, #203a43 100%)" }}
+      >
+        <div className="absolute top-0 right-0 w-80 h-80 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-60 h-60 bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
+        <div className="relative max-w-4xl mx-auto text-center">
+          <span className="inline-block py-1.5 px-4 rounded-full bg-white/10 border border-white/20 text-orange-400 text-sm font-bold mb-6 uppercase tracking-wider backdrop-blur-md" data-aos="fade-down">
             Realtime Tracking System
           </span>
-          <h1
-            className="text-3xl md:text-5xl font-extrabold mb-4"
-            data-aos="fade-up"
-          >
+          <h1 className="text-3xl md:text-5xl font-extrabold mb-4 text-white" data-aos="fade-up">
             Tra Cứu Hành Trình Đơn Hàng
           </h1>
-          <p
-            className="text-blue-100 text-lg mb-8"
-            data-aos="fade-up"
-            data-aos-delay="100"
-          >
-            Theo dõi vị trí thực tế và trạng thái đơn hàng của bạn mọi lúc, mọi
-            nơi.
+          <p className="text-blue-100 text-lg mb-10" data-aos="fade-up" data-aos-delay="100">
+            Theo dõi vị trí thực tế và trạng thái đơn hàng của bạn mọi lúc, mọi nơi.
           </p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto" data-aos="fade-up" data-aos-delay="200">
+            {[
+              { num: "24/7", label: "Theo dõi", sub: "Không ngừng nghỉ", color: "from-indigo-400/25 to-indigo-600/15" },
+              { num: "GPS", label: "Realtime", sub: "Cập nhật liên tục", color: "from-blue-400/25 to-blue-600/15" },
+              { num: "100%", label: "Minh bạch", sub: "Lộ trình rõ ràng", color: "from-violet-400/25 to-violet-600/15" },
+              { num: "5M+", label: "Đơn/Năm", sub: "Tin tưởng bởi", color: "from-indigo-500/25 to-blue-700/15" },
+            ].map((s, i) => (
+              <div key={i} className={`bg-gradient-to-br ${s.color} backdrop-blur-md border border-white/10 rounded-2xl p-4 hover:-translate-y-1 transition-all shadow-lg`} data-aos="zoom-in" data-aos-delay={i * 80}>
+                <div className="text-2xl font-extrabold text-white mb-1">{s.num}</div>
+                <div className="text-sm font-bold text-white/90">{s.label}</div>
+                <div className="text-xs text-white/60 mt-0.5">{s.sub}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 

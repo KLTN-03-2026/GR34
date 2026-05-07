@@ -1,4 +1,4 @@
-﻿import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import {
   FaCalculator,
@@ -18,50 +18,140 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 
 export default function PriceList() {
+  const miniBarRef = useRef(null);
+  const imgRef = useRef(null);
+
   useEffect(() => {
     AOS.init({ duration: 800, once: true });
     window.scrollTo(0, 0);
+    let rafId;
+    const handleScroll = () => {
+      rafId = requestAnimationFrame(() => {
+        if (!miniBarRef.current) return;
+        const scrollY = window.scrollY;
+        if (scrollY > 380) {
+          miniBarRef.current.style.opacity = "1";
+          miniBarRef.current.style.transform = "translateY(0%)";
+        } else {
+          miniBarRef.current.style.opacity = "0";
+          miniBarRef.current.style.transform = "translateY(-110%)";
+        }
+        if (imgRef.current) {
+          const progress = Math.min(scrollY / 600, 1);
+          const scale = 1 - progress * 0.12;
+          const opacity = 1 - progress * 0.5;
+          imgRef.current.style.transform = `scale(${scale})`;
+          imgRef.current.style.opacity = opacity;
+        }
+      });
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      cancelAnimationFrame(rafId);
+    };
   }, []);
 
   return (
     <div className="font-sans bg-slate-50 text-slate-700">
-      {/* Khối nội dung */}
-      <section className="relative h-[350px] flex items-center justify-center overflow-hidden bg-[#113e48] text-white">
-        <div
-          className="absolute inset-0 opacity-10"
-          style={{
-            backgroundImage: "radial-gradient(#ffffff 1px, transparent 1px)",
-            backgroundSize: "20px 20px",
-          }}
-        ></div>
-        <div className="absolute -top-1/2 -right-1/2 w-[800px] h-[800px] bg-orange-500/20 rounded-full blur-3xl"></div>
-
-        <div className="relative z-10 text-center px-6 max-w-4xl mt-10">
-          <div
-            className="inline-flex items-center gap-2 py-1 px-4 rounded-full bg-white/10 border border-white/20 text-orange-400 font-bold text-xs uppercase tracking-wider backdrop-blur-md mb-6"
-            data-aos="fade-down"
-          >
-            <FaMoneyBillWave /> Chi phí tối ưu - Minh bạch tuyệt đối
+      {/* Mini-bar - luôn tồn tại trong DOM, ẩn/hiện qua CSS transform */}
+      <div
+        ref={miniBarRef}
+        className="fixed top-[65px] left-0 right-0 z-30 h-16 bg-[#113e48]/97 backdrop-blur-md shadow-xl px-6 flex items-center"
+        style={{
+          opacity: 0,
+          transform: "translateY(-110%)",
+          transition: "opacity 0.4s ease, transform 0.4s ease",
+        }}
+      >
+        <div className="max-w-7xl mx-auto w-full flex items-center justify-between gap-4">
+          <span className="text-orange-300 font-bold text-sm tracking-widest uppercase whitespace-nowrap">
+            💰 Bảng Giá Cước — Minh Bạch & Tối Ưu
+          </span>
+          <div className="flex items-center gap-3">
+            {[
+              { num: "0đ", label: "COD < 2tr" },
+              { num: "30%", label: "Chiết khấu" },
+              { num: "3", label: "Gói cước" },
+              { num: "24/7", label: "Hỗ trợ" },
+            ].map((s, i) => (
+              <div key={i} className="flex items-center gap-1.5 bg-green-400/20 backdrop-blur-sm border border-green-200/20 rounded-full px-3 py-1">
+                <span className="text-white font-extrabold text-sm leading-none">{s.num}</span>
+                <span className="text-white/70 text-xs hidden sm:block">{s.label}</span>
+              </div>
+            ))}
           </div>
-          <h1
-            className="text-3xl md:text-5xl font-extrabold mb-6 leading-tight"
-            data-aos="fade-up"
-          >
-            Bảng Giá Cước Vận Chuyển
-          </h1>
-          <div data-aos="fade-up" data-aos-delay="200">
+        </div>
+      </div>
+
+      {/* Banner ảnh - zoom-out mượt khi cuộn */}
+      <section className="w-full overflow-hidden banner-entrance">
+        <img
+          ref={imgRef}
+          src="/assets/img/pricelist_banner.png"
+          alt="SpeedyShip Price List"
+          className="w-full block object-contain"
+          style={{ transformOrigin: "top center", willChange: "transform, opacity" }}
+        />
+      </section>
+
+      {/* Header section - gradient bên dưới ảnh */}
+      <section
+        className="relative overflow-hidden py-20 px-6"
+        style={{ background: "linear-gradient(135deg, #0f2027 0%, #113e48 50%, #203a43 100%)" }}
+      >
+        <div className="absolute top-0 right-0 w-96 h-96 bg-orange-500/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
+
+        <div className="relative max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+          {/* Trái: tiêu đề */}
+          <div data-aos="fade-right">
+            <div className="inline-flex items-center gap-2 py-1.5 px-4 rounded-full bg-white/10 border border-white/20 text-orange-400 font-bold text-xs uppercase tracking-wider backdrop-blur-md mb-6">
+              <FaMoneyBillWave /> Chi phí tối ưu - Minh bạch tuyệt đối
+            </div>
+            <h1 className="text-4xl md:text-5xl font-extrabold mb-5 leading-tight text-white">
+              Bảng Giá Cước <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-yellow-300">
+                Vận Chuyển SpeedyShip
+              </span>
+            </h1>
+            <p className="text-gray-300 text-lg leading-relaxed mb-8 max-w-xl">
+              Giá cước minh bạch, không phí ẩn. Chiết khấu đến 30% cho khách hàng
+              có sản lượng ổn định trên 500 đơn/tháng.
+            </p>
             <Link
               to="/register"
-              className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-full font-bold transition-all shadow-lg hover:shadow-orange-500/40 transform hover:-translate-y-1"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-600 hover:to-orange-500 text-white px-8 py-4 rounded-full font-bold shadow-lg shadow-orange-500/30 hover:-translate-y-1 transition-all"
             >
-              <FaCalculator /> Tra cứu cước phí tự động
+              <FaCalculator /> Tra cứu cước phí
             </Link>
+          </div>
+
+          {/* Phải: stats cards */}
+          <div className="grid grid-cols-2 gap-4" data-aos="fade-left">
+            {[
+              { num: "0đ", label: "COD < 2tr", sub: "Miễn phí thu hộ", color: "from-green-400/25 to-green-600/15" },
+              { num: "30%", label: "Chiết khấu", sub: "Khách hàng lớn", color: "from-emerald-400/25 to-emerald-600/15" },
+              { num: "3", label: "Gói cước", sub: "Nội thành & liên tỉnh", color: "from-teal-400/25 to-teal-600/15" },
+              { num: "24/7", label: "Hỗ trợ", sub: "Tư vấn giá cước", color: "from-green-500/25 to-teal-700/15" },
+            ].map((s, i) => (
+              <div
+                key={i}
+                className={`bg-gradient-to-br ${s.color} backdrop-blur-md border border-white/10 rounded-2xl p-5 hover:-translate-y-1 transition-all duration-300 shadow-lg`}
+                data-aos="zoom-in"
+                data-aos-delay={i * 100}
+              >
+                <div className="text-3xl font-extrabold text-white mb-1">{s.num}</div>
+                <div className="text-sm font-bold text-white/90">{s.label}</div>
+                <div className="text-xs text-white/60 mt-0.5">{s.sub}</div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Khối nội dung */}
-      <section className="py-24 px-4 md:px-6 max-w-7xl mx-auto -mt-16 relative z-20">
+      <section className="py-24 px-4 md:px-6 max-w-7xl mx-auto relative z-20">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Phần giao diện */}
           <div

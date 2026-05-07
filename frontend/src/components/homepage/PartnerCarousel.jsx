@@ -1,46 +1,56 @@
-﻿import React from "react";
+import React from "react";
 import { motion } from "framer-motion";
-
 
 const partners = [
   {
     name: "Shopee",
-    src: "https://upload.wikimedia.org/wikipedia/commons/f/fe/Shopee.svg",
+    src: "/assets/logo/shopee-com-logo.png",
   },
   {
     name: "Lazada",
-    src: "https://upload.wikimedia.org/wikipedia/commons/4/4d/Lazada_%282019%29.svg",
+    src: "/assets/logo/lazada-sg-logo.png",
   },
   {
     name: "TikTok",
-    src: "https://upload.wikimedia.org/wikipedia/en/a/a9/TikTok_logo.svg",
+    src: "/assets/logo/tiktok-com-logo.png",
   },
   {
     name: "Amazon",
-    src: "https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg",
+    src: "/assets/logo/amazonaws-com-logo.png",
   },
   {
-    name: "Nike",
-    src: "https://upload.wikimedia.org/wikipedia/commons/a/a6/Logo_NIKE.svg",
+    name: "H&M",
+    src: "/assets/logo/hm-com-logo.png",
   },
   {
-    name: "Adidas",
-    src: "https://upload.wikimedia.org/wikipedia/commons/2/20/Adidas_Logo.svg",
+    name: "Puma",
+    src: "/assets/logo/puma-com-logo.png",
   },
   {
     name: "Samsung",
-    src: "https://upload.wikimedia.org/wikipedia/commons/2/24/Samsung_Logo.svg",
+    src: "/assets/logo/samsung-com-logo.png",
   },
   {
     name: "Apple",
-    src: "https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg",
+    src: "/assets/logo/apple-com-logo.png",
+  },
+  {
+    name: "Oppo",
+    src: "/assets/logo/oppo-com-logo.png",
+  },
+  {
+    name: "Vivo",
+    src: "/assets/logo/vivo-com-logo.png",
+  },
+  {
+    name: "Red Bull",
+    src: "/assets/logo/redbull-com-logo.png",
   },
 ];
 
-
 export default function PartnerCarousel({
   className = "",
-  logoSize = "w-14 h-8",
+  logoSize = "w-16 h-16",
 }) {
   return (
     <div
@@ -75,7 +85,7 @@ export default function PartnerCarousel({
                 <img
                   src={logo.src}
                   alt={logo.name}
-                  className="max-w-full max-h-full object-contain grayscale opacity-40 transition-all duration-300 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-110"
+                  className="max-w-full max-h-full object-contain grayscale opacity-40 transition-all duration-300 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-110 rounded-md bg-white p-1 shadow-md hover:shadow-lg"
                 />
               </div>
             ))}

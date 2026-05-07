@@ -1,4 +1,4 @@
-﻿import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import {
   FaShippingFast,
@@ -15,58 +15,145 @@ import "aos/dist/aos.css";
 
 // Giới thiệu về SpeedyShip
 export default function About() {
+  const miniBarRef = useRef(null);
+  const imgRef = useRef(null);
 
+  useEffect(() => {
+    AOS.init({ duration: 800, once: true });
+    window.scrollTo(0, 0);
+    let rafId;
+    const handleScroll = () => {
+      rafId = requestAnimationFrame(() => {
+        if (!miniBarRef.current) return;
+        const scrollY = window.scrollY;
+        if (scrollY > 380) {
+          miniBarRef.current.style.opacity = "1";
+          miniBarRef.current.style.transform = "translateY(0%)";
+        } else {
+          miniBarRef.current.style.opacity = "0";
+          miniBarRef.current.style.transform = "translateY(-110%)";
+        }
+        if (imgRef.current) {
+          const progress = Math.min(scrollY / 600, 1);
+          const scale = 1 - progress * 0.12;
+          const opacity = 1 - progress * 0.5;
+          imgRef.current.style.transform = `scale(${scale})`;
+          imgRef.current.style.opacity = opacity;
+        }
+      });
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      cancelAnimationFrame(rafId);
+    };
+  }, []);
 
   return (
     <div className="bg-white font-sans overflow-hidden">
-      {/* Khối nội dung */}
-      <section className="relative py-32 bg-[#113e48] text-white overflow-hidden">
-        {/* Phần giao diện */}
-        <div className="absolute inset-0 opacity-10 pointer-events-none">
-          <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-            <pattern
-              id="grid-pattern"
-              width="40"
-              height="40"
-              patternUnits="userSpaceOnUse"
-            >
-              <path
-                d="M0 40L40 0H20L0 20M40 40V20L20 40"
-                stroke="currentColor"
-                strokeWidth="1"
-                fill="none"
-              />
-            </pattern>
-            <rect width="100%" height="100%" fill="url(#grid-pattern)" />
-          </svg>
-        </div>
-
-        {/* Phần giao diện */}
-        <div className="relative z-10 max-w-7xl mx-auto px-6 text-center">
-          <span
-            className="inline-block py-1.5 px-4 rounded-full bg-white/10 border border-white/20 text-orange-400 text-sm font-bold mb-6 tracking-widest uppercase backdrop-blur-sm"
-            data-aos="fade-down"
-          >
-            Hành trình của SpeedyShip
+      {/* Mini-bar - luôn tồn tại trong DOM, ẩn/hiện qua CSS transform */}
+      <div
+        ref={miniBarRef}
+        className="fixed top-[65px] left-0 right-0 z-30 h-16 bg-[#113e48]/97 backdrop-blur-md shadow-xl px-6 flex items-center"
+        style={{
+          opacity: 0,
+          transform: "translateY(-110%)",
+          transition: "opacity 0.4s ease, transform 0.4s ease",
+        }}
+      >
+        <div className="max-w-7xl mx-auto w-full flex items-center justify-between gap-4">
+          <span className="text-orange-300 font-bold text-sm tracking-widest uppercase whitespace-nowrap">
+            ✦ SpeedyShip — Kiến Tạo Logistics Việt Nam
           </span>
-          <h1
-            className="text-4xl md:text-6xl font-extrabold mb-6 leading-tight"
-            data-aos="fade-up"
-          >
-            Kiến tạo tương lai <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-yellow-300">
-              Logistics Việt Nam
+          <div className="flex items-center gap-3">
+            {[
+              { num: "5M+", label: "Đơn hoàn tất" },
+              { num: "63", label: "Tỉnh thành" },
+              { num: "10k+", label: "Đối tác" },
+              { num: "99.9%", label: "Đúng hẹn" },
+            ].map((s, i) => (
+              <div key={i} className="flex items-center gap-1.5 bg-teal-400/20 backdrop-blur-sm border border-teal-200/20 rounded-full px-3 py-1">
+                <span className="text-white font-extrabold text-sm leading-none">{s.num}</span>
+                <span className="text-white/70 text-xs hidden sm:block">{s.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Banner ảnh - zoom-out mượt khi cuộn */}
+      <section className="w-full overflow-hidden banner-entrance">
+        <img
+          ref={imgRef}
+          src="/assets/img/about_banner.png"
+          alt="About SpeedyShip"
+          className="w-full block object-contain"
+          style={{ transformOrigin: "top center", willChange: "transform, opacity" }}
+        />
+      </section>
+
+      {/* Header section - gradient đẹp bên dưới ảnh */}
+      <section
+        className="relative overflow-hidden py-20 px-6"
+        style={{ background: "linear-gradient(135deg, #0f2a1f 0%, #113e48 50%, #1a5c6e 100%)" }}
+      >
+        {/* Decorative blobs */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-teal-500/10 rounded-full blur-2xl pointer-events-none" />
+
+        <div className="relative max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+          {/* Trái: tiêu đề */}
+          <div data-aos="fade-right">
+            <span className="inline-block py-1.5 px-4 rounded-full bg-white/10 border border-white/20 text-orange-400 text-sm font-bold mb-6 tracking-widest uppercase backdrop-blur-sm">
+              Hành trình của SpeedyShip
             </span>
-          </h1>
-          <p
-            className="text-gray-300 text-lg md:text-xl max-w-3xl mx-auto mb-10 leading-relaxed"
-            data-aos="fade-up"
-            data-aos-delay="100"
-          >
-            SpeedyShip không chỉ là giao hàng. Chúng tôi kết nối cơ hội, rút
-            ngắn khoảng cách và mang lại sự thịnh vượng cho doanh nghiệp Việt
-            bằng công nghệ vận chuyển tiên tiến.
-          </p>
+            <h1 className="text-4xl md:text-5xl font-extrabold mb-5 leading-tight text-white">
+              Kiến tạo tương lai <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-yellow-300">
+                Logistics Việt Nam
+              </span>
+            </h1>
+            <p className="text-gray-300 text-lg leading-relaxed mb-8 max-w-xl">
+              SpeedyShip không chỉ là giao hàng. Chúng tôi kết nối cơ hội, rút ngắn
+              khoảng cách và mang lại sự thịnh vượng cho doanh nghiệp Việt bằng công
+              nghệ vận chuyển tiên tiến.
+            </p>
+            <div className="flex flex-wrap gap-4">
+              <Link
+                to="/services"
+                className="px-8 py-4 bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-600 hover:to-orange-500 text-white font-bold rounded-full shadow-lg shadow-orange-500/30 hover:-translate-y-1 transition-all flex items-center gap-2"
+              >
+                Khám phá dịch vụ <FaChartLine />
+              </Link>
+              <Link
+                to="/contact"
+                className="px-8 py-4 bg-white/10 backdrop-blur-sm border border-white/30 hover:bg-white hover:text-[#113e48] text-white font-bold rounded-full transition-all flex items-center gap-2"
+              >
+                Liên hệ ngay
+              </Link>
+            </div>
+          </div>
+
+          {/* Phải: stats cards */}
+          <div className="grid grid-cols-2 gap-4" data-aos="fade-left">
+            {[
+              { num: "5M+", label: "Đơn hoàn tất", sub: "Tin tưởng từ khách hàng", color: "from-teal-400/25 to-teal-600/15" },
+              { num: "63", label: "Tỉnh thành", sub: "Phủ khắp cả nước", color: "from-emerald-400/25 to-emerald-600/15" },
+              { num: "10k+", label: "Đối tác", sub: "Doanh nghiệp tin dùng", color: "from-cyan-400/25 to-cyan-600/15" },
+              { num: "99.9%", label: "Đúng hẹn", sub: "Tỷ lệ cam kết", color: "from-teal-500/25 to-emerald-700/15" },
+            ].map((s, i) => (
+              <div
+                key={i}
+                className={`bg-gradient-to-br ${s.color} backdrop-blur-md border border-white/10 rounded-2xl p-5 hover:-translate-y-1 transition-all duration-300 shadow-lg`}
+                data-aos="zoom-in"
+                data-aos-delay={i * 100}
+              >
+                <div className="text-3xl font-extrabold text-white mb-1">{s.num}</div>
+                <div className="text-sm font-bold text-white/90">{s.label}</div>
+                <div className="text-xs text-white/60 mt-0.5">{s.sub}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -113,19 +200,17 @@ export default function About() {
       <section className="py-24 max-w-7xl mx-auto px-6 space-y-32">
         {/* Phần giao diện */}
         <div className="grid md:grid-cols-2 gap-16 items-center">
-          <div className="relative" data-aos="fade-right">
-            {/* Phần giao diện */}
-            <div className="absolute -top-6 -left-6 w-32 h-32 bg-orange-100 rounded-full z-0 mix-blend-multiply filter blur-xl opacity-70"></div>
-            <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-blue-100 rounded-full z-0 mix-blend-multiply filter blur-xl opacity-70"></div>
-
-            <img
-              src="/assets/img/about1.png"
-              alt="Mission"
-              className="relative z-10 rounded-2xl shadow-xl w-full object-cover h-[450px]"
-            />
-            {/* Phần giao diện */}
-
-          </div>
+            <div className="relative overflow-hidden rounded-2xl shadow-xl group cursor-pointer" data-aos="fade-right">
+              <div className="absolute -top-6 -left-6 w-32 h-32 bg-orange-100 rounded-full z-0 mix-blend-multiply filter blur-xl opacity-70"></div>
+              <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-blue-100 rounded-full z-0 mix-blend-multiply filter blur-xl opacity-70"></div>
+              <img
+                src="/assets/img/about1.png"
+                alt="Mission"
+                className="relative z-10 w-full object-cover h-[450px] transform group-hover:scale-105 transition-transform duration-700"
+              />
+              <div className="absolute inset-0 bg-[#113e48]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 mix-blend-multiply z-20"></div>
+              <div className="absolute top-0 -left-[100%] w-full h-full bg-white/20 skew-x-[45deg] group-hover:left-[100%] transition-all duration-700 ease-in-out z-30"></div>
+            </div>
 
           <div data-aos="fade-left">
             <h3 className="text-orange-600 font-bold uppercase tracking-widest text-sm mb-3">
@@ -183,11 +268,15 @@ export default function About() {
 
           <div className="order-1 md:order-2 relative" data-aos="fade-left">
             <div className="absolute inset-0 bg-[#113e48] rounded-2xl transform rotate-3 scale-[0.98] opacity-10 z-0"></div>
-            <img
-              src="/assets/img/about2.png"
-              alt="Vision"
-              className="relative z-10 rounded-2xl shadow-xl w-full object-cover h-[450px]"
-            />
+            <div className="relative overflow-hidden rounded-2xl shadow-xl group cursor-pointer">
+              <img
+                src="/assets/img/about2.png"
+                alt="Vision"
+                className="relative z-10 w-full object-cover h-[450px] transform group-hover:scale-105 transition-transform duration-700"
+              />
+              <div className="absolute inset-0 bg-[#113e48]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 mix-blend-multiply z-20"></div>
+              <div className="absolute top-0 -left-[100%] w-full h-full bg-white/20 skew-x-[45deg] group-hover:left-[100%] transition-all duration-700 ease-in-out z-30"></div>
+            </div>
           </div>
         </div>
       </section>

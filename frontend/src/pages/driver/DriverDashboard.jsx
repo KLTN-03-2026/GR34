@@ -1,5 +1,5 @@
-﻿import { useEffect, useState, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { useEffect, useState, useRef } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import toast, { Toaster } from "react-hot-toast";
 
@@ -9,6 +9,7 @@ const STATUS_LABELS = {
   picking:    { label: "Đang lấy hàng",  color: "bg-orange-100 text-orange-700" },
   delivering: { label: "Đang giao",       color: "bg-blue-100 text-blue-700" },
   completed:  { label: "Hoàn thành",      color: "bg-green-100 text-green-700" },
+  delivered:  { label: "Hoàn tất",        color: "bg-green-100 text-green-700" },
   failed:     { label: "Giao thất bại",  color: "bg-red-100 text-red-700" },
   pending:    { label: "Chờ xử lý",    color: "bg-yellow-100 text-yellow-700" },
 };
@@ -23,6 +24,8 @@ import {
   AlertCircle,
   Rocket,
   X,
+  Calendar,
+  Home,
 } from "lucide-react";
 
 import Map, { Marker, NavigationControl, GeolocateControl } from "react-map-gl";
@@ -75,6 +78,7 @@ const StatCard = ({ title, value, icon: Icon, colorClass, delay }) => (
 // Trang tổng quan của tài xế
 export default function DriverDashboard() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const mapRef = useRef(null);
 
   const [stats, setStats] = useState(null);
@@ -207,23 +211,33 @@ export default function DriverDashboard() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] p-4 pb-20 lg:p-8 space-y-6">
-      <Toaster position="top-right" containerStyle={{ top: 80 }} />
 
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-            👋 Xin chào, Tài xế <span className="text-blue-600">#{id}</span>
+          <h1 className="text-2xl font-bold text-[#113e48] flex items-center gap-2">
+            Dashboard Tài xế
           </h1>
-          <p className="text-sm text-gray-500 mt-1 flex items-center gap-1">
-            <MapPin size={14} /> Khu vực hoạt động: Đà Nẵng
+          <p className="text-sm text-gray-600 mt-1 flex items-center gap-2">
+            👋 Xin chào, <strong className="text-blue-700">{localStorage.getItem("username") || "Tài xế"}</strong>
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <span className="flex h-3 w-3 relative">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-          </span>
-          <span className="text-sm font-medium text-green-600">Trực tuyến</span>
+        <div className="flex flex-col sm:flex-row items-center gap-3">
+          <div className="flex items-center gap-2 bg-green-50 px-3 py-1.5 rounded-full border border-green-100 h-9">
+            <span className="flex h-2.5 w-2.5 relative">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
+            </span>
+            <span className="text-xs font-bold text-green-700">Trực tuyến</span>
+          </div>
+          
+          <button className="bg-white border border-gray-200 text-gray-600 px-3 md:px-4 py-1.5 md:py-2 rounded-lg md:rounded-xl text-xs md:text-sm font-bold shadow-sm hover:bg-gray-50 transition-colors w-full sm:w-auto text-center h-9 md:h-auto">
+            {new Date().toLocaleDateString("vi-VN", {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })}
+          </button>
         </div>
       </div>
 

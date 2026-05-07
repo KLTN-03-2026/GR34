@@ -1,4 +1,4 @@
-﻿import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import {
   ChevronDownIcon,
@@ -354,21 +354,23 @@ export default function Navbar() {
                       </div>
                     </button>
 
-                    <Link
-                      to="/customer/profile"
-                      onClick={() => setUserDropdownOpen(false)}
-                      className="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium text-slate-700 rounded-lg hover:bg-gray-100 transition-all text-left group"
-                    >
-                      <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center group-hover:bg-slate-800 group-hover:text-white transition-colors">
-                        <UserIcon className="w-4 h-4" />
-                      </div>
-                      <div className="flex flex-col">
-                        <span>Tài khoản</span>
-                        <span className="text-[10px] text-gray-400 font-normal">
-                          Thông tin cá nhân
-                        </span>
-                      </div>
-                    </Link>
+                    {(role === "customer" || role === "driver") && (
+                      <Link
+                        to={role === "driver" ? `/driver/${localStorage.getItem("userId")}/profile` : "/customer/profile"}
+                        onClick={() => setUserDropdownOpen(false)}
+                        className="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium text-slate-700 rounded-lg hover:bg-gray-100 transition-all text-left group"
+                      >
+                        <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center group-hover:bg-slate-800 group-hover:text-white transition-colors">
+                          <UserIcon className="w-4 h-4" />
+                        </div>
+                        <div className="flex flex-col">
+                          <span>Tài khoản</span>
+                          <span className="text-[10px] text-gray-400 font-normal">
+                            Thông tin cá nhân
+                          </span>
+                        </div>
+                      </Link>
+                    )}
                   </div>
 
                   <div className="p-2 border-t border-gray-100 mt-1">
