@@ -258,7 +258,7 @@ export default function RoadFreight() {
               <div className="absolute top-0 -left-[100%] w-full h-full bg-white/20 skew-x-[45deg] group-hover:left-[100%] transition-all duration-700 ease-in-out z-20"></div>
             </div>
             {/* Phần giao diện */}
-            <div className="absolute bottom-10 left-[-20px] z-30 bg-white p-6 rounded-xl shadow-xl border-l-4 border-orange-500 hidden md:block">
+            <div className="absolute top-10 right-[-20px] z-30 bg-white p-6 rounded-xl shadow-xl border-l-4 border-orange-500 hidden md:block">
               <p className="font-bold text-[#113e48] text-lg">
                 Tỷ lệ giao đúng hẹn
               </p>
@@ -295,7 +295,7 @@ export default function RoadFreight() {
                   <img
                     src={item.img}
                     alt={item.name}
-                    className="w-full h-full object-contain bg-white transition-transform duration-700 group-hover:scale-110"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#113e48]/90 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
                     <span className="text-white font-bold flex items-center gap-2">

@@ -8,11 +8,84 @@ import { io } from "socket.io-client";
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:5000";
 const socket = io(SOCKET_URL, { transports: ["websocket"] });
 
+// Custom Toast với progress bar countdown
+const ToastNotification = ({ message, duration = 30000, onClose }) => {
+  const [progress, setProgress] = useState(100);
+  const [isPaused, setIsPaused] = useState(false);
+  
+  useEffect(() => {
+    const startTime = Date.now();
+    const interval = setInterval(() => {
+      if (!isPaused) {
+        const elapsed = Date.now() - startTime;
+        const remaining = Math.max(0, 100 - (elapsed / duration) * 100);
+        setProgress(remaining);
+        
+        if (remaining <= 0) {
+          clearInterval(interval);
+          onClose();
+        }
+      }
+    }, 100);
+    
+    return () => clearInterval(interval);
+  }, [duration, isPaused, onClose]);
+  
+  const getProgressColor = () => {
+    if (progress > 60) return "bg-green-500";
+    if (progress > 30) return "bg-yellow-500";
+    return "bg-red-500";
+  };
+  
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: 100, scale: 0.9 }}
+      animate={{ opacity: 1, x: 0, scale: 1 }}
+      exit={{ opacity: 0, x: 100, scale: 0.9 }}
+      transition={{ type: "spring", stiffness: 300, damping: 25 }}
+      className="relative bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden w-80"
+      style={{ zIndex: 99999 }}
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
+      {/* Progress bar ở dưới */}
+      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-100">
+        <motion.div
+          className={`h-full ${getProgressColor()}`}
+          style={{ width: `${progress}%` }}
+          transition={{ duration: 0.1, ease: "linear" }}
+        />
+      </div>
+      
+      {/* Nội dung toast */}
+      <div className="p-4 flex items-start gap-3">
+        <div className="p-2 bg-blue-100 rounded-full shrink-0">
+          <Package size={18} className="text-blue-600" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-semibold text-gray-800 text-sm">Thông báo mới!</p>
+          <p className="text-sm text-gray-600 mt-0.5 line-clamp-2">{message}</p>
+          <p className="text-xs text-gray-400 mt-1">
+            {Math.ceil((progress / 100) * (duration / 1000))}s
+          </p>
+        </div>
+        <button
+          onClick={onClose}
+          className="text-gray-400 hover:text-gray-600 transition-colors shrink-0"
+        >
+          ✕
+        </button>
+      </div>
+    </motion.div>
+  );
+};
+
 // Thông báo cho tài xế
 export default function DriverNotifications({ driverId }) {
   const [show, setShow] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [hasNew, setHasNew] = useState(false);
+  const [toasts, setToasts] = useState([]);
   const dropdownRef = useRef(null);
 
 
@@ -32,6 +105,8 @@ export default function DriverNotifications({ driverId }) {
     try {
       const res = await API.get(`/notifications/driver/${driverId}`);
       setNotifications(res.data);
+      const unread = res.data.filter((n) => !n.is_read).length;
+      setHasNew(unread > 0);
     } catch (err) {
     }
   };
@@ -46,9 +121,20 @@ export default function DriverNotifications({ driverId }) {
     if (!driverId) return;
     socket.emit("registerDriver", driverId);
 
-    const handleRealtimeNotification = () => {
+    const handleRealtimeNotification = (notif) => {
+      const newNotification = {
+        id: Date.now(),
+        message: notif.message || "Bạn có thông báo mới!",
+        is_read: 0,
+        created_at: notif.created_at || new Date().toISOString(),
+      };
+      
       setHasNew(true);
-      fetchNotifications();
+      setNotifications((prev) => [newNotification, ...prev]);
+      
+      // Hiện toast popup với countdown 30 giây
+      const toastId = `toast-${Date.now()}`;
+      setToasts((prev) => [...prev, { id: toastId, message: newNotification.message }]);
     };
 
     socket.on("newAssignment", handleRealtimeNotification);
@@ -59,6 +145,11 @@ export default function DriverNotifications({ driverId }) {
       socket.off("newNotification", handleRealtimeNotification);
     };
   }, [driverId]);
+
+  // Xóa toast khi hết giờ hoặc user đóng
+  const removeToast = (toastId) => {
+    setToasts((prev) => prev.filter((t) => t.id !== toastId));
+  };
 
 
 // Đánh dấu thông báo đã đọc
@@ -76,6 +167,21 @@ export default function DriverNotifications({ driverId }) {
 
   return (
     <div className="relative select-none" ref={dropdownRef}>
+      {/* Container hiển thị toasts - đặt z-index cao nhất */}
+      <div className="fixed top-20 right-4 z-[99999] flex flex-col gap-3 pointer-events-none">
+        <AnimatePresence>
+          {toasts.map((t) => (
+            <div key={t.id} className="pointer-events-auto">
+              <ToastNotification
+                message={t.message}
+                duration={30000}
+                onClose={() => removeToast(t.id)}
+              />
+            </div>
+          ))}
+        </AnimatePresence>
+      </div>
+
       {/* Phần giao diện */}
       <motion.button
         whileTap={{ scale: 0.9 }}

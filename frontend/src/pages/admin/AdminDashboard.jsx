@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import API from "../../services/api";
 import {
@@ -54,7 +54,12 @@ export default function AdminDashboard() {
 
 
   const formatCurrency = (value) => {
-    return new Intl.NumberFormat("vi-VN").format(value) + " VNĐ";
+    return (
+      <>
+        <span className="truncate min-w-0">{new Intl.NumberFormat("vi-VN").format(value)}</span>
+        <span className="text-sm font-bold text-gray-500 shrink-0 ml-1">VNĐ</span>
+      </>
+    );
   };
 
 
@@ -331,12 +336,16 @@ export default function AdminDashboard() {
 function StatCard({ title, value, icon, color, trend, to }) {
   const content = (
     <>
-      <div>
-        <p className="text-sm font-medium text-gray-500 mb-1">{title}</p>
-        <h3 className="text-2xl font-extrabold text-[#113e48] tracking-tight">
-          {value}
+      <div className="min-w-0 flex-1 pr-2">
+        <p className="text-sm font-medium text-gray-500 mb-1 truncate">{title}</p>
+        <h3 className="text-base lg:text-lg xl:text-xl 2xl:text-2xl font-extrabold text-[#113e48] tracking-tighter flex items-baseline overflow-hidden whitespace-nowrap">
+          {typeof value === "string" || typeof value === "number" ? (
+            <span className="truncate min-w-0 flex-shrink">{value}</span>
+          ) : (
+            value
+          )}
         </h3>
-        <div className="flex items-center gap-1 mt-2 text-xs font-bold text-green-500 bg-green-50 px-2 py-0.5 rounded-md w-fit">
+        <div className="flex items-center gap-1 mt-2 text-xs font-bold text-green-500 bg-green-50 px-2 py-0.5 rounded-md w-fit whitespace-nowrap">
           <TrendingUp size={12} /> {trend}{" "}
           <span className="text-gray-400 font-normal ml-1">
             so với tháng trước

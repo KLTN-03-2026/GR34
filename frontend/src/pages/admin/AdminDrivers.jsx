@@ -217,9 +217,8 @@ export default function AdminDrivers() {
   };
 
   const normalizeDriverStatus = (status) => {
-    if (status === "available" || status === "free") return "free";
-    if (status === "busy" || status === "active" || status === "delivering")
-      return "busy";
+    if (status === "available" || status === "free" || status === "active" || status === "delivering" || status === "busy")
+      return "free";
     if (status === "inactive") return "inactive";
     return "free";
   };
@@ -438,13 +437,10 @@ export default function AdminDrivers() {
                           className={`border outline-none font-bold text-xs cursor-pointer px-2.5 py-0.5 rounded-full ${
                             normalizeDriverStatus(d.status) === "free"
                               ? "bg-green-100 text-green-800 border-green-200"
-                              : normalizeDriverStatus(d.status) === "busy"
-                              ? "bg-sky-100 text-sky-800 border-sky-200"
                               : "bg-gray-100 text-gray-800 border-gray-200"
                           }`}
                         >
                           <option value="free">Sẵn sàng</option>
-                          <option value="busy">Đang bận</option>
                           <option value="inactive">Tạm nghỉ</option>
                         </select>
                       </td>

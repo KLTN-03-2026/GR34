@@ -1,5 +1,6 @@
 ﻿import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import CustomerNotifications from "../components/CustomerNotifications";
 import {
   LogOut,
@@ -19,14 +20,39 @@ import {
   FileText,
 } from "lucide-react";
 
+// Animation variants cho page transition - nhanh nhẹ
+const pageVariants = {
+  initial: { opacity: 0 },
+  enter: {
+    opacity: 1,
+    transition: { duration: 0.3, ease: "easeOut" },
+  },
+  exit: {
+    opacity: 0,
+    transition: { duration: 0.2, ease: "easeIn" },
+  },
+};
+
 export default function CustomerLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const username = localStorage.getItem("username") || "Khách hàng";
   const customerId = localStorage.getItem("customer_id") || localStorage.getItem("userId");
-
+  const [avatar, setAvatar] = useState(localStorage.getItem("userAvatar") || "");
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    const handleAvatarUpdate = () => {
+      setAvatar(localStorage.getItem("userAvatar") || "");
+    };
+    window.addEventListener("avatarUpdated", handleAvatarUpdate);
+    window.addEventListener("storage", handleAvatarUpdate);
+    return () => {
+      window.removeEventListener("avatarUpdated", handleAvatarUpdate);
+      window.removeEventListener("storage", handleAvatarUpdate);
+    };
+  }, []);
 
 
   useEffect(() => {
@@ -184,9 +210,11 @@ export default function CustomerLayout() {
         <div className="p-4 bg-[#0d2f36] border-t border-white/5 shrink-0">
           <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors cursor-pointer group">
             <div className="flex items-center gap-3 overflow-hidden">
-              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-sm font-bold text-white shadow-inner shrink-0">
-                {username.charAt(0).toUpperCase()}
-              </div>
+              <img
+                src={avatar || `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(username)}`}
+                alt="Avatar"
+                className="w-9 h-9 rounded-full object-cover bg-white shadow-inner shrink-0"
+              />
               <div className="overflow-hidden">
                 <h4 className="text-sm font-bold text-white truncate max-w-[100px] group-hover:text-orange-400 transition-colors">
                   {username}
@@ -235,7 +263,17 @@ export default function CustomerLayout() {
 
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-[#F8FAFC] p-4 md:p-8 scroll-smooth w-full">
           <div className="max-w-7xl mx-auto min-h-full">
-            <Outlet />
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={location.pathname}
+                variants={pageVariants}
+                initial="initial"
+                animate="enter"
+                exit="exit"
+              >
+                <Outlet />
+              </motion.div>
+            </AnimatePresence>
           </div>
         </main>
       </div>

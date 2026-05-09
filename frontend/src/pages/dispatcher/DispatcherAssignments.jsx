@@ -555,7 +555,7 @@ export default function DispatcherAssignmentsUIPro() {
                               </span>
                             </span>
                             <span className="text-[10px] uppercase font-bold text-slate-400 bg-slate-100 px-1.5 rounded-md">
-                              Tiền mặt
+                              {s.payment_method === "WALLET" ? "Ví nội bộ" : s.payment_method === "MOMO" ? "Ví MoMo" : "Tiền mặt"}
                             </span>
                           </div>
                         </td>

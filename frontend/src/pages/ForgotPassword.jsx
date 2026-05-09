@@ -83,7 +83,11 @@ export default function ForgotPassword() {
 
     try {
       setLoading(true);
-      await API.post("/auth/reset-password", { email, otp, newPassword });
+
+      const verifyRes = await API.post("/auth/verify-forgot-otp", { email, otp });
+      const resetToken = verifyRes.data.resetToken;
+
+      await API.post("/auth/reset-password", { email, newPassword, token: resetToken });
       setMessage({
         type: "success",
         text: "Đổi mật khẩu thành công! Đang chuyển hướng...",

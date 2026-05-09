@@ -86,9 +86,11 @@ export default function CustomerProfile() {
         const res = await API.get(`/customers/profile/${userId}`);
         const data = res.data;
 
+        const savedAvatar = localStorage.getItem("userAvatar");
         setProfile({
           ...data,
           avatar:
+            savedAvatar ||
             data.avatar ||
             `https://api.dicebear.com/9.x/avataaars/svg?seed=${
               data.name || "User"
@@ -126,7 +128,10 @@ export default function CustomerProfile() {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setProfile({ ...profile, avatar: reader.result });
+        const avatarData = reader.result;
+        setProfile({ ...profile, avatar: avatarData });
+        localStorage.setItem("userAvatar", avatarData);
+        window.dispatchEvent(new Event("avatarUpdated"));
       };
       reader.readAsDataURL(file);
     }
