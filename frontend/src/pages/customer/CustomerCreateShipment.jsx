@@ -23,6 +23,9 @@ import {
   DollarSign,
   Book,
   X,
+  CheckCircle,
+  AlertCircle,
+  Wallet
 } from "lucide-react";
 
 
@@ -68,6 +71,7 @@ export default function CustomerCreateShipment() {
   const [serviceType, setServiceType] = useState("express");
 
   const [shippingData, setShippingData] = useState(null);
+  const [showReview, setShowReview] = useState(false);
   const [loadingFee, setLoadingFee] = useState(false);
 
   const [activeMap, setActiveMap] = useState(null);
@@ -112,13 +116,19 @@ export default function CustomerCreateShipment() {
         });
 
         if (response.data.success) {
+          const dist = parseFloat(response.data.distance_km) || 0;
           setShippingData(response.data);
           setEstimatedFee(response.data.total_shipping);
-          setDistanceKm(parseFloat(response.data.distance_km) || 0);
+          setDistanceKm(dist);
           setForm((prev) => ({
             ...prev,
             shipping_fee: response.data.total_shipping,
           }));
+
+          if (dist > 100 && serviceType === "fast") {
+            setServiceType("express");
+            toast.error("Khoảng cách trên 100km không hỗ trợ Hỏa Tốc. Đã tự động chuyển sang Giao Nhanh!");
+          }
         }
       } catch (error) {
         toast.error("Không thể tính phí vận chuyển");
@@ -330,7 +340,12 @@ export default function CustomerCreateShipment() {
       });
     }
 
+    setShowReview(true);
+  };
+
+  const confirmSubmit = async () => {
     setCreating(true);
+    setShowReview(false);
     try {
       const payload = {
         ...form,
@@ -368,12 +383,32 @@ export default function CustomerCreateShipment() {
 
   return (
     <div className="animate-in fade-in duration-500 pb-20 max-w-6xl mx-auto px-4">
+      <style>{`
+        @keyframes slideUpFade {
+          0% { opacity: 0; transform: translateY(30px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+        .animate-stagger {
+          opacity: 0;
+          animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        /* Custom input glow effect */
+        .input-glow:focus {
+          box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+        }
+        .input-glow-green:focus {
+          box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.15);
+        }
+        .input-glow-orange:focus {
+          box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.15);
+        }
+      `}</style>
       {/* Phần giao diện */}
-      <div className="mb-8 text-center pt-6">
-        <h1 className="text-3xl font-extrabold text-[#113e48]">
+      <div className="mb-8 text-center pt-6 animate-stagger" style={{ animationDelay: "0s" }}>
+        <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#113e48] to-teal-600 drop-shadow-sm">
           Tạo đơn hàng mới
         </h1>
-        <p className="text-gray-500 text-sm mt-2">
+        <p className="text-gray-500 text-sm mt-3 font-medium">
           Điền thông tin chi tiết để chúng tôi phục vụ bạn tốt nhất.
         </p>
       </div>
@@ -385,8 +420,11 @@ export default function CustomerCreateShipment() {
         {/* Phần giao diện */}
         <div className="lg:col-span-2 space-y-6">
           {/* Phần giao diện */}
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 relative">
-            <div className="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
+          <div 
+            className="bg-white p-6 rounded-3xl shadow-sm hover:shadow-lg border border-gray-100 relative transition-all duration-300 hover:-translate-y-1 animate-stagger"
+            style={{ animationDelay: "0.1s" }}
+          >
+            <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-blue-400 to-blue-600 rounded-l-3xl"></div>
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-bold text-[#113e48] flex items-center gap-2">
                 <div className="p-2 bg-blue-100 rounded-lg text-blue-600">
@@ -412,7 +450,7 @@ export default function CustomerCreateShipment() {
                   value={form.sender_name}
                   onChange={handleChange}
                   placeholder="VD: Trần Thị B"
-                  className="w-full p-3 border border-gray-200 rounded-xl outline-none focus:border-blue-500"
+                  className="w-full p-3.5 border-2 border-gray-100 bg-gray-50 rounded-xl outline-none focus:border-blue-500 focus:bg-white transition-all duration-300 input-glow"
                   required
                 />
               </div>
@@ -426,7 +464,7 @@ export default function CustomerCreateShipment() {
                   onChange={handleChange}
                   maxLength={10}
                   placeholder="VD: 0987654321"
-                  className="w-full p-3 border border-gray-200 rounded-xl outline-none focus:border-blue-500"
+                  className="w-full p-3.5 border-2 border-gray-100 bg-gray-50 rounded-xl outline-none focus:border-blue-500 focus:bg-white transition-all duration-300 input-glow"
                   required
                 />
               </div>
@@ -523,8 +561,11 @@ export default function CustomerCreateShipment() {
           </div>
 
           {/* Phần giao diện */}
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 relative ">
-            <div className="absolute top-0 left-0 w-1 h-full bg-green-500"></div>
+          <div 
+            className="bg-white p-6 rounded-3xl shadow-sm hover:shadow-lg border border-gray-100 relative transition-all duration-300 hover:-translate-y-1 animate-stagger"
+            style={{ animationDelay: "0.2s" }}
+          >
+            <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-green-400 to-green-600 rounded-l-3xl"></div>
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-bold text-[#113e48] flex items-center gap-2">
                 <div className="p-2 bg-green-100 rounded-lg text-green-600">
@@ -550,7 +591,7 @@ export default function CustomerCreateShipment() {
                   value={form.receiver_name}
                   onChange={handleChange}
                   placeholder="VD: Nguyễn Văn A"
-                  className="w-full p-3 border border-gray-200 rounded-xl outline-none focus:border-green-500"
+                  className="w-full p-3.5 border-2 border-gray-100 bg-gray-50 rounded-xl outline-none focus:border-green-500 focus:bg-white transition-all duration-300 input-glow-green"
                   required
                 />
               </div>
@@ -564,7 +605,7 @@ export default function CustomerCreateShipment() {
                   onChange={handleChange}
                   maxLength={10}
                   placeholder="VD: 0901234567"
-                  className="w-full p-3 border border-gray-200 rounded-xl outline-none focus:border-green-500"
+                  className="w-full p-3.5 border-2 border-gray-100 bg-gray-50 rounded-xl outline-none focus:border-green-500 focus:bg-white transition-all duration-300 input-glow-green"
                   required
                 />
               </div>
@@ -616,8 +657,11 @@ export default function CustomerCreateShipment() {
           </div>
 
           {/* Phần giao diện */}
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-1 h-full bg-orange-500"></div>
+          <div 
+            className="bg-white p-6 rounded-3xl shadow-sm hover:shadow-lg border border-gray-100 relative overflow-hidden transition-all duration-300 hover:-translate-y-1 animate-stagger"
+            style={{ animationDelay: "0.3s" }}
+          >
+            <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-orange-400 to-orange-600 rounded-l-3xl"></div>
             <h3 className="text-lg font-bold text-[#113e48] mb-4 flex items-center gap-2">
               <div className="p-2 bg-orange-100 rounded-lg text-orange-600">
                 <Package size={20} />
@@ -634,7 +678,7 @@ export default function CustomerCreateShipment() {
                   value={form.item_name}
                   onChange={handleChange}
                   placeholder="VD: Quần áo, mỹ phẩm, sách..."
-                  className="w-full p-3 border border-gray-200 rounded-xl outline-none focus:border-orange-500"
+                  className="w-full p-3.5 border-2 border-gray-100 bg-gray-50 rounded-xl outline-none focus:border-orange-500 focus:bg-white transition-all duration-300 input-glow-orange"
                   required
                 />
               </div>
@@ -649,7 +693,7 @@ export default function CustomerCreateShipment() {
                     value={form.quantity}
                     onChange={handleChange}
                     min="1"
-                    className="w-full p-3 border border-gray-200 rounded-xl outline-none focus:border-orange-500 text-center font-bold"
+                    className="w-full p-3.5 border-2 border-gray-100 bg-gray-50 rounded-xl outline-none focus:border-orange-500 focus:bg-white transition-all duration-300 input-glow-orange text-center font-bold"
                     required
                   />
                 </div>
@@ -756,6 +800,99 @@ export default function CustomerCreateShipment() {
         addresses={savedAddresses}
         onSelect={handleSelectAddress}
       />
+      {/* Review Modal */}
+      {showReview && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+              <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                <CheckCircle className="text-green-500" size={20} />
+                Xác nhận thông tin đơn hàng
+              </h3>
+              <button
+                onClick={() => setShowReview(false)}
+                className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto space-y-6 flex-1">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-sm font-bold text-gray-700 uppercase tracking-wider">
+                    <MapPin size={16} className="text-orange-500" /> Người gửi
+                  </div>
+                  <div className="bg-orange-50/50 p-4 rounded-xl border border-orange-100 text-sm space-y-1.5">
+                    <p><span className="text-gray-500">Tên:</span> <span className="font-semibold text-gray-800">{form.sender_name}</span></p>
+                    <p><span className="text-gray-500">SĐT:</span> <span className="font-semibold text-gray-800">{form.sender_phone}</span></p>
+                    <p><span className="text-gray-500">Địa chỉ:</span> <span className="font-medium text-gray-700">{form.pickup_address}</span></p>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-sm font-bold text-gray-700 uppercase tracking-wider">
+                    <MapPin size={16} className="text-blue-500" /> Người nhận
+                  </div>
+                  <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100 text-sm space-y-1.5">
+                    <p><span className="text-gray-500">Tên:</span> <span className="font-semibold text-gray-800">{form.receiver_name}</span></p>
+                    <p><span className="text-gray-500">SĐT:</span> <span className="font-semibold text-gray-800">{form.receiver_phone}</span></p>
+                    <p><span className="text-gray-500">Địa chỉ:</span> <span className="font-medium text-gray-700">{form.delivery_address}</span></p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 text-sm font-bold text-gray-700 uppercase tracking-wider">
+                  <Package size={16} className="text-indigo-500" /> Thông tin kiện hàng
+                </div>
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 text-sm flex flex-wrap gap-x-8 gap-y-3">
+                  <p><span className="text-gray-500">Tên hàng:</span> <span className="font-semibold text-gray-800">{form.item_name}</span></p>
+                  <p><span className="text-gray-500">Số lượng:</span> <span className="font-semibold text-gray-800">{form.quantity} kiện</span></p>
+                  <p><span className="text-gray-500">Khối lượng:</span> <span className="font-semibold text-gray-800">{form.weight_kg} kg</span></p>
+                  <p><span className="text-gray-500">Dịch vụ:</span> <span className={`font-bold ${serviceType === 'economy' ? 'text-emerald-600' : serviceType === 'express' ? 'text-blue-600' : 'text-red-600'}`}>{serviceType === 'economy' ? 'Tiết kiệm' : serviceType === 'express' ? 'Giao Nhanh' : 'Hỏa Tốc'}</span></p>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 text-sm font-bold text-gray-700 uppercase tracking-wider">
+                  <Wallet size={16} className="text-emerald-500" /> Cước phí & Thu hộ
+                </div>
+                <div className="bg-emerald-50/50 p-4 rounded-xl border border-emerald-100 text-sm space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Phí vận chuyển:</span>
+                    <span className="font-semibold text-gray-800">{(estimatedFee || 0).toLocaleString('vi-VN')}₫</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Tiền thu hộ (COD):</span>
+                    <span className="font-semibold text-gray-800">{(Number(form.cod_amount) || 0).toLocaleString('vi-VN')}₫</span>
+                  </div>
+                  <div className="h-px bg-emerald-200/50 my-1"></div>
+                  <div className="flex justify-between items-center">
+                    <span className="font-bold text-emerald-800">Tổng thanh toán:</span>
+                    <span className="text-lg font-black text-emerald-600">{(estimatedFee + Number(form.cod_amount || 0)).toLocaleString('vi-VN')}₫</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex justify-end gap-3">
+              <button
+                onClick={() => setShowReview(false)}
+                className="px-5 py-2.5 rounded-xl font-semibold text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 transition-colors"
+              >
+                Quay lại sửa
+              </button>
+              <button
+                onClick={confirmSubmit}
+                className="px-6 py-2.5 rounded-xl font-bold text-white bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-md transition-colors flex items-center gap-2"
+              >
+                {creating ? "Đang tạo đơn..." : "Tạo đơn & Thanh toán"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

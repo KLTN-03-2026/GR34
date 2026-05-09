@@ -1,5 +1,6 @@
 ﻿import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import io from "socket.io-client";
 import {
   LogOut,
@@ -16,8 +17,20 @@ import {
 } from "lucide-react";
 import DispatcherNotifications from "../components/DispatcherNotifications";
 
-
 const socket = io("http://localhost:5000", { transports: ["websocket"] });
+
+// Animation variants cho page transition - nhanh nhẹ
+const pageVariants = {
+  initial: { opacity: 0 },
+  enter: {
+    opacity: 1,
+    transition: { duration: 0.3, ease: "easeOut" },
+  },
+  exit: {
+    opacity: 0,
+    transition: { duration: 0.2, ease: "easeIn" },
+  },
+};
 
 export default function DispatcherLayout() {
   const navigate = useNavigate();
@@ -243,7 +256,17 @@ export default function DispatcherLayout() {
         {/* Phần giao diện */}
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-[#F8FAFC] p-6 lg:p-10 scroll-smooth">
           <div className="max-w-7xl mx-auto min-h-full">
-            <Outlet />
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={location.pathname}
+                variants={pageVariants}
+                initial="initial"
+                animate="enter"
+                exit="exit"
+              >
+                <Outlet />
+              </motion.div>
+            </AnimatePresence>
           </div>
         </main>
       </div>

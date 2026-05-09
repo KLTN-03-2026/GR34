@@ -7,6 +7,7 @@ import Map, {
   Source,
   Layer,
   NavigationControl,
+  ScaleControl,
 } from "react-map-gl";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -20,7 +21,11 @@ import {
   CheckCircle,
   MapPin,
   User,
+  ZoomIn,
+  ZoomOut,
+  Maximize2,
 } from "lucide-react";
+import { motion } from "framer-motion";
 
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
@@ -75,6 +80,58 @@ export default function DispatcherTrackingDetail() {
   const [delivery, setDelivery] = useState(null);
   const [driverPos, setDriverPos] = useState(null);
   const [popupInfo, setPopupInfo] = useState(null);
+  const [currentZoom, setCurrentZoom] = useState(12);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Zoom controls
+  const handleZoomIn = () => {
+    if (mapRef.current) {
+      const newZoom = Math.min(currentZoom + 1, 20);
+      setCurrentZoom(newZoom);
+      mapRef.current.zoomTo(newZoom, { duration: 300 });
+    }
+  };
+
+  const handleZoomOut = () => {
+    if (mapRef.current) {
+      const newZoom = Math.max(currentZoom - 1, 1);
+      setCurrentZoom(newZoom);
+      mapRef.current.zoomTo(newZoom, { duration: 300 });
+    }
+  };
+
+  const handleFullscreen = () => {
+    const mapContainer = document.getElementById("tracking-map-container");
+    if (!isFullscreen) {
+      if (mapContainer.requestFullscreen) {
+        mapContainer.requestFullscreen();
+      }
+      setIsFullscreen(true);
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+      setIsFullscreen(false);
+    }
+  };
+
+  // Fit bounds to show all markers
+  const fitBoundsToMarkers = () => {
+    if (!mapRef.current || !pickup || !delivery) return;
+
+    const bounds = new mapboxgl.LngLatBounds();
+    bounds.extend([pickup[1], pickup[0]]);
+    bounds.extend([delivery[1], delivery[0]]);
+    if (driverPos) {
+      bounds.extend([driverPos[1], driverPos[0]]);
+    }
+
+    mapRef.current.fitBounds(bounds, {
+      padding: 100,
+      duration: 1000,
+      maxZoom: 14,
+    });
+  };
 
 
   const fetchRouteOSRM = async (start, end) => {
@@ -126,14 +183,15 @@ export default function DispatcherTrackingDetail() {
         setPickup(pk);
         setDelivery(dl);
 
-
-        if (data.status === "picking" || data.status === "delivering") {
+        // Luôn hiện đường đi ước tính (dù chưa giao hay đang giao)
+        if (data.status === "assigned" || data.status === "picking" || data.status === "delivering") {
           const geoJson = await fetchRouteOSRM(pk, dl);
           setRouteGeoJSON(geoJson);
 
           if (data.driver_lat) {
             setDriverPos([Number(data.driver_lat), Number(data.driver_lng)]);
           } else {
+            // Hiện vị trí pickup làm vị trí tài xế tạm thời
             setDriverPos(pk);
           }
         } else if (
@@ -155,7 +213,6 @@ export default function DispatcherTrackingDetail() {
 
 
   useEffect(() => {
-
     if (!mapRef.current || !pickup || !delivery) return;
 
     const features = [];
@@ -169,7 +226,6 @@ export default function DispatcherTrackingDetail() {
       geometry: { type: "Point", coordinates: [delivery[1], delivery[0]] },
     });
 
-
     if (routeGeoJSON) features.push(routeGeoJSON);
 
     const featureCollection = { type: "FeatureCollection", features: features };
@@ -177,18 +233,17 @@ export default function DispatcherTrackingDetail() {
     try {
       const [minLng, minLat, maxLng, maxLat] = bbox(featureCollection);
 
-
       const isSamePoint = minLng === maxLng && minLat === maxLat;
 
       if (isSamePoint) {
-        mapRef.current.flyTo({ center: [minLng, minLat], zoom: 14 });
+        mapRef.current.flyTo({ center: [minLng, minLat], zoom: 14, duration: 1200 });
       } else {
         mapRef.current.fitBounds(
           [
             [minLng, minLat],
             [maxLng, maxLat],
           ],
-          { padding: 80, duration: 1500, maxZoom: 14 }
+          { padding: 80, duration: 1200, maxZoom: 14 }
         );
       }
     } catch (error) {
@@ -316,19 +371,68 @@ export default function DispatcherTrackingDetail() {
         </div>
 
         {/* Phần giao diện */}
-        <div className="lg:col-span-2 h-[600px] bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden relative">
+        <div
+          id="tracking-map-container"
+          className={`lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden relative transition-all duration-300 ${
+            isFullscreen
+              ? "fixed inset-4 z-[9999] rounded-2xl"
+              : "h-[500px] lg:h-[600px]"
+          }`}
+        >
+          {/* Zoom controls */}
+          <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
+            <button
+              onClick={handleZoomIn}
+              className="bg-white p-2 rounded-lg shadow-lg hover:bg-gray-50 transition-colors border border-gray-200"
+              title="Phóng to"
+            >
+              <ZoomIn size={18} className="text-gray-700" />
+            </button>
+            <button
+              onClick={handleZoomOut}
+              className="bg-white p-2 rounded-lg shadow-lg hover:bg-gray-50 transition-colors border border-gray-200"
+              title="Thu nhỏ"
+            >
+              <ZoomOut size={18} className="text-gray-700" />
+            </button>
+            <button
+              onClick={fitBoundsToMarkers}
+              className="bg-white p-2 rounded-lg shadow-lg hover:bg-gray-50 transition-colors border border-gray-200"
+              title="Fit tất cả markers"
+            >
+              <Maximize2 size={18} className="text-gray-700" />
+            </button>
+            <button
+              onClick={handleFullscreen}
+              className="bg-white p-2 rounded-lg shadow-lg hover:bg-gray-50 transition-colors border border-gray-200"
+              title={isFullscreen ? "Thoát toàn màn hình" : "Toàn màn hình"}
+            >
+              <Maximize2 size={18} className={`text-gray-700 ${isFullscreen ? "rotate-180" : ""}`} />
+            </button>
+          </div>
+
+          {/* Current zoom level */}
+          <div className="absolute top-4 right-4 z-10 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-lg shadow-lg border border-gray-200">
+            <span className="text-xs font-medium text-gray-600">
+              Zoom: {currentZoom.toFixed(1)}
+            </span>
+          </div>
+
           <Map
             ref={mapRef}
             initialViewState={{
               longitude: 106.6297,
               latitude: 10.8231,
-              zoom: 6,
+              zoom: 12,
             }}
+            onMove={(evt) => setCurrentZoom(evt.viewState.zoom)}
+            onZoom={(evt) => setCurrentZoom(evt.viewState.zoom)}
             style={{ width: "100%", height: "100%" }}
             mapStyle="mapbox://styles/mapbox/streets-v12"
             mapboxAccessToken={MAPBOX_TOKEN}
           >
-            <NavigationControl position="bottom-right" />
+            <NavigationControl position="bottom-right" showCompass={false} />
+            <ScaleControl position="bottom-left" />
 
             {/* Render điều kiện */}
             {routeGeoJSON && (

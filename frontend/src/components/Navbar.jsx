@@ -45,6 +45,7 @@ export default function Navbar() {
   const location = useLocation();
   const [role, setRole] = useState(localStorage.getItem("role"));
   const [name, setName] = useState(localStorage.getItem("username") || "User");
+  const [avatar, setAvatar] = useState(localStorage.getItem("userAvatar") || "");
 
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -71,9 +72,14 @@ export default function Navbar() {
     const handleStorageChange = () => {
       setRole(localStorage.getItem("role"));
       setName(localStorage.getItem("username") || "User");
+      setAvatar(localStorage.getItem("userAvatar") || "");
     };
     window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
+    window.addEventListener("avatarUpdated", handleStorageChange);
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("avatarUpdated", handleStorageChange);
+    };
   }, []);
 
   useEffect(() => {
@@ -316,9 +322,11 @@ export default function Navbar() {
                       {name}
                     </p>
                   </div>
-                  <div className="w-9 h-9 rounded-full bg-slate-800 text-white flex items-center justify-center font-bold text-sm shadow-sm ring-2 ring-white group-hover:ring-orange-200 transition-all shrink-0">
-                    {getInitials(name)}
-                  </div>
+                  <img
+                    src={avatar || `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(name)}`}
+                    alt="Avatar"
+                    className="w-9 h-9 rounded-full object-cover bg-white shadow-sm ring-2 ring-white group-hover:ring-orange-200 transition-all shrink-0"
+                  />
                 </button>
 
                 <div

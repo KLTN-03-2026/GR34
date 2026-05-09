@@ -22,7 +22,7 @@ export const getAllPayments = async (req, res) => {
 export const createPayment = async (req, res) => {
   try {
     const { shipment_id, customer_id, amount, method } = req.body;
-    await db.query("UPDATE shipments SET payment_method = ? WHERE id = ?", [
+    await db.query("UPDATE shipments SET payment_method = ?, status = 'pending' WHERE id = ?", [
       method,
       shipment_id,
     ]);
@@ -48,29 +48,30 @@ export const createMomoPayment = async (req, res) => {
       [shipment_id],
     );
 
+    const finalAmount = Math.round(Number(amount));
     const partnerCode = "MOMO";
     const accessKey = "F8BBA842ECF85";
     const secretKey = "K951B6PE1waDMi640xX08PD3vg6EkVlz";
 
     const orderId = `SHIP${Date.now()}`;
     const requestId = orderId;
-    const orderInfo = `Thanh toán vận đơn #${shipment_id}`;
+    const orderInfo = `Thanh toan van don #${shipment_id}`;
     const redirectUrl = `http://localhost:5173/customer/payment-success?orderId=${orderId}&type=shipment`;
     const ipnUrl = "http://localhost:5000/api/payments/momo/callback";
     const requestType = "captureWallet";
 
-    const rawSignature = `accessKey=${accessKey}&amount=${amount}&extraData=&ipnUrl=${ipnUrl}&orderId=${orderId}&orderInfo=${orderInfo}&partnerCode=${partnerCode}&redirectUrl=${redirectUrl}&requestId=${requestId}&requestType=${requestType}`;
+    const rawSignature = `accessKey=${accessKey}&amount=${finalAmount}&extraData=&ipnUrl=${ipnUrl}&orderId=${orderId}&orderInfo=${orderInfo}&partnerCode=${partnerCode}&redirectUrl=${redirectUrl}&requestId=${requestId}&requestType=${requestType}`;
 
     const signature = crypto
       .createHmac("sha256", secretKey)
-      .update(rawSignature)
+      .update(rawSignature, "utf8")
       .digest("hex");
 
     const body = {
       partnerCode,
       accessKey,
       requestId,
-      amount: parseInt(amount),
+      amount: finalAmount,
       orderId,
       orderInfo,
       redirectUrl,
@@ -109,29 +110,30 @@ export const createWalletDepositMomo = async (req, res) => {
     if (!wallet_id || !amount)
       return res.status(400).json({ error: "Thiếu dữ liệu nạp tiền" });
 
+    const finalAmount = Math.round(Number(amount));
     const partnerCode = "MOMO";
     const accessKey = "F8BBA842ECF85";
     const secretKey = "K951B6PE1waDMi640xX08PD3vg6EkVlz";
 
     const orderId = `WALLET${Date.now()}`;
     const requestId = orderId;
-    const orderInfo = `Nạp tiền vào ví #${wallet_id}`;
+    const orderInfo = `Nap tien vao vi #${wallet_id}`;
 
     const redirectUrl = `http://localhost:5173/customer/wallet?orderId=${orderId}&resultCode=0&type=wallet`;
     const ipnUrl = "http://localhost:5000/api/payments/momo/callback";
     const requestType = "captureWallet";
 
-    const rawSignature = `accessKey=${accessKey}&amount=${amount}&extraData=&ipnUrl=${ipnUrl}&orderId=${orderId}&orderInfo=${orderInfo}&partnerCode=${partnerCode}&redirectUrl=${redirectUrl}&requestId=${requestId}&requestType=${requestType}`;
+    const rawSignature = `accessKey=${accessKey}&amount=${finalAmount}&extraData=&ipnUrl=${ipnUrl}&orderId=${orderId}&orderInfo=${orderInfo}&partnerCode=${partnerCode}&redirectUrl=${redirectUrl}&requestId=${requestId}&requestType=${requestType}`;
     const signature = crypto
       .createHmac("sha256", secretKey)
-      .update(rawSignature)
+      .update(rawSignature, "utf8")
       .digest("hex");
 
     const body = {
       partnerCode,
       accessKey,
       requestId,
-      amount,
+      amount: finalAmount,
       orderId,
       orderInfo,
       redirectUrl,
@@ -171,6 +173,13 @@ export const momoIPN = async (req, res) => {
         status === "success" ? "completed" : "failed",
         orderId,
       ]);
+      
+      if (status === "success") {
+        await db.query(
+          "UPDATE shipments SET status = 'pending' WHERE id = (SELECT shipment_id FROM payments WHERE order_id = ? LIMIT 1)",
+          [orderId]
+        );
+      }
     } else if (orderId.startsWith("WALLET")) {
       await db.query("UPDATE transactions SET status=? WHERE order_id=?", [
         status,

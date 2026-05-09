@@ -1,9 +1,9 @@
 import { Routes, Route, useLocation, Outlet } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "./components/Navbar.jsx";
 import Footer from "./components/Footer.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import ScrollToTop from "./components/ScrollToTop.jsx";
-
 
 import Home from "./pages/Home.jsx";
 import Tracking from "./pages/Tracking.jsx";
@@ -18,12 +18,10 @@ import Logout from "./pages/Logout.jsx";
 import Unauthorized from "./pages/Unauthorized.jsx";
 import ApplyDriver from "./pages/ApplyDriver.jsx";
 
-
 import AdminLayout from "./layouts/AdminLayout.jsx";
 import DispatcherLayout from "./layouts/DispatcherLayout.jsx";
 import DriverLayout from "./layouts/DriverLayout.jsx";
 import CustomerLayout from "./layouts/CustomerLayout.jsx";
-
 
 import AdminDashboard from "./pages/admin/AdminDashboard.jsx";
 import AdminShipments from "./pages/admin/AdminShipments.jsx";
@@ -36,7 +34,6 @@ import AdminContacts from "./pages/admin/AdminContacts";
 import AdminNews from "./pages/admin/AdminNews.jsx";
 import AdminShipmentDetail from "./pages/admin/AdminShipmentDetail.jsx";
 
-
 import DispatcherDashboard from "./pages/dispatcher/DispatcherDashboard.jsx";
 import DispatcherAssignments from "./pages/dispatcher/DispatcherAssignments.jsx";
 import DispatcherTracking from "./pages/dispatcher/DispatcherTracking.jsx";
@@ -45,13 +42,11 @@ import DispatcherContacts from "./pages/dispatcher/DispatcherContacts.jsx";
 import DispatcherChat from "./pages/dispatcher/DispatcherChat.jsx";
 import FailedShipmentsPanel from "./pages/dispatcher/FailedShipmentsPanel.jsx";
 
-
 import DriverDashboard from "./pages/driver/DriverDashboard.jsx";
 import DriverAssignments from "./pages/driver/DriverAssignments.jsx";
 import DriverHistory from "./pages/driver/DriverHistory.jsx";
 import DriverProfile from "./pages/driver/DriverProfile.jsx";
 import DriverShipmentDetail from "./pages/driver/DriverShipmentDetail.jsx";
-
 
 import CustomerDashboard from "./pages/customer/CustomerDashboard.jsx";
 import CustomerCreateShipment from "./pages/customer/CustomerCreateShipment.jsx";
@@ -69,7 +64,6 @@ import CustomerWallet from "./pages/customer/CustomerWallet.jsx";
 import CustomerSupport from "./pages/customer/CustomerSupport.jsx";
 import CustomerInvoice from "./pages/customer/CustomerInvoice.jsx";
 
-
 import PrivacyPolicy from "./pages/policy/PrivacyPolicy.jsx";
 import Claims from "./pages/policy/Claims.jsx";
 import Terms from "./pages/policy/Terms.jsx";
@@ -83,12 +77,34 @@ import PriceList from "./pages/service/PriceList.jsx";
 import { ChatProvider } from "./context/ChatContext";
 import ChatLayout from "./components/ChatLayout.jsx";
 
+// Animation variants cho page transition - nhanh nhẹ
+const pageVariants = {
+  initial: { opacity: 0 },
+  enter: {
+    opacity: 1,
+    transition: { duration: 0.3, ease: "easeOut" },
+  },
+  exit: {
+    opacity: 0,
+    transition: { duration: 0.2, ease: "easeIn" },
+  },
+};
 
 const PublicLayout = () => (
   <>
     <Navbar />
     <main className="flex-1">
-      <Outlet />
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={location.pathname}
+          variants={pageVariants}
+          initial="initial"
+          animate="enter"
+          exit="exit"
+        >
+          <Outlet />
+        </motion.div>
+      </AnimatePresence>
     </main>
     <Footer />
   </>

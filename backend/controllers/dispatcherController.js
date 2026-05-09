@@ -30,6 +30,10 @@ export const getUnassignedShipments = async (req, res) => {
         AND a.status IN ('assigned','picking','delivering')
       WHERE a.id IS NULL 
         AND s.status IN ('pending','assigned','picking','delivering')
+        AND (
+          s.payment_method = 'COD' 
+          OR s.id IN (SELECT shipment_id FROM payments WHERE status = 'completed')
+        )
     `;
 
     const params = [];
