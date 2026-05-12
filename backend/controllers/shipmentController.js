@@ -4,17 +4,25 @@ import {
   sendNotificationToDispatcher,
   sendNotificationToCustomer,
 } from "../server.js";
+import {
+  getRegionIdFromAddress,
+  getPrefixFromRegionId,
+  getCodeFromRegionId,
+} from "../utils/regionHelper.js";
 
 
 // Lấy danh sách tất cả đơn hàng
 export const getAllShipments = async (req, res) => {
   try {
     const currentUser = req.user;
-    const userRegion = currentUser?.region_id;
+    const userRegionId = currentUser?.region_id;
 
     let sql = `
       SELECT
         s.*,
+        r.code as region_code,
+        r.name as region_name,
+        r.prefix as region_prefix,
         (
           SELECT d.name FROM assignments a
           JOIN drivers d ON d.id = a.driver_id
@@ -28,12 +36,13 @@ export const getAllShipments = async (req, res) => {
           ORDER BY a.assigned_at DESC LIMIT 1
         ) AS driver_phone
       FROM shipments s
+      LEFT JOIN regions r ON s.region_id = r.id
     `;
     let params = [];
 
-    if (userRegion) {
+    if (userRegionId) {
       sql += " WHERE s.region_id = ?";
-      params.push(userRegion);
+      params.push(userRegionId);
     }
 
     sql += " ORDER BY s.created_at DESC";
@@ -50,58 +59,19 @@ export const getAllShipments = async (req, res) => {
 export const getShipmentById = async (req, res) => {
   try {
     const { id } = req.params;
-    const [rows] = await pool.query("SELECT * FROM shipments WHERE id = ?", [
-      id,
-    ]);
+    const [rows] = await pool.query(
+      `SELECT s.*, r.code as region_code, r.name as region_name, r.prefix as region_prefix
+       FROM shipments s
+       LEFT JOIN regions r ON s.region_id = r.id
+       WHERE s.id = ?`,
+      [id]
+    );
     if (!rows.length)
       return res.status(404).json({ error: "Không tìm thấy đơn hàng" });
     res.json(rows[0]);
   } catch (err) {
     res.status(500).json({ error: "Không thể lấy chi tiết đơn hàng" });
   }
-};
-
-
-// Xác định vùng (prefix + region_id) từ địa chỉ giao hàng để sinh tracking code
-const getRegionInfoFromAddress = (address) => {
-  if (!address) return { prefix: "SP", region_id: "OTHER" };
-
-  const addrLower = address.toLowerCase();
-
-
-  if (
-    addrLower.includes("hồ chí minh") ||
-    addrLower.includes("hcm") ||
-    addrLower.includes("sài gòn") ||
-    addrLower.includes("bình dương") ||
-    addrLower.includes("đồng nai") ||
-    addrLower.includes("long an")
-  ) {
-    return { prefix: "HCM", region_id: "HCM" };
-  }
-
-
-  if (
-    addrLower.includes("đà nẵng") ||
-    addrLower.includes("da nang") ||
-    addrLower.includes("quảng nam") ||
-    addrLower.includes("huế")
-  ) {
-    return { prefix: "DN", region_id: "DN" };
-  }
-
-
-  if (
-    addrLower.includes("hà nội") ||
-    addrLower.includes("ha noi") ||
-    addrLower.includes("hưng yên") ||
-    addrLower.includes("bắc ninh")
-  ) {
-    return { prefix: "HN", region_id: "HN" };
-  }
-
-
-  return { prefix: "SP", region_id: "OTHER" };
 };
 
 
@@ -131,15 +101,12 @@ export const createShipment = async (req, res) => {
       customer_id,
     } = req.body;
 
-
     const addressToCheck = pickup_address || delivery_address;
-    const regionInfo = getRegionInfoFromAddress(addressToCheck);
-
+    const regionId = await getRegionIdFromAddress(addressToCheck);
+    const prefix = await getPrefixFromRegionId(regionId);
 
     const randomSuffix = Date.now().toString().slice(-6);
-    const tracking_code = `${regionInfo.prefix}-${randomSuffix}`;
-    const finalRegionId = regionInfo.region_id;
-
+    const tracking_code = `${prefix}-${randomSuffix}`;
 
     const q = `
       INSERT INTO shipments 
@@ -172,20 +139,18 @@ export const createShipment = async (req, res) => {
       pickup_option,
       service_type,
       status || "pending",
-      finalRegionId,
+      regionId,
       new Date(),
     ];
 
     const [result] = await pool.query(q, [values]);
 
-
     try {
       await sendNotificationToDispatcher(
         1,
         result.insertId,
-        `🆕 Đơn hàng mới tại ${regionInfo.prefix}: #${tracking_code}`,
+        `🆕 Đơn hàng mới tại ${prefix}: #${tracking_code}`,
       );
-
 
       if (customer_id) {
         await sendNotificationToCustomer(
@@ -201,7 +166,8 @@ export const createShipment = async (req, res) => {
       message: "Tạo đơn hàng thành công",
       id: result.insertId,
       tracking_code: tracking_code,
-      region: finalRegionId,
+      region_id: regionId,
+      prefix: prefix,
     });
   } catch (err) {
     res

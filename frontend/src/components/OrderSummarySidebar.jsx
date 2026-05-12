@@ -31,7 +31,7 @@ export default function OrderSummarySidebar({
     setServiceType(key);
     if (key === "fast") {
       setIsOnFire(true);
-      setTimeout(() => setIsOnFire(false), 2500); // Tắt lửa sau 2.5s
+      setTimeout(() => setIsOnFire(false), 2500);
     } else {
       setIsOnFire(false);
     }
@@ -63,26 +63,30 @@ export default function OrderSummarySidebar({
 
   const colorMap = {
     emerald: {
-      activeContainer: "border-emerald-500 bg-gradient-to-br from-emerald-50 to-green-100 shadow-[0_10px_20px_-10px_rgba(16,185,129,0.5)] scale-[1.03] ring-4 ring-emerald-500/20 z-10 relative",
-      activeIconBox: "bg-gradient-to-br from-emerald-400 to-emerald-600 text-white shadow-lg shadow-emerald-500/40 scale-110",
+      activeContainer:
+        "border-emerald-500 bg-gradient-to-br from-emerald-50 to-green-100 shadow-[0_10px_20px_-10px_rgba(16,185,129,0.5)] scale-[1.03] ring-4 ring-emerald-500/20 z-10 relative",
+      activeIconBox:
+        "bg-gradient-to-br from-emerald-400 to-emerald-600 text-white shadow-lg shadow-emerald-500/40 scale-110",
       activeTitle: "text-emerald-800 font-extrabold text-[15px]",
       activeSubtitle: "text-emerald-600 font-bold",
       checkIcon: "text-emerald-500 drop-shadow-md scale-110",
     },
     blue: {
-      activeContainer: "border-blue-500 bg-gradient-to-br from-blue-50 to-sky-100 shadow-[0_10px_20px_-10px_rgba(59,130,246,0.5)] scale-[1.03] ring-4 ring-blue-500/20 z-10 relative",
-      activeIconBox: "bg-gradient-to-br from-blue-400 to-blue-600 text-white shadow-lg shadow-blue-500/40 scale-110",
+      activeContainer:
+        "border-blue-500 bg-gradient-to-br from-blue-50 to-sky-100 shadow-[0_10px_20px_-10px_rgba(59,130,246,0.5)] scale-[1.03] ring-4 ring-blue-500/20 z-10 relative",
+      activeIconBox:
+        "bg-gradient-to-br from-blue-400 to-blue-600 text-white shadow-lg shadow-blue-500/40 scale-110",
       activeTitle: "text-blue-800 font-extrabold text-[15px]",
       activeSubtitle: "text-blue-600 font-bold",
       checkIcon: "text-blue-500 drop-shadow-md scale-110",
     },
     red: {
-      activeContainer: `border-red-500 bg-gradient-to-br from-red-50 to-rose-100 shadow-[0_15px_30px_-10px_rgba(239,68,68,0.6)] scale-[1.05] ring-4 ring-red-500/30 z-10 relative ${isOnFire ? 'is-on-fire' : ''}`,
-      activeIconBox: `bg-gradient-to-br from-red-500 to-rose-600 text-white shadow-xl shadow-red-500/50 scale-125 ${isOnFire ? 'icon-on-fire' : 'animate-[bounce_2s_infinite]'}`,
-      activeTitle: `text-red-800 font-black text-[16px] ${isOnFire ? 'text-on-fire' : ''}`,
+      activeContainer: `border-red-500 bg-gradient-to-br from-red-50 to-rose-100 shadow-[0_15px_30px_-10px_rgba(239,68,68,0.6)] scale-[1.05] ring-4 ring-red-500/30 z-10 relative ${isOnFire ? "is-on-fire" : ""}`,
+      activeIconBox: `bg-gradient-to-br from-red-500 to-rose-600 text-white shadow-xl shadow-red-500/50 scale-125 ${isOnFire ? "icon-on-fire" : "animate-[bounce_2s_infinite]"}`,
+      activeTitle: `text-red-800 font-black text-[16px] ${isOnFire ? "text-on-fire" : ""}`,
       activeSubtitle: "text-red-600 font-bold tracking-widest",
       checkIcon: "text-red-500 drop-shadow-lg scale-125",
-    }
+    },
   };
 
   return (
@@ -122,10 +126,13 @@ export default function OrderSummarySidebar({
           {/* Decorative glowing blobs */}
           <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/20 rounded-full blur-3xl group-hover:bg-teal-400/30 transition-all duration-700"></div>
           <div className="absolute bottom-0 left-0 w-24 h-24 bg-orange-500/20 rounded-full blur-2xl group-hover:bg-orange-400/30 transition-all duration-700"></div>
-          
+
           <div className="flex items-center gap-4 relative z-10">
             <div className="p-3 bg-white/10 rounded-2xl backdrop-blur-md border border-white/10 shadow-[0_0_15px_rgba(255,255,255,0.1)] group-hover:scale-110 transition-transform duration-500">
-              <Receipt className="text-orange-400 group-hover:animate-pulse" size={26} />
+              <Receipt
+                className="text-orange-400 group-hover:animate-pulse"
+                size={26}
+              />
             </div>
             <div>
               <h3 className="text-lg font-black text-white tracking-wide drop-shadow-md">
@@ -147,7 +154,10 @@ export default function OrderSummarySidebar({
             <div className="space-y-2.5">
               {serviceOptions.map((opt) => {
                 const isActive = serviceType === opt.key;
-                const isFastDisabled = opt.key === "fast" && shippingData && parseFloat(shippingData.distance_km) > 100;
+                const isFastDisabled =
+                  opt.key === "fast" &&
+                  shippingData &&
+                  parseFloat(shippingData.distance_km) > 100;
                 const Icon = opt.icon;
                 const colors = colorMap[opt.color];
                 return (
@@ -157,11 +167,15 @@ export default function OrderSummarySidebar({
                     disabled={isFastDisabled}
                     onClick={() => handleSelectService(opt.key)}
                     className={`w-full px-5 py-4 rounded-2xl border-2 transition-all duration-300 flex justify-between items-center group overflow-hidden ${
-                      isFastDisabled ? "opacity-50 cursor-not-allowed bg-gray-100 border-gray-200" : "hover:-translate-y-1 hover:shadow-xl"
+                      isFastDisabled
+                        ? "opacity-50 cursor-not-allowed bg-gray-100 border-gray-200"
+                        : "hover:-translate-y-1 hover:shadow-xl"
                     } ${
                       isActive
                         ? colors.activeContainer
-                        : !isFastDisabled ? "border-transparent bg-gray-50/80 hover:border-gray-300 hover:bg-white" : ""
+                        : !isFastDisabled
+                          ? "border-transparent bg-gray-50/80 hover:border-gray-300 hover:bg-white"
+                          : ""
                     }`}
                   >
                     <div className="flex items-center gap-4 relative z-10">
@@ -178,7 +192,12 @@ export default function OrderSummarySidebar({
                         <p
                           className={`font-bold text-sm ${isActive ? colors.activeTitle : "text-gray-700"}`}
                         >
-                          {opt.label} {isFastDisabled && <span className="text-[10px] text-red-500 font-normal normal-case">(Quá 100km)</span>}
+                          {opt.label}{" "}
+                          {isFastDisabled && (
+                            <span className="text-[10px] text-red-500 font-normal normal-case">
+                              (Quá 100km)
+                            </span>
+                          )}
                         </p>
                         <p
                           className={`text-[10px] font-semibold uppercase tracking-wide ${isActive ? colors.activeSubtitle : "text-gray-400"}`}
@@ -211,7 +230,10 @@ export default function OrderSummarySidebar({
               <div className="flex items-center justify-center py-10 gap-3 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
                 <div className="relative flex items-center justify-center">
                   <div className="absolute w-12 h-12 bg-orange-200 rounded-full animate-ping opacity-50"></div>
-                  <Loader2 className="animate-spin text-orange-500 relative z-10" size={28} />
+                  <Loader2
+                    className="animate-spin text-orange-500 relative z-10"
+                    size={28}
+                  />
                 </div>
                 <span className="font-bold text-sm text-gray-600 tracking-wide animate-pulse">
                   Đang tính cước phí...
@@ -241,7 +263,10 @@ export default function OrderSummarySidebar({
                 <div className="flex justify-between items-center p-3.5 bg-gradient-to-r from-gray-50 to-white border border-gray-100 rounded-xl hover:shadow-md transition-shadow group">
                   <span className="text-gray-600 flex items-center gap-2 text-sm font-medium">
                     <div className="p-1.5 bg-emerald-50 rounded-lg group-hover:scale-110 transition-transform">
-                      <Banknote size={16} className="text-emerald-500 shrink-0" />
+                      <Banknote
+                        size={16}
+                        className="text-emerald-500 shrink-0"
+                      />
                     </div>
                     Phí thu hộ COD
                   </span>
@@ -262,7 +287,10 @@ export default function OrderSummarySidebar({
                 <div className="flex justify-between items-center p-3.5 bg-gradient-to-r from-gray-50 to-white border border-gray-100 rounded-xl hover:shadow-md transition-shadow group">
                   <span className="text-gray-600 flex items-center gap-2 text-sm font-medium">
                     <div className="p-1.5 bg-violet-50 rounded-lg group-hover:scale-110 transition-transform">
-                      <ShieldCheck size={16} className="text-violet-500 shrink-0" />
+                      <ShieldCheck
+                        size={16}
+                        className="text-violet-500 shrink-0"
+                      />
                     </div>
                     Thuế VAT (10%)
                   </span>
@@ -279,9 +307,8 @@ export default function OrderSummarySidebar({
                       className="shrink-0 text-blue-500 mt-0.5"
                     />
                     <span className="leading-relaxed">
-                      Đơn liên tỉnh (
-                      {shippingData?.details?.receiver_province}). Đã áp dụng
-                      cước đường bộ.
+                      Đơn liên tỉnh ({shippingData?.details?.receiver_province}
+                      ). Đã áp dụng cước đường bộ.
                     </span>
                   </div>
                 )}
@@ -326,20 +353,27 @@ export default function OrderSummarySidebar({
                   Shipper sẽ thu khách
                 </span>
                 <div className="p-2 bg-white/10 rounded-xl backdrop-blur-sm border border-white/5 shadow-inner">
-                  <Wallet size={20} className="text-orange-400 drop-shadow-md" />
+                  <Wallet
+                    size={20}
+                    className="text-orange-400 drop-shadow-md"
+                  />
                 </div>
               </div>
 
               {/* Phần giao diện */}
               <div className="space-y-2 mb-4">
                 <div className="flex justify-between text-xs items-center">
-                  <span className="text-teal-100/70 font-medium">Tiền hàng (COD)</span>
+                  <span className="text-teal-100/70 font-medium">
+                    Tiền hàng (COD)
+                  </span>
                   <span className="text-white font-bold tabular-nums bg-white/10 px-2 py-0.5 rounded-md">
                     {safeFormat(codAmount)}
                   </span>
                 </div>
                 <div className="flex justify-between text-xs items-center">
-                  <span className="text-teal-100/70 font-medium">Phí vận chuyển</span>
+                  <span className="text-teal-100/70 font-medium">
+                    Phí vận chuyển
+                  </span>
                   <span className="text-white font-bold tabular-nums bg-white/10 px-2 py-0.5 rounded-md">
                     {safeFormat(shippingData?.total_shipping)}
                   </span>
@@ -369,9 +403,13 @@ export default function OrderSummarySidebar({
           >
             {/* Sweep effect */}
             <div className="absolute inset-0 w-[200%] -translate-x-[150%] bg-gradient-to-r from-transparent via-white/30 to-transparent group-hover:animate-[shimmer_2s_infinite]" />
-            
-            {creating && <Loader2 className="animate-spin relative z-10" size={24} />}
-            <span className="relative z-10 tracking-wide">{creating ? "Đang xử lý..." : "Xem lại đơn hàng"}</span>
+
+            {creating && (
+              <Loader2 className="animate-spin relative z-10" size={24} />
+            )}
+            <span className="relative z-10 tracking-wide">
+              {creating ? "Đang xử lý..." : "Xem lại đơn hàng"}
+            </span>
           </button>
         </div>
       </div>
