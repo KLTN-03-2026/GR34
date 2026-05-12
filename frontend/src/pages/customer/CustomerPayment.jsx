@@ -18,19 +18,16 @@ export default function CustomerPayment() {
   const location = useLocation();
   const navigate = useNavigate();
 
-
   const { shipment_id, amount, shipping_fee, cod } = location.state || {};
 
   const [paymentMethod, setPaymentMethod] = useState("Wallet");
   const [loading, setLoading] = useState(false);
-
 
   const [walletBalance, setWalletBalance] = useState(0);
   const [loadingWallet, setLoadingWallet] = useState(true);
   const [showMomoPopup, setShowMomoPopup] = useState(false);
   const [momoUrl, setMomoUrl] = useState("");
   const checkIntervalRef = useRef(null);
-
 
   const getUserId = () => {
     const userStr = localStorage.getItem("user");
@@ -45,14 +42,12 @@ export default function CustomerPayment() {
   };
   const currentUserId = getUserId();
 
-
   useEffect(() => {
     if (!shipment_id || !amount) {
       toast.error("Không tìm thấy thông tin đơn hàng!");
       navigate("/customer/create-order");
       return;
     }
-
 
     if (currentUserId) {
       API.get(`/wallet/${currentUserId}`)
@@ -68,21 +63,18 @@ export default function CustomerPayment() {
     };
   }, []);
 
-
-// Xử lý thanh toán
+  // Xử lý thanh toán
   const handlePayment = async () => {
     if (!currentUserId) return toast.error("Vui lòng đăng nhập lại.");
     setLoading(true);
 
     try {
-
       if (paymentMethod === "Wallet") {
         if (walletBalance < Number(amount)) {
           toast.error("Số dư ví không đủ. Vui lòng nạp thêm!");
           setLoading(false);
           return;
         }
-
 
         await API.post("/payments/wallet-pay", {
           shipment_id: shipment_id,
@@ -92,12 +84,9 @@ export default function CustomerPayment() {
 
         toast.success("Thanh toán ví thành công!");
         navigate(
-          `/customer/payment-success?orderId=SHIP${shipment_id}&resultCode=0&type=shipment`
+          `/customer/payment-success?orderId=SHIP${shipment_id}&resultCode=0&type=shipment`,
         );
-      }
-
-
-      else if (paymentMethod === "Momo") {
+      } else if (paymentMethod === "Momo") {
         const res = await API.post("/payments/momo", {
           shipment_id: shipment_id,
           customer_id: Number(currentUserId),
@@ -112,10 +101,7 @@ export default function CustomerPayment() {
           toast.error("Lỗi lấy link thanh toán MoMo");
           setLoading(false);
         }
-      }
-
-
-      else {
+      } else {
         await API.post("/payments", {
           shipment_id: shipment_id,
           customer_id: Number(currentUserId),
@@ -123,7 +109,7 @@ export default function CustomerPayment() {
           method: "COD",
         });
         navigate(
-          `/customer/payment-success?orderId=SHIP${shipment_id}&resultCode=0&type=shipment`
+          `/customer/payment-success?orderId=SHIP${shipment_id}&resultCode=0&type=shipment`,
         );
       }
     } catch (err) {
@@ -131,7 +117,6 @@ export default function CustomerPayment() {
       setLoading(false);
     }
   };
-
 
   const startCheckingPayment = () => {
     if (checkIntervalRef.current) clearInterval(checkIntervalRef.current);
@@ -142,7 +127,7 @@ export default function CustomerPayment() {
         const payment = res.data.find(
           (p) =>
             Number(p.shipment_id) === Number(shipment_id) &&
-            (p.status === "completed" || p.status === "success")
+            (p.status === "completed" || p.status === "success"),
         );
 
         if (payment) {
@@ -152,11 +137,10 @@ export default function CustomerPayment() {
           navigate(
             `/customer/payment-success?orderId=${
               payment.order_id || "UNKNOWN"
-            }&resultCode=0&type=shipment`
+            }&resultCode=0&type=shipment`,
           );
         }
-      } catch (err) {
-      }
+      } catch (err) {}
     }, 3000);
   };
 
@@ -239,7 +223,7 @@ export default function CustomerPayment() {
               >
                 <div className="flex items-center gap-4">
                   <img
-                    src="https://upload.wikimedia.org/wikipedia/vi/f/fe/MoMo_Logo.png"
+                    src="https://img.logo.dev/momo.vn?token=pk_Au5xjh-tSiKt4KCaxc9EcQ"
                     className="w-12 h-12 rounded-xl shadow-sm"
                     alt="MoMo"
                   />
@@ -348,8 +332,8 @@ export default function CustomerPayment() {
                 paymentMethod === "Momo"
                   ? "bg-pink-600 hover:bg-pink-700"
                   : paymentMethod === "Wallet"
-                  ? "bg-orange-600 hover:bg-orange-700"
-                  : "bg-green-600 hover:bg-green-700"
+                    ? "bg-orange-600 hover:bg-orange-700"
+                    : "bg-green-600 hover:bg-green-700"
               }`}
             >
               {loading ? (

@@ -565,53 +565,109 @@ export default function DispatcherAssignmentsUIPro() {
 
                 {/* Dòng dữ liệu tab Đang vận hành */}
                 {activeTab === "assigned" &&
-                  pagedAssigned.map((a) => (
-                    <tr
-                      key={a.id}
-                      className="group hover:bg-slate-50 transition-all duration-200"
-                    >
-                      <td className="px-6 py-4">
-                        <div className="flex items-start gap-4">
-                          <div className="p-2.5 rounded-xl bg-green-50 text-green-600 group-hover:bg-white group-hover:shadow-sm transition-all">
-                            <Truck size={20} strokeWidth={2} />
-                          </div>
-                          <div>
-                            <span className="font-extrabold text-slate-800 text-base tracking-tight">
-                              {a.tracking_code}
-                            </span>
-                            <div className="text-xs text-slate-500 mt-1.5 font-medium flex items-center gap-1.5">
-                              <div className="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center">
-                                <User size={12} className="text-slate-500" />
+                  pagedAssigned.map((a) => {
+                    // Xác định màu sắc icon theo trạng thái
+                    const statusColors = {
+                      assigned:   "bg-blue-50 text-blue-600",
+                      picking:    "bg-purple-50 text-purple-600",
+                      delivering: "bg-orange-50 text-orange-600",
+                      completed:  "bg-green-50 text-green-600",
+                      failed:     "bg-red-50 text-red-600",
+                    };
+                    const iconBg = statusColors[a.status] || "bg-slate-50 text-slate-500";
+                    
+                    // Icon theo trạng thái
+                    const StatusIcon = a.status === "picking" ? Package 
+                      : a.status === "delivering" ? Truck 
+                      : a.status === "completed" ? CheckCircle 
+                      : a.status === "failed" ? AlertCircle 
+                      : Truck;
+                    
+                    return (
+                      <tr
+                        key={a.id}
+                        className="group hover:bg-slate-50 transition-all duration-200 border-l-[4px] border-transparent hover:border-slate-300"
+                      >
+                        <td className="px-6 py-4">
+                          <div className="flex items-start gap-4">
+                            <div className={`p-2.5 rounded-xl ${iconBg} group-hover:shadow-sm transition-all shrink-0`}>
+                              <StatusIcon size={20} strokeWidth={2} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              {/* Mã đơn + loại dịch vụ */}
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span 
+                                  className="font-extrabold text-base tracking-tight hover:text-blue-600 transition-colors cursor-pointer"
+                                  onClick={(e) => { e.stopPropagation(); navigate(`/dispatcher/tracking/${a.id}`); }}
+                                >
+                                  {a.tracking_code}
+                                </span>
+                                {a.service_type === 'fast' && (
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-500 text-white shadow-sm animate-pulse">
+                                    <Rocket size={10} />
+                                    HỎA TỐC
+                                  </span>
+                                )}
+                                {a.service_type === 'express' && (
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-100 text-orange-700 ring-1 ring-orange-200">
+                                    <Zap size={10} />
+                                    NHANH
+                                  </span>
+                                )}
                               </div>
-                              Tài xế:{" "}
-                              <span className="font-bold text-slate-700">
-                                {a.driver_name || "Chưa có"}
-                              </span>
+                              {/* Thông tin tài xế */}
+                              <div className="flex items-center gap-2 mt-2">
+                                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white text-[10px] font-bold">
+                                  {a.driver_name ? a.driver_name.charAt(0).toUpperCase() : "?"}
+                                </div>
+                                <span className="text-xs font-semibold text-slate-700">
+                                  {a.driver_name || "Chưa có tài xế"}
+                                </span>
+                                {a.driver_phone && (
+                                  <span className="text-xs text-slate-400">
+                                    • {a.driver_phone}
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-start gap-2">
-                          <MapPin
-                            size={16}
-                            className="text-slate-400 mt-0.5 flex-shrink-0"
-                          />
+                        </td>
+                        <td className="px-6 py-4">
+                          {/* Địa chỉ lấy hàng */}
+                          <div className="mb-3">
+                            <div className="flex items-center gap-1.5 mb-1">
+                              <Package size={12} className="text-green-500" />
+                              <span className="text-[10px] font-bold text-green-600 uppercase tracking-wide">Lấy hàng</span>
+                            </div>
+                            <p className="text-xs text-slate-600 font-medium line-clamp-2 leading-relaxed">
+                              {a.pickup_address || "—"}
+                            </p>
+                          </div>
+                          {/* Địa chỉ giao hàng */}
                           <div>
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-600 ring-1 ring-blue-200 mb-1 mr-1">
-                                {getDistrict(a.delivery_address)}
-                              </span>
-                            <p className="text-slate-600 text-xs leading-relaxed line-clamp-2 font-medium">
+                            <div className="flex items-center gap-1.5 mb-1">
+                              <MapPin size={12} className="text-orange-500" />
+                              <span className="text-[10px] font-bold text-orange-600 uppercase tracking-wide">Giao hàng</span>
+                            </div>
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-50 text-orange-700 ring-1 ring-orange-200 mb-1 mr-1">
+                              {getDistrict(a.delivery_address)}
+                            </span>
+                            <p className="text-xs text-slate-600 font-medium line-clamp-2 leading-relaxed">
                               {a.delivery_address}
                             </p>
                           </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        <StatusPill status={a.status} />
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <div className="flex flex-col items-center gap-2">
+                            <StatusPill status={a.status} />
+                            <span className="text-[10px] text-slate-400 font-medium">
+                              {a.assigned_at ? `Phân công ${new Date(a.assigned_at).toLocaleDateString("vi-VN", { hour: "2-digit", minute: "2-digit" })}` : ""}
+                            </span>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
 
                 {/* Thông báo khi không có dữ liệu */}
                 {((activeTab === "unassigned" &&
