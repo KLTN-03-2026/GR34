@@ -65,12 +65,12 @@ Sau đó, bạn có thể truy cập hệ thống tại: http://localhost:5173
 
 Để thuận tiện cho việc đánh giá và kiểm thử, bạn có thể sử dụng các tài khoản có sẵn dưới đây:
 
-| Vai trò            | Email                    | Mật khẩu   |
-| ------------------ | ------------------------ | ---------- |
-| Admin              | admin2@speedyship.vn     | admin123   |
-| Điều phối viên     | dieuphoi@speedyship.vn   | 123456     |
-| Tài xế             | driver@speedyship.vn     | 123456     |
-| Khách hàng         | truongkh@speedyship.vn   | 123456     |
+| Vai trò            | Email                                   | Mật khẩu   |
+| ------------------ | --------------------------------------- | ---------- |
+| Admin              | admin2@speedyship.vn                    | admin123   |
+| Điều phối viên     | dieuphoi.dn@speedyship.com              | 123456     |
+| Tài xế             | tx.lienchieu1@speedyship.com            | 123456     |
+| Khách hàng         | khachhang.demo1@gmail.com               | 123456     |
 
 ---
 
