@@ -197,8 +197,8 @@ export default function AdminLayout() {
         <div className="p-4 bg-[#0d2f36] border-t border-white/5">
           <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
             <div className="flex items-center gap-3 overflow-hidden">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-orange-600 flex items-center justify-center text-white shadow-inner shrink-0">
-                <ShieldCheck size={20} />
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-orange-600 flex items-center justify-center text-white font-bold text-base shadow-inner shrink-0 leading-none select-none">
+                AD
               </div>
               <div className="overflow-hidden">
                 <h4 className="text-sm font-bold text-white truncate max-w-[100px]">

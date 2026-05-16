@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Search,
   MapPin,
@@ -18,6 +18,17 @@ export default function DiaChiSelector({
   onOpenMap,
   required,
 }) {
+  // Lọc bỏ postal code, "Việt Nam" / "Vietnam" khỏi địa chỉ Mapbox
+  const stripAddress = (raw) => {
+    const parts = raw.split(",").map((p) => p.trim()).filter(Boolean);
+    const filtered = parts.filter((p) => {
+      const low = p.toLowerCase();
+      if (low === "việt nam" || low === "vietnam") return false;
+      if (/^\d{4,6}$/.test(p)) return false;
+      return true;
+    });
+    return filtered.join(", ");
+  };
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [showManual, setShowManual] = useState(false);
@@ -120,13 +131,10 @@ export default function DiaChiSelector({
               <div
                 key={s.id}
                 onClick={() => {
-                  setSearchQuery(s.place_name);
+                  const clean = stripAddress(s.place_name);
+                  setSearchQuery(clean);
                   setSuggestions([]);
-                  onChange({
-                    address: s.place_name,
-                    lat: s.center[1],
-                    lng: s.center[0],
-                  });
+                  onChange({ address: clean, lat: s.center[1], lng: s.center[0] });
                 }}
                 className="p-4 hover:bg-orange-50 cursor-pointer flex items-start gap-4 border-b border-gray-50 last:border-0 transition-all group"
               >

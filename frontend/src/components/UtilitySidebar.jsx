@@ -1,6 +1,14 @@
 ﻿import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useChat } from "../hooks/useChat";
+import {
+  DollarSign,
+  Search,
+  Package,
+  MessageCircle,
+  Bot,
+  ClipboardList,
+} from "lucide-react";
 
 // Sidebar tiện ích
 export default function UtilitySidebar() {
@@ -11,27 +19,27 @@ export default function UtilitySidebar() {
 
   const items = [
     {
-      icon: "💰",
+      icon: DollarSign,
       text: "Ước tính cước phí",
       action: () => navigate("/pricing"),
     },
     {
-      icon: "🔍",
+      icon: Search,
       text: "Theo dõi vận đơn",
       action: () => navigate("/tracking"),
     },
     {
-      icon: "📦",
+      icon: Package,
       text: "Ứng tuyển giao hàng",
       action: () => navigate("/driver/apply"),
     },
     {
-      icon: "💬",
+      icon: MessageCircle,
       text: "Chat hỗ trợ",
       action: () => openSupportChat(),
     },
     {
-      icon: "🤖",
+      icon: Bot,
       text: "Chat AI",
       action: () => openAIChat(),
     },
@@ -46,7 +54,8 @@ export default function UtilitySidebar() {
           className="bg-blue-400 text-white px-5 py-3 rounded-l-xl 
                      flex items-center gap-2 font-semibold shadow-lg hover:bg-blue-700"
         >
-          📌 Tiện ích
+          <ClipboardList className="inline w-5 h-5 mr-2 text-yellow-300" />
+          Tiện ích
         </button>
       )}
 
@@ -75,7 +84,7 @@ export default function UtilitySidebar() {
                 className="flex items-center gap-3 px-4 py-3 text-sm
                            hover:bg-blue-700 transition-all"
               >
-                <span className="text-xl">{item.icon}</span>
+                <item.icon className="w-5 h-5" />
                 <span>{item.text}</span>
               </button>
             ))}

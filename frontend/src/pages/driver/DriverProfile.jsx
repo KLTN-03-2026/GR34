@@ -2,11 +2,12 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import API from "../../services/api";
 import { motion, AnimatePresence } from "framer-motion";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "../../lib/toast";
 import {
   User, Mail, Phone, Truck, MapPin, Star, Shield, Edit,
   Power, RefreshCw, Award, TrendingUp, PackageCheck, X,
   Lock, Eye, EyeOff, Save, CheckCircle, XCircle, MessageSquare,
+  Camera,
 } from "lucide-react";
 
 export default function DriverProfile() {
@@ -33,6 +34,13 @@ export default function DriverProfile() {
   const [savingPassword, setSavingPassword] = useState(false);
 
   const driverId = paramId || localStorage.getItem("userId");
+  const [driverAvatar, setDriverAvatar] = useState(localStorage.getItem("userAvatar") || "");
+
+  useEffect(() => {
+    const handle = () => setDriverAvatar(localStorage.getItem("userAvatar") || "");
+    window.addEventListener("avatarUpdated", handle);
+    return () => window.removeEventListener("avatarUpdated", handle);
+  }, []);
 
   const fetchData = async () => {
     if (!driverId) return;
@@ -46,6 +54,10 @@ export default function DriverProfile() {
       setRatingStats(ratingRes.data);
       setEditName(profileRes.data.name || "");
       setEditPhone(profileRes.data.phone || "");
+      if (profileRes.data.avatar) {
+        setDriverAvatar(profileRes.data.avatar);
+        localStorage.setItem("userAvatar", profileRes.data.avatar);
+      }
     } catch {
       toast.error("Không thể tải thông tin tài xế");
     } finally {
@@ -114,6 +126,31 @@ export default function DriverProfile() {
     }
   };
 
+  // Upload avatar
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) return toast.error("Vui lòng chọn file hình ảnh");
+    if (file.size > 5 * 1024 * 1024) return toast.error("Kích thước ảnh tối đa 5MB");
+
+    const formData = new FormData();
+    formData.append("avatar", file);
+    const toastId = toast.loading("Đang tải ảnh lên...");
+
+    try {
+      const res = await API.post(`/drivers/upload-avatar/${driverId}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      const url = res.data.avatarUrl || res.data.url || res.data.avatar;
+      localStorage.setItem("userAvatar", url);
+      setDriverAvatar(url);
+      window.dispatchEvent(new Event("avatarUpdated"));
+      toast.success("Cập nhật ảnh đại diện thành công!", { id: toastId });
+    } catch {
+      toast.error("Tải ảnh thất bại. Vui lòng thử lại.", { id: toastId });
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -133,19 +170,25 @@ export default function DriverProfile() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] space-y-6 pb-24">
-      <Toaster position="top-right" />
+      
 
       {/* Header Card */}
       <div className="relative bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="h-32 bg-gradient-to-r from-[#113e48] to-[#2a6f7d]"></div>
         <div className="px-6 pb-6 relative flex flex-col md:flex-row items-center md:items-end -mt-12 gap-4 md:gap-6">
           <div className="relative">
-            <img
-              src={`https://api.dicebear.com/9.x/initials/svg?seed=${encodeURIComponent(profile.name)}&backgroundColor=113e48&fontSize=50`}
-              alt={profile.name}
-              className="w-28 h-28 rounded-full border-4 border-white shadow-md bg-white"
-            />
-            <span className={`absolute bottom-2 right-2 w-5 h-5 border-2 border-white rounded-full ${
+            {driverAvatar ? (
+              <img src={driverAvatar} alt={profile.name} className="w-28 h-28 rounded-full border-4 border-white shadow-md bg-white object-cover" />
+            ) : (
+              <div className="w-28 h-28 rounded-full border-4 border-white shadow-md bg-gradient-to-br from-[#113e48] to-[#2a6f7d] flex items-center justify-center text-white font-bold text-3xl leading-none select-none">
+                TX
+              </div>
+            )}
+            <label htmlFor="avatar-upload" className="absolute bottom-2 right-2 w-8 h-8 bg-white border-2 border-gray-200 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-50 hover:border-blue-400 transition-all shadow-sm">
+              <Camera size={14} className="text-gray-500" />
+              <input id="avatar-upload" type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+            </label>
+            <span className={`absolute bottom-2 left-2 w-5 h-5 border-2 border-white rounded-full ${
               isAvailable ? "bg-green-500 animate-pulse" : isDelivering ? "bg-blue-500 animate-pulse" : "bg-gray-400"
             }`}></span>
           </div>

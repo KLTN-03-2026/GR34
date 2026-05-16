@@ -1,6 +1,23 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import {
+  Phone,
+  Mail,
+  Search,
+  Truck,
+  Plane,
+  Warehouse,
+  Zap,
+  DollarSign,
+  Shield,
+  Scale,
+  FileText,
+  Package,
+  MapPin,
+  X,
+  Hand,
+} from "lucide-react";
+import {
   ChevronDownIcon,
   UserIcon,
   LogoutIcon,
@@ -155,8 +172,8 @@ export default function Navbar() {
             Top 10 Đơn vị vận chuyển uy tín 2026
           </span>
           <div className="flex gap-4 opacity-90 text-gray-200 whitespace-nowrap">
-            <span className="hidden sm:inline">✉ support@speedyship.com</span>
-            <span>📞 1900 888 999 (24/7)</span>
+            <Phone className="w-4 h-4 inline-block mr-1 text-white" />
+            <span className="hidden sm:inline">1900 888 999 (24/7)</span>
           </div>
         </div>
       </div>
@@ -200,54 +217,66 @@ export default function Navbar() {
                 <div className="p-1">
                   <Link
                     to="/tracking"
-                    className="flex items-center justify-between px-4 py-3 hover:bg-orange-50 rounded-lg text-sm font-medium text-slate-700 hover:text-orange-600 transition-colors group/item"
+                    className="flex items-center justify-between px-4 py-3 hover:bg-blue-50 rounded-lg text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors group/item"
                   >
                     <span className="flex items-center gap-2">
-                      🔍 Tra cứu vận đơn
+                      <Search className="w-4 h-4 text-blue-500" />
+                      Tra cứu vận đơn
                     </span>
-                    <span className=" text-[10px] font-bold bg-red-500 text-white px-2 py-0 rounded border border-gray-200 group-hover/item:bg-orange-100 group-hover/item:text-orange-600 group-hover/item:border-orange-200 transition-all whitespace-nowrap">
+                    <span className=" text-[10px] font-bold bg-red-500 text-white px-2 py-0 rounded border border-gray-200 group-hover/item:bg-blue-100 group-hover/item:text-blue-600 group-hover/item:border-blue-200 transition-all whitespace-nowrap">
                       Hot
                     </span>
                   </Link>
                   <Link
                     to="/services/road"
-                    className="flex items-center justify-between px-4 py-3 hover:bg-orange-50 rounded-lg text-sm font-medium text-slate-700 hover:text-orange-600 transition-colors group/item"
+                    className="flex items-center justify-between px-4 py-3 hover:bg-yellow-50 rounded-lg text-sm font-medium text-slate-700 hover:text-yellow-600 transition-colors group/item"
                   >
                     <span className="flex items-center gap-2">
-                      🚛 Vận chuyển Đường bộ
+                      <Truck className="w-4 h-4 text-yellow-500" />
+                      Vận chuyển Đường bộ
                     </span>
-                    <span className=" text-[10px] font-bold bg-red-500 text-white px-2 py-0 rounded border border-gray-200 group-hover/item:bg-orange-100 group-hover/item:text-orange-600 group-hover/item:border-orange-200 transition-all whitespace-nowrap">
+                    <span className=" text-[10px] font-bold bg-red-500 text-white px-2 py-0 rounded border border-gray-200 group-hover/item:bg-yellow-100 group-hover/item:text-yellow-600 group-hover/item:border-yellow-200 transition-all whitespace-nowrap">
                       Hot
                     </span>
                   </Link>
                   <Link
                     to="/services/air"
-                    className="flex items-center justify-between px-4 py-3 hover:bg-orange-50 rounded-lg text-sm font-medium text-slate-700 hover:text-orange-600 transition-colors group/item"
+                    className="flex items-center justify-between px-4 py-3 hover:bg-cyan-50 rounded-lg text-sm font-medium text-slate-700 hover:text-cyan-600 transition-colors group/item"
                   >
                     <span className="flex items-center gap-2">
-                      ✈️ Vận chuyển Hàng không
+                      <Plane className="w-4 h-4 text-cyan-500" />
+                      Vận chuyển Hàng không
                     </span>
-                    <span className="text-[10px] font-bold bg-gray-100 text-gray-500 px-2 py-0.5 rounded border border-gray-200 group-hover/item:bg-orange-100 group-hover/item:text-orange-600 group-hover/item:border-orange-200 transition-all whitespace-nowrap">
+                    <span className="text-[10px] font-bold bg-gray-100 text-gray-500 px-2 py-0.5 rounded border border-gray-200 group-hover/item:bg-cyan-100 group-hover/item:text-cyan-600 group-hover/item:border-cyan-200 transition-all whitespace-nowrap">
                       Sắp ra mắt
                     </span>
                   </Link>
                   <Link
                     to="/services/warehouse"
-                    className="block px-4 py-3 hover:bg-orange-50 rounded-lg text-sm font-medium text-slate-700 hover:text-orange-600 transition-colors"
+                    className="block px-4 py-3 hover:bg-purple-50 rounded-lg text-sm font-medium text-slate-700 hover:text-purple-600 transition-colors"
                   >
-                    🏭 Kho bãi & Lưu trữ
+                    <span className="flex items-center gap-2">
+                      <Warehouse className="w-4 h-4 text-purple-500" />
+                      Kho bãi & Lưu trữ
+                    </span>
                   </Link>
                   <Link
                     to="/services/express"
-                    className="block px-4 py-3 hover:bg-orange-50 rounded-lg text-sm font-medium text-slate-700 hover:text-orange-600 transition-colors"
+                    className="block px-4 py-3 hover:bg-red-50 rounded-lg text-sm font-medium text-slate-700 hover:text-red-600 transition-colors"
                   >
-                    ⚡ Giao hàng hỏa tốc
+                    <span className="flex items-center gap-2">
+                      <Zap className="w-4 h-4 text-red-500" />
+                      Giao hàng hỏa tốc
+                    </span>
                   </Link>
                   <Link
                     to="/services/price-list"
-                    className="block px-4 py-3 hover:bg-orange-50 rounded-lg text-sm font-semibold text-slate-700 hover:text-orange-600 transition-colors"
+                    className="block px-4 py-3 hover:bg-emerald-50 rounded-lg text-sm font-semibold text-slate-700 hover:text-emerald-600 transition-colors"
                   >
-                    💸 Bảng giá dịch vụ
+                    <span className="flex items-center gap-2">
+                      <DollarSign className="w-4 h-4 text-emerald-500" />
+                      Bảng giá dịch vụ
+                    </span>
                   </Link>
                 </div>
               </div>
@@ -262,31 +291,35 @@ export default function Navbar() {
                 <ChevronDownIcon className="w-5 h-5 ml-1 opacity-70 group-hover:rotate-180 transition" />
               </span>
               <div className="absolute top-full left-1/2 -translate-x-1/2 w-64 bg-white rounded-xl shadow-xl border border-gray-100 opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-300 z-50 mt-2 overflow-hidden">
-                <div className="h-1 bg-blue-500"></div>
+                <div className="h-1 bg-indigo-500"></div>
                 <div className="p-1">
                   <Link
                     to="/policy/privacy"
-                    className="block px-4 py-3 hover:bg-blue-50 rounded-lg text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors"
+                    className="block px-4 py-3 hover:bg-indigo-50 rounded-lg text-sm font-medium text-slate-700 hover:text-indigo-600 transition-colors"
                   >
-                    🛡️ Bảo mật thông tin
+                    <Shield className="w-4 h-4 inline-block mr-2 text-indigo-500" />
+                    Bảo mật thông tin
                   </Link>
                   <Link
                     to="/policy/claims"
-                    className="block px-4 py-3 hover:bg-blue-50 rounded-lg text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors"
+                    className="block px-4 py-3 hover:bg-orange-50 rounded-lg text-sm font-medium text-slate-700 hover:text-orange-600 transition-colors"
                   >
-                    ⚖️ Giải quyết khiếu nại
+                    <Scale className="w-4 h-4 inline-block mr-2 text-orange-500" />
+                    Giải quyết khiếu nại
                   </Link>
                   <Link
                     to="/policy/terms"
-                    className="block px-4 py-3 hover:bg-blue-50 rounded-lg text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors"
+                    className="block px-4 py-3 hover:bg-teal-50 rounded-lg text-sm font-medium text-slate-700 hover:text-teal-600 transition-colors"
                   >
-                    📝 Điều khoản sử dụng
+                    <FileText className="w-4 h-4 inline-block mr-2 text-teal-500" />
+                    Điều khoản sử dụng
                   </Link>
                   <Link
                     to="/policy/shipping-rules"
-                    className="block px-4 py-3 hover:bg-blue-50 rounded-lg text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors"
+                    className="block px-4 py-3 hover:bg-rose-50 rounded-lg text-sm font-medium text-slate-700 hover:text-rose-600 transition-colors"
                   >
-                    📦 Quy định gửi hàng
+                    <Package className="w-4 h-4 inline-block mr-2 text-rose-500" />
+                    Quy định gửi hàng
                   </Link>
                 </div>
               </div>
@@ -323,7 +356,7 @@ export default function Navbar() {
                     </p>
                   </div>
                   <img
-                    src={avatar || `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(name)}`}
+                    src={avatar || `https://api.dicebear.com/9.x/lorelei/svg?seed=${encodeURIComponent(name)}&backgroundColor=4f46e5&hairColor=3b3b3b`}
                     alt="Avatar"
                     className="w-9 h-9 rounded-full object-cover bg-white shadow-sm ring-2 ring-white group-hover:ring-orange-200 transition-all shrink-0"
                   />
@@ -459,25 +492,29 @@ export default function Navbar() {
                 to="/services/road"
                 className="block py-1.5 text-sm text-slate-600 hover:text-orange-600 transition-colors"
               >
-                🚛 Vận chuyển Đường bộ
+                <Truck className="w-4 h-4 text-orange-500" />
+                      Vận chuyển Đường bộ
               </Link>
               <Link
                 to="/services/warehouse"
                 className="block py-1.5 text-sm text-slate-600 hover:text-orange-600 transition-colors"
               >
-                🏭 Kho bãi & Lưu trữ
+                <Warehouse className="w-4 h-4 text-orange-500" />
+                    Kho bãi & Lưu trữ
               </Link>
               <Link
                 to="/services/express"
                 className="block py-1.5 text-sm text-slate-600 hover:text-orange-600 transition-colors"
               >
-                ⚡ Giao hàng hỏa tốc
+                <Zap className="w-4 h-4 text-orange-500" />
+                    Giao hàng hỏa tốc
               </Link>
               <Link
                 to="/services/price-list"
                 className="block py-1.5 text-sm font-semibold text-slate-700 hover:text-orange-600 transition-colors"
               >
-                💸 Bảng giá dịch vụ
+                <DollarSign className="w-4 h-4 text-orange-500" />
+                    Bảng giá dịch vụ
               </Link>
             </div>
           </div>
@@ -492,19 +529,22 @@ export default function Navbar() {
                 to="/policy/privacy"
                 className="block py-1.5 text-sm text-slate-600 hover:text-orange-600"
               >
-                🛡️ Bảo mật
+                <Shield className="w-4 h-4 inline-block mr-1 text-blue-500" />
+                Bảo mật
               </Link>
               <Link
                 to="/policy/claims"
                 className="block py-1.5 text-sm text-slate-600 hover:text-orange-600"
               >
-                ⚖️ Khiếu nại
+                <Scale className="w-4 h-4 inline-block mr-1 text-blue-500" />
+                Khiếu nại
               </Link>
               <Link
                 to="/policy/terms"
                 className="block py-1.5 text-sm text-slate-600 hover:text-orange-600"
               >
-                📝 Điều khoản
+                <FileText className="w-4 h-4 inline-block mr-1 text-blue-500" />
+                Điều khoản
               </Link>
             </div>
           </div>

@@ -1,39 +1,38 @@
-import toast from "react-hot-toast";
+import toast from "../lib/toast";
 import MapPicker from "./MapPicker.jsx";
 
-// Modal bản đồ chọn vị trí
-export default function LocationMapModal({
-  isOpen,
-  onClose,
-  defaultPos,
-  onConfirm,
-}) {
-  if (!isOpen) return null;
-
-
-  const reverseGeocode = async (lat, lng) => {
-    try {
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`,
-      );
-      return (await res.json())?.display_name || "";
-    } catch {
-      return "";
-    }
+export default function LocationMapModal({ isOpen, onClose, defaultPos, onConfirm }) {
+  const stripAddress = (raw) => {
+    const parts = raw.split(",").map((p) => p.trim()).filter(Boolean);
+    const filtered = parts.filter((p) => {
+      const low = p.toLowerCase();
+      if (low === "việt nam" || low === "vietnam") return false;
+      if (/^\d{4,6}$/.test(p)) return false;
+      return true;
+    });
+    return filtered.join(", ");
   };
+
+  if (!isOpen) return null;
 
   const handleConfirm = async (pos) => {
     toast.loading("Đang dịch địa chỉ...", { id: "geo" });
-    const address = await reverseGeocode(pos.lat, pos.lng);
-    toast.success("Đã xác nhận vị trí!", { id: "geo" });
-
-
-    onConfirm({ lat: pos.lat, lng: pos.lng, address });
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.lat}&lon=${pos.lng}&accept-language=vi`,
+        { headers: { "User-Agent": "SpeedyShip/1.0" } },
+      );
+      const data = await res.json();
+      toast.success("Đã xác nhận vị trí!", { id: "geo" });
+      onConfirm({ address: stripAddress(data?.display_name || ""), lat: pos.lat, lng: pos.lng });
+    } catch {
+      toast.error("Không dịch được địa chỉ", { id: "geo" });
+    }
   };
 
   return (
     <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4 animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl overflow-hidden w-full max-w-3xl h-[500px] shadow-2xl relative zoom-in-95 animate-in">
+      <div className="bg-white rounded-2xl overflow-hidden w-full max-w-4xl h-[600px] shadow-2xl relative zoom-in-95 animate-in">
         <MapPicker
           defaultPos={defaultPos}
           onConfirm={handleConfirm}

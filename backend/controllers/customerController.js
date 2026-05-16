@@ -1,5 +1,11 @@
 import pool from "../config/db.js";
 import bcrypt from "bcryptjs";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 
 // Lấy hồ sơ khách hàng kèm số dư ví, tổng đơn hàng và xếp hạng thành viên
@@ -45,6 +51,41 @@ export const getCustomerProfile = async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ message: "Lỗi hệ thống" });
+  }
+};
+
+// Upload avatar cho khách hàng
+export const uploadAvatar = async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    if (!req.file) {
+      return res.status(400).json({ message: "Không có file được upload" });
+    }
+
+    // Build the avatar URL - return full URL for frontend
+    const baseUrl = process.env.BASE_URL || `http://localhost:5000`;
+    const avatarUrl = `${baseUrl}/uploads/avatars/${req.file.filename}`;
+
+    // Update user's avatar in database (store relative path)
+    const relativePath = `/uploads/avatars/${req.file.filename}`;
+    await pool.query("UPDATE users SET avatar = ? WHERE id = ?", [relativePath, userId]);
+
+    res.json({
+      message: "Upload avatar thành công",
+      avatarUrl: avatarUrl,
+    });
+  } catch (err) {
+    console.error("[uploadAvatar] Error:", err);
+    // Clean up uploaded file on error
+    if (req.file && req.file.path) {
+      try {
+        fs.unlinkSync(req.file.path);
+      } catch (unlinkErr) {
+        console.error("[uploadAvatar] Failed to clean up file:", unlinkErr);
+      }
+    }
+    res.status(500).json({ message: "Lỗi upload avatar" });
   }
 };
 
@@ -157,17 +198,29 @@ export const createShipment = async (req, res) => {
 export const getShipmentsByCustomer = async (req, res) => {
   try {
       const [rows] = await pool.query(
-        `SELECT s.*, 
-                d.name AS driver_name, 
+        `SELECT s.*,
+                d.name AS driver_name,
                 d.phone AS driver_phone,
-                d.license_no AS plate_number
-         FROM shipments s 
-         LEFT JOIN assignments a ON s.id = a.shipment_id 
-         LEFT JOIN drivers d ON a.driver_id = d.id 
-         WHERE s.customer_id = ? 
+                d.license_no AS plate_number,
+                d.avatar AS driver_avatar
+         FROM shipments s
+         LEFT JOIN assignments a ON s.id = a.shipment_id
+         LEFT JOIN drivers d ON a.driver_id = d.id
+         WHERE s.customer_id = ?
          ORDER BY s.created_at DESC`,
         [req.params.customer_id]
     );
+
+    // Convert driver avatar relative paths to full URLs
+    const baseUrl = process.env.BASE_URL || "http://localhost:5000";
+    rows.forEach(shipment => {
+      if (shipment.driver_avatar) {
+        shipment.driver_avatar = shipment.driver_avatar.startsWith("/uploads")
+          ? `${baseUrl}${shipment.driver_avatar}`
+          : shipment.driver_avatar;
+      }
+    });
+
     res.json(rows);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -202,12 +255,13 @@ export const trackShipment = async (req, res) => {
     }
 
     let query = `
-  SELECT 
-    s.*, 
-    d.name AS driver_name, 
+  SELECT
+    s.*,
+    d.name AS driver_name,
     d.phone AS driver_phone,
-    d.license_no AS plate_number, 
-    d.latitude AS driver_lat, 
+    d.license_no AS plate_number,
+    d.avatar AS driver_avatar,
+    d.latitude AS driver_lat,
     d.longitude AS driver_lng
   FROM shipments s
   LEFT JOIN assignments a ON a.shipment_id = s.id
@@ -242,6 +296,14 @@ export const trackShipment = async (req, res) => {
 
     const shipment = rows[0];
 
+    // Convert driver avatar relative path to full URL
+    if (shipment.driver_avatar) {
+      const baseUrl = process.env.BASE_URL || "http://localhost:5000";
+      shipment.driver_avatar = shipment.driver_avatar.startsWith("/uploads")
+        ? `${baseUrl}${shipment.driver_avatar}`
+        : shipment.driver_avatar;
+    }
+
     res.json(shipment);
   } catch (err) {
     res.status(500).json({ message: "Lỗi máy chủ!" });
@@ -252,11 +314,12 @@ export const trackShipment = async (req, res) => {
 export const getShipmentDetail = async (req, res) => {
   try {
     const [rows] = await pool.query(
-      `SELECT 
-          s.*, 
+      `SELECT
+          s.*,
           d.name AS driver_name,
           d.phone AS driver_phone,
           d.license_no AS plate_number,
+          d.avatar AS driver_avatar,
           d.latitude AS driver_lat,
           d.longitude AS driver_lng
         FROM shipments s
@@ -269,7 +332,17 @@ export const getShipmentDetail = async (req, res) => {
     if (!rows.length)
       return res.status(404).json({ message: "Không tìm thấy đơn hàng" });
 
-    res.json(rows[0]);
+    const shipment = rows[0];
+
+    // Convert driver avatar relative path to full URL
+    if (shipment.driver_avatar) {
+      const baseUrl = process.env.BASE_URL || "http://localhost:5000";
+      shipment.driver_avatar = shipment.driver_avatar.startsWith("/uploads")
+        ? `${baseUrl}${shipment.driver_avatar}`
+        : shipment.driver_avatar;
+    }
+
+    res.json(shipment);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

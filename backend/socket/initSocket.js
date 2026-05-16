@@ -92,7 +92,14 @@ export default function initSocket(io, pool) {
               [chatId, SYSTEM_ID, "dispatcher", WELCOME_CONTENT, time]
             );
 
+            // Lấy id thật để gửi cho client, tránh duplicate khi merge
+            const [inserted] = await pool.query(
+              "SELECT id FROM messages WHERE chat_id = ? AND role = 'dispatcher' ORDER BY id DESC LIMIT 1",
+              [chatId]
+            );
+
             const welcomeMsg = {
+              id: inserted[0]?.id || null,
               chatId,
               senderId: SYSTEM_ID,
               role: "dispatcher",
@@ -100,9 +107,10 @@ export default function initSocket(io, pool) {
               created_at: time,
             };
 
+            // Gửi trực tiếp đến customer (socketId có sẵn từ connection)
+            io.to(socket.id).emit("newMessage", welcomeMsg);
 
-            io.to(room).emit("newMessage", welcomeMsg);
-
+            // Gửi cho dispatcher qua dispatcherRoom
             io.to("dispatcherRoom").emit("welcomeMessage", welcomeMsg);
           }
         }, 500);
@@ -128,12 +136,13 @@ export default function initSocket(io, pool) {
       const room = `chat_${chatId}`;
 
       try {
-        await pool.query(
+        const [result] = await pool.query(
           "INSERT INTO messages (chat_id, sender_id, role, content, created_at) VALUES (?, ?, ?, ?, ?)",
           [chatId, senderId, role, content, time]
         );
 
         const messageData = {
+          id: result.insertId,
           chatId,
           senderId,
           role,
@@ -142,9 +151,10 @@ export default function initSocket(io, pool) {
         };
 
 
+        // Gửi message cho TẤT CẢ trong room (bao gồm cả customer và dispatcher)
         io.to(room).emit("newMessage", messageData);
 
-
+        // Nếu KHÁCH gửi → báo cho dispatcher (room)
         if (role === "customer") {
           io.to("dispatcherRoom").emit("customerMessage", messageData);
         }
@@ -214,8 +224,10 @@ export default function initSocket(io, pool) {
             tracking_code: extra.tracking_code || '',
           });
         } else {
+          console.log(`[sendNotificationToDriver] Driver ${driverId} is offline`);
         }
       } catch (err) {
+        console.error(`[sendNotificationToDriver] Error: ${err.message}`);
       }
     },
 
@@ -231,6 +243,7 @@ export default function initSocket(io, pool) {
           created_at: new Date(),
         });
       } catch (err) {
+        console.error(`[sendNotificationToDispatcher] Error: ${err.message}`);
       }
     },
 
@@ -246,6 +259,7 @@ export default function initSocket(io, pool) {
           created_at: new Date(),
         });
       } catch (err) {
+        console.error(`[sendNotificationToCustomer] Error: ${err.message}`);
       }
     },
   };

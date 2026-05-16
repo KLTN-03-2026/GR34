@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import API from "../services/api";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "../lib/toast";
 import AOS from "aos";
 import "aos/dist/aos.css";
 
@@ -16,6 +16,7 @@ import {
   FaIdCard,
   FaHandshake,
 } from "react-icons/fa";
+import { Truck } from "lucide-react";
 
 // Đăng ký làm tài xế
 export default function ApplyDriver() {
@@ -98,7 +99,7 @@ export default function ApplyDriver() {
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-      return toast.error("⚠️ Vui lòng kiểm tra lại thông tin!");
+      return toast.error("Vui lòng kiểm tra lại thông tin!");
     }
     setErrors({});
 
@@ -117,7 +118,7 @@ export default function ApplyDriver() {
         experience: "",
       });
     } catch (err) {
-      toast.error("❌ Gửi thất bại, vui lòng thử lại!");
+      toast.error("Gửi thất bại, vui lòng thử lại!");
     } finally {
       setLoading(false);
     }
@@ -125,7 +126,7 @@ export default function ApplyDriver() {
 
   return (
     <div className="font-sans bg-gray-50 text-slate-800">
-      <Toaster position="top-center" />
+      
       {/* Mini-bar */}
       <div
         ref={miniBarRef}
@@ -138,7 +139,8 @@ export default function ApplyDriver() {
       >
         <div className="max-w-7xl mx-auto w-full flex items-center justify-between gap-4">
           <span className="text-orange-300 font-bold text-sm tracking-widest uppercase whitespace-nowrap">
-            🚚 Tuyển Dụng Tài Xế SpeedyShip
+            <Truck className="inline w-4 h-4 mr-1" />
+            Tuyển Dụng Tài Xế SpeedyShip
           </span>
           <div className="flex items-center gap-3">
             {[

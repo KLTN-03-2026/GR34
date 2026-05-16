@@ -1,5 +1,5 @@
 ﻿import { useEffect, useState } from "react";
-import toast from "react-hot-toast";
+import toast from "../../lib/toast";
 import API from "../../services/api";
 import {
   Users,
@@ -11,6 +11,8 @@ import {
   User,
   Truck,
   ShoppingBag,
+  CircleCheck,
+  Ban,
 } from "lucide-react";
 import Pagination from "../../components/Pagination";
 
@@ -39,7 +41,7 @@ export default function AdminUsers() {
       setFiltered(usersRes.data);
       setRoles(rolesRes.data);
     } catch (err) {
-      toast.error("❌ Lỗi khi tải dữ liệu!");
+      toast.error("Lỗi khi tải dữ liệu!");
     } finally {
       setLoading(false);
     }
@@ -70,7 +72,7 @@ export default function AdminUsers() {
       toast.success("Cập nhật thành công!");
       fetchData();
     } catch (err) {
-      toast.error("❌ Cập nhật thất bại!");
+      toast.error("Cập nhật thất bại!");
     }
   };
 
@@ -80,10 +82,10 @@ export default function AdminUsers() {
     if (confirm("Bạn có chắc muốn xóa người dùng này không?")) {
       try {
         await API.delete(`/users/${id}`);
-        toast.success("🗑️ Đã xóa người dùng!");
+        toast.success("Đã xóa người dùng!");
         fetchData();
       } catch {
-        toast.error("❌ Xóa thất bại!");
+        toast.error("Xóa thất bại!");
       }
     }
   };
@@ -250,20 +252,27 @@ export default function AdminUsers() {
                       </td>
 
                       <td className="px-6 py-4 text-center">
-                        <select
-                          value={u.status}
-                          onChange={(e) =>
-                            handleUpdate(u.id, "status", e.target.value)
-                          }
-                          className={`border outline-none font-bold text-xs cursor-pointer px-2.5 py-0.5 rounded-full ${
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border min-w-[110px] justify-center ${
                             u.status === "active" || u.status === "Hoạt động"
-                              ? "bg-green-100 text-green-800 border-green-200"
-                              : "bg-red-100 text-red-800 border-red-200"
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                              : "bg-red-50 text-red-700 border-red-200"
                           }`}
                         >
-                          <option value="active">Hoạt động</option>
-                          <option value="blocked">Đã khóa</option>
-                        </select>
+                          <span className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 shadow-sm ${
+                            u.status === "active" || u.status === "Hoạt động"
+                              ? "bg-emerald-100 text-emerald-600"
+                              : "bg-red-100 text-red-600"
+                          }`}>
+                            {u.status === "active" || u.status === "Hoạt động"
+                              ? <CircleCheck size={11} />
+                              : <Ban size={11} />
+                            }
+                          </span>
+                          {u.status === "active" || u.status === "Hoạt động"
+                            ? "Hoạt động"
+                            : "Đã khóa"}
+                        </span>
                       </td>
                       <td className="px-6 py-4 text-center text-gray-500 text-xs">
                         <div className="flex items-center justify-center gap-1">

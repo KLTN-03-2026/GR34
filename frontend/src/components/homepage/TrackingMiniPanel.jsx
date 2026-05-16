@@ -8,6 +8,7 @@ import {
   faTruckFast,
 } from "@fortawesome/free-solid-svg-icons";
 import { motion, AnimatePresence } from "framer-motion";
+import { AlertTriangle } from "lucide-react";
 
 export default function TrackingMiniPanel({
   trackingCode,
@@ -22,10 +23,10 @@ export default function TrackingMiniPanel({
 
 
   const slogans = [
-    "Cập nhật trạng thái Real-time ⚡",
-    "An tâm trên mọi nẻo đường 🛣️",
-    "Giao nhận siêu tốc, đúng hẹn 🚀",
-    "Tra cứu hành trình 24/7 🕒",
+    "Cập nhật trạng thái Real-time",
+    "An tâm trên mọi nẻo đường",
+    "Giao nhận siêu tốc, đúng hẹn",
+    "Tra cứu hành trình 24/7",
   ];
 
   const [index, setIndex] = useState(0);
@@ -136,7 +137,7 @@ export default function TrackingMiniPanel({
             className="overflow-hidden"
           >
             <p className="bg-red-500/20 border border-red-500/30 text-red-100 px-3 py-2 text-xs rounded-lg flex items-center gap-2">
-              ⚠️ {error}
+              <AlertTriangle className="w-3 h-3" /> {error}
             </p>
           </motion.div>
         )}

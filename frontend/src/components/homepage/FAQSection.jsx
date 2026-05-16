@@ -6,7 +6,7 @@ import { FaRobot, FaUser, FaPaperPlane, FaChevronRight } from "react-icons/fa";
 const FAQ_LIST = [
   {
     q: "Thời gian giao hàng mất bao lâu?",
-    a: "SpeedyShip cung cấp nhiều gói dịch vụ:\n• 🚀 Hỏa tốc: 2–4 giờ nội thành\n• ⚡ Nhanh: 1 ngày (nội tỉnh) hoặc 1–2 ngày (liên tỉnh)\n• 📦 Tiêu chuẩn: 2–5 ngày toàn quốc\nThời gian thực tế phụ thuộc tuyến đường và điều kiện giao thông.",
+    a: "SpeedyShip cung cấp nhiều gói dịch vụ:\n• Hỏa tốc: 2–4 giờ nội thành\n• Nhanh: 1 ngày (nội tỉnh) hoặc 1–2 ngày (liên tỉnh)\n• Tiêu chuẩn: 2–5 ngày toàn quốc\nThời gian thực tế phụ thuộc tuyến đường và điều kiện giao thông.",
   },
   {
     q: "Phí vận chuyển được tính như thế nào?",
@@ -30,9 +30,10 @@ const FAQ_LIST = [
   },
   {
     q: "Giờ làm việc và hotline hỗ trợ?",
-    a: "Đội ngũ SpeedyShip hỗ trợ bạn:\n• 📞 Hotline: 1900 888 999 (miễn phí)\n• 🕐 Giờ hành chính: T2–T7, 8:00–18:00\n• 💬 Chat online: 24/7 qua website\n• 📧 Email: support@speedyship.com\nPhản hồi trong vòng 1 giờ làm việc!",
+    a: "Đội ngũ SpeedyShip hỗ trợ bạn:\n• Hotline: 1900 888 999 (miễn phí)\n• Giờ hành chính: T2–T7, 8:00–18:00\n• Chat online: 24/7 qua website\n• Email: support@speedyship.com\nPhản hồi trong vòng 1 giờ làm việc!",
   },
 ];
+
 
 // Hiệu ứng gõ chữ từng ký tự
 function TypingText({ text, onDone }) {
@@ -69,7 +70,7 @@ export default function FAQSection() {
   const [messages, setMessages] = useState([
     {
       role: "ai",
-      text: "Xin chào! 👋 Tôi là trợ lý SpeedyShip. Hãy chọn câu hỏi bên dưới hoặc gõ thắc mắc của bạn — tôi sẽ hỗ trợ ngay!",
+      text: "Xin chào! Tôi là trợ lý SpeedyShip. Hãy chọn câu hỏi bên dưới hoặc gõ thắc mắc của bạn — tôi sẽ hỗ trợ ngay!",
       id: 0,
     },
   ]);
@@ -100,7 +101,7 @@ export default function FAQSection() {
     setTimeout(() => {
       setMessages((prev) => [...prev, { role: "ai", text, id: msgId.current++, animate: true }]);
       setTyping(false);
-    }, 600);
+    }, 1500);
   };
 
   const handleFAQ = (item) => {
@@ -142,7 +143,7 @@ export default function FAQSection() {
         <div className="text-center mb-14" data-aos="fade-up">
           <div className="inline-flex items-center gap-2 bg-[#113e48]/10 text-[#113e48] px-4 py-1.5 rounded-full font-bold text-sm uppercase tracking-wider mb-4 border border-[#113e48]/20">
             <FaRobot className="text-orange-500" />
-            <span>Trợ lý AI</span>
+            <span>Trợ lý FAQ - trả lời tự động</span>
           </div>
           <h2 className="text-3xl md:text-5xl font-extrabold text-[#113e48] mb-4">
             Câu Hỏi Thường Gặp
@@ -204,7 +205,7 @@ export default function FAQSection() {
                   <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 rounded-full border-2 border-[#113e48]" />
                 </div>
                 <div>
-                  <p className="font-bold text-white text-sm">Trợ lý SpeedyShip AI</p>
+                  <p className="font-bold text-white text-sm">Trợ lý SpeedyShip FAQ</p>
                   <p className="text-white/60 text-xs">Trực tuyến • Phản hồi ngay</p>
                 </div>
               </div>
@@ -213,7 +214,7 @@ export default function FAQSection() {
               <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/50 scrollbar-thin scrollbar-thumb-gray-200">
                 <div className="text-center mb-2">
                   <span className="text-[10px] text-gray-400 bg-gray-100 px-3 py-1 rounded-full">
-                    Cuộc trò chuyện được bảo mật 🔒
+                    Cuộc trò chuyện được bảo mật
                   </span>
                 </div>
 
@@ -263,14 +264,19 @@ export default function FAQSection() {
                     <div className="w-7 h-7 rounded-full bg-[#113e48] text-white flex items-center justify-center text-xs shrink-0">
                       <FaRobot />
                     </div>
-                    <div className="bg-white border border-gray-100 rounded-2xl rounded-bl-none px-4 py-3 shadow-sm flex gap-1 items-center">
-                      {[0, 1, 2].map((i) => (
-                        <span
-                          key={i}
-                          className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                          style={{ animationDelay: `${i * 0.15}s` }}
-                        />
-                      ))}
+                    <div className="bg-white border border-gray-100 rounded-2xl rounded-bl-none px-4 py-3 shadow-sm">
+                      <p className="text-xs text-gray-400 mb-1.5 flex items-center gap-1">
+                        SpeedyShip AI đang trả lời
+                        <span className="flex gap-0.5">
+                          {[0, 1, 2].map((i) => (
+                            <span
+                              key={i}
+                              className="w-1.5 h-1.5 bg-orange-400 rounded-full animate-bounce"
+                              style={{ animationDelay: `${i * 0.2}s` }}
+                            />
+                          ))}
+                        </span>
+                      </p>
                     </div>
                   </motion.div>
                 )}

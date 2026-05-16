@@ -1,6 +1,6 @@
 ﻿import { useEffect, useState } from "react";
 import API from "../../services/api";
-import toast from "react-hot-toast";
+import toast from "../../lib/toast";
 import {
   Users,
   Search,
@@ -10,8 +10,8 @@ import {
   Mail,
   Phone,
   ShoppingBag,
-  ChevronLeft,
-  ChevronRight,
+  CircleCheck,
+  Ban,
 } from "lucide-react";
 
 import Pagination from "../../components/Pagination";
@@ -34,7 +34,7 @@ export default function AdminCustomer() {
       setCustomers(res.data);
       setFiltered(res.data);
     } catch (err) {
-      toast.error("❌ Lỗi tải danh sách khách hàng");
+      toast.error("Lỗi tải danh sách khách hàng");
     } finally {
       setLoading(false);
     }
@@ -72,11 +72,11 @@ export default function AdminCustomer() {
     try {
       await API.put(`/admin/customers/${id}`, { status: newStatus });
       toast.success(
-        isActive ? "🔒 Đã khóa tài khoản" : "Đã mở khóa tài khoản"
+        isActive ? "Đã khóa tài khoản" : "Đã mở khóa tài khoản"
       );
       fetchCustomers();
     } catch {
-      toast.error("❌ Không thể cập nhật trạng thái");
+      toast.error("Không thể cập nhật trạng thái");
     }
   };
 
@@ -85,16 +85,16 @@ export default function AdminCustomer() {
   const handleDelete = async (id) => {
     if (
       !confirm(
-        "⚠️ CẢNH BÁO: Xóa khách hàng sẽ xóa toàn bộ dữ liệu liên quan. Bạn có chắc chắn không?"
+        "CẢNH BÁO: Xóa khách hàng sẽ xóa toàn bộ dữ liệu liên quan. Bạn có chắc chắn không?"
       )
     )
       return;
     try {
       await API.delete(`/admin/customers/${id}`);
-      toast.success("🗑️ Đã xóa khách hàng");
+      toast.success("Đã xóa khách hàng");
       fetchCustomers();
     } catch {
-      toast.error("❌ Xóa thất bại");
+      toast.error("Xóa thất bại");
     }
   };
 
@@ -200,11 +200,17 @@ export default function AdminCustomer() {
                     </td>
                     <td className="px-6 py-4 text-center">
                       {c.status === "active" || c.status === "Hoạt động" ? (
-                        <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-700 border border-green-200">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border min-w-[110px] justify-center bg-emerald-50 text-emerald-700 border-emerald-200">
+                          <span className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 shadow-sm bg-emerald-100 text-emerald-600">
+                            <CircleCheck size={11} />
+                          </span>
                           Hoạt động
                         </span>
                       ) : (
-                        <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700 border border-red-200">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border min-w-[110px] justify-center bg-red-50 text-red-700 border-red-200">
+                          <span className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 shadow-sm bg-red-100 text-red-600">
+                            <Ban size={11} />
+                          </span>
                           Đã khóa
                         </span>
                       )}

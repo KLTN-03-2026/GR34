@@ -54,6 +54,7 @@ const shippingController = {
         delivery_lat,
         delivery_lng,
         weight_kg,
+        quantity,
         service_type,
         cod_amount,
       } = req.body;
@@ -120,7 +121,8 @@ const shippingController = {
       const isInterProvincial =
         pickupProvince.toLowerCase() !== receiverProvince.toLowerCase();
       let baseFee = 0;
-      const weight = parseFloat(weight_kg) || 0.5;
+      const qty = parseInt(quantity) || 1;
+      const weight = (parseFloat(weight_kg) || 0.5) * qty;
       const cod = parseFloat(cod_amount) || 0;
 
       if (isInterProvincial) {
@@ -172,6 +174,13 @@ const shippingController = {
           ];
           baseFee = startPrice + (distanceKm - 20) * kmRate;
         }
+
+        // Phụ phí khối lượng nội tỉnh: mỗi 0.5kg vượt quá 0.5kg đầu tính thêm
+        if (weight > 0.5) {
+          const extraSteps = Math.ceil((weight - 0.5) / 0.5);
+          const stepPrices = { economy: 3000, express: 5000, fast: 8000 };
+          baseFee += extraSteps * (stepPrices[service_type] || 3000);
+        }
       }
 
       const vat = baseFee * 0.1;
@@ -191,6 +200,7 @@ const shippingController = {
           pickup_province: pickupProvince,
           receiver_province: receiverProvince,
           weight: weight,
+          quantity: qty,
         },
       });
     } catch (error) {

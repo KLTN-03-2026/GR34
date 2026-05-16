@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../../services/api";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "../../lib/toast";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import {
@@ -208,7 +208,7 @@ export default function CustomerHistory() {
 
   return (
     <div className="animate-in fade-in duration-500 space-y-6 pb-10">
-      <Toaster position="top-right" />
+      
 
       {/* Phần giao diện */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
@@ -268,7 +268,7 @@ export default function CustomerHistory() {
               ) : currentShipments.length === 0 ? (
                 <tr>
                   <td
-                    colSpan="6"
+                    colSpan="7"
                     className="px-6 py-12 text-center text-gray-400 italic"
                   >
                     Không tìm thấy đơn hàng nào.
@@ -282,7 +282,7 @@ export default function CustomerHistory() {
                     className="hover:bg-gray-50/50 transition-colors group cursor-pointer"
                   >
                     <td className="px-6 py-4 font-bold text-[#113e48]">
-                      {s.tracking_code}
+                      #{s.tracking_code}
                     </td>
                     <td className="px-6 py-4">
                       <div className="font-medium text-gray-900">

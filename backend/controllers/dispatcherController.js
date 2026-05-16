@@ -7,11 +7,10 @@ import {
 // Kiểm tra dispatcher có region_id hợp lệ, trả 403 nếu chưa được gán khu vực
 const ensureDispatcherRegion = (req, res) => {
   const regionId = req.user?.region_id;
+  // Cho phép dispatcher xem toàn bộ dữ liệu nếu chưa được gán khu vực (log cảnh báo)
   if (!regionId) {
-    res.status(403).json({
-      message: "Tài khoản điều phối chưa được gán khu vực quản lý.",
-    });
-    return null;
+    console.warn(`[Dispatcher ${req.user?.id}] Chưa được gán khu vực — cho phép truy cập toàn bộ dữ liệu.`);
+    return null; // Trả null thay vì 403
   }
   return regionId;
 };
@@ -20,18 +19,17 @@ const ensureDispatcherRegion = (req, res) => {
 export const getUnassignedShipments = async (req, res) => {
   try {
     const region_id = ensureDispatcherRegion(req, res);
-    if (!region_id) return;
 
     let sql = `
       SELECT s.*
       FROM shipments s
-      LEFT JOIN assignments a 
-        ON a.shipment_id = s.id 
+      LEFT JOIN assignments a
+        ON a.shipment_id = s.id
         AND a.status IN ('assigned','picking','delivering')
-      WHERE a.id IS NULL 
+      WHERE a.id IS NULL
         AND s.status IN ('pending','assigned','picking','delivering')
         AND (
-          s.payment_method = 'COD' 
+          s.payment_method = 'COD'
           OR s.id IN (SELECT shipment_id FROM payments WHERE status = 'completed')
         )
     `;
@@ -56,10 +54,9 @@ export const getUnassignedShipments = async (req, res) => {
 export const getAvailableDrivers = async (req, res) => {
   try {
     const region_id = ensureDispatcherRegion(req, res);
-    if (!region_id) return;
 
     let sql = `
-      SELECT id, name, email, phone, status, vehicle_type, region_id
+      SELECT id, name, email, phone, status, vehicle_type, region_id, avatar
       FROM drivers
       WHERE status <> 'inactive'
     `;
@@ -135,14 +132,16 @@ export const assignShipment = async (req, res) => {
 
       const isExpress = shipmentInfo?.service_type === "fast";
       const msg = isExpress
-        ? `Don hoa toc #${shipmentInfo.tracking_code} - Giao NGAY!`
-        : `Don hang #${shipmentInfo?.tracking_code || shipment_id} da duoc phan cong cho ban`;
+        ? `Hỏa tốc! Đơn #${shipmentInfo.tracking_code} cần giao NGAY. Vui lòng đến lấy hàng ngay.`
+        : `Bạn được phân công đơn hàng #${shipmentInfo?.tracking_code || shipment_id}. Vui lòng đến lấy hàng sớm.`;
 
       await sendNotificationToDriver(driver_id, shipment_id, msg, {
         service_type: shipmentInfo?.service_type || "normal",
         tracking_code: shipmentInfo?.tracking_code || "",
       });
-    } catch (e) {}
+    } catch (e) {
+      console.error(`[assignShipment] Driver notification error: ${e.message}`);
+    }
 
     try {
       const [[shipment]] = await db.query(
@@ -153,10 +152,12 @@ export const assignShipment = async (req, res) => {
         await sendNotificationToCustomer(
           shipment.customer_id,
           shipment_id,
-          `🚚 Đơn hàng #${shipment.tracking_code} đã được phân công cho tài xế và đang chờ lấy hàng!`,
+          `Đơn hàng #${shipment.tracking_code} đã được phân công cho tài xế và đang chờ lấy hàng.`,
         );
       }
-    } catch (e) {}
+    } catch (e) {
+      console.error(`[assignShipment] Customer notification error: ${e.message}`);
+    }
 
     res.json({ message: " Đã phân công tài xế cho đơn hàng" });
   } catch (err) {
@@ -164,15 +165,22 @@ export const assignShipment = async (req, res) => {
   }
 };
 
-// Lấy danh sách phân công
+// Lấy danh sách phân công với pagination
 export const getAssignments = async (req, res) => {
   try {
     const region_id = ensureDispatcherRegion(req, res);
-    if (!region_id) return;
-    const activeOnly = String(req.query.activeOnly || "false") === "true";
+    // Lọc mặc định chỉ lấy các assignment đang active (không load lịch sử cũ)
+    const activeOnly = String(req.query.activeOnly || "true") === "true";
 
+    // Pagination params
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
+    const offset = (page - 1) * limit;
+
+    let countSql = `SELECT COUNT(*) as total FROM assignments a
+      JOIN shipments s ON s.id = a.shipment_id WHERE 1=1`;
     let sql = `
-      SELECT 
+      SELECT
         a.id,
         a.shipment_id,
         a.driver_id,
@@ -181,34 +189,56 @@ export const getAssignments = async (req, res) => {
         s.tracking_code,
         s.sender_name,
         s.receiver_name,
-        s.status AS shipment_status,
-        s.current_location,
         s.pickup_address,
         s.delivery_address,
         s.region_id,
+        s.service_type,
         d.name AS driver_name,
         d.phone AS driver_phone,
-        d.vehicle_type
+        d.vehicle_type,
+        d.avatar AS driver_avatar
       FROM assignments a
       JOIN shipments s ON s.id = a.shipment_id
       JOIN drivers d ON d.id = a.driver_id
       WHERE 1=1
     `;
 
+    const countParams = [];
     const params = [];
 
     if (activeOnly) {
-      sql += ` AND a.status IN ('assigned','picking','delivering')`;
+      const activeCondition = ` AND a.status IN ('assigned','picking','delivering')`;
+      sql += activeCondition;
+      countSql += activeCondition;
     }
 
-    sql += ` AND s.region_id = ?`;
-    params.push(region_id);
+    // Khi region_id null → dispatcher chưa gán khu vực → xem toàn bộ
+    if (region_id) {
+      sql += ` AND s.region_id = ?`;
+      countSql += ` AND s.region_id = ?`;
+      params.push(region_id);
+      countParams.push(region_id);
+    }
 
-    sql += ` ORDER BY a.assigned_at DESC`;
+    // Get total count
+    const [countResult] = await db.query(countSql, countParams);
+    const total = countResult[0]?.total || 0;
+
+    sql += ` ORDER BY a.assigned_at DESC LIMIT ? OFFSET ?`;
+    params.push(limit, offset);
 
     const [rows] = await db.query(sql, params);
-    res.json(rows);
+    res.json({
+      data: rows,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit)
+      }
+    });
   } catch (err) {
+    console.error("[getAssignments]", err.message);
     res.status(500).json({ message: "Lỗi server khi lấy danh sách phân công" });
   }
 };
@@ -295,7 +325,7 @@ export const updateAssignmentStatus = async (req, res) => {
         else if (shipmentStatus === "delivered")
           msg = `Đơn hàng #${shipment.tracking_code} đã được giao thành công!`;
         else if (shipmentStatus === "failed")
-          msg = `❌ Đơn hàng #${shipment.tracking_code} giao/lấy thất bại.`;
+          msg = `Đơn hàng #${shipment.tracking_code} giao/lấy thất bại. Hãy liên hệ điều phối viên để xử lý.`;
 
         await sendNotificationToCustomer(
           shipment.customer_id,
@@ -303,7 +333,9 @@ export const updateAssignmentStatus = async (req, res) => {
           msg,
         );
       }
-    } catch (e) {}
+    } catch (e) {
+      console.error(`[updateAssignmentStatus] Customer notification error: ${e.message}`);
+    }
 
     res.json({ message: " Đã cập nhật trạng thái và đồng bộ tài xế" });
   } catch (err) {
@@ -464,7 +496,10 @@ export const getShipmentDetail = async (req, res) => {
       region_id = "ALL";
     } else {
       region_id = ensureDispatcherRegion(req, res);
-      if (!region_id) return;
+      if (!region_id) {
+        console.error(`[getShipmentDetail] Dispatcher ${req.user?.id} has no region_id`);
+        return;
+      }
     }
 
     let sql = `SELECT 
@@ -489,6 +524,7 @@ export const getShipmentDetail = async (req, res) => {
     const [[shipment]] = await db.query(sql, params);
     res.json(shipment || {});
   } catch (err) {
+    console.error("[getShipmentDetail] Error:", err.message);
     res.status(500).json({ message: "Lỗi" });
   }
 };
@@ -544,7 +580,7 @@ export const getNearbyDrivers = async (req, res) => {
 
     if (!targetLat || !targetLng) {
       let fallbackSql = `
-        SELECT id, name, phone, status, vehicle_type, latitude, longitude
+        SELECT id, name, phone, status, vehicle_type, latitude, longitude, avatar
         FROM drivers WHERE status IN ('available', 'free')
       `;
       const fallbackParams = [];
@@ -559,8 +595,8 @@ export const getNearbyDrivers = async (req, res) => {
     }
 
     let sql = `
-      SELECT 
-        d.id, d.name, d.phone, d.status, d.vehicle_type,
+      SELECT
+        d.id, d.name, d.phone, d.status, d.vehicle_type, d.avatar,
         d.latitude, d.longitude, d.region_id,
         ROUND(
           6371 * ACOS(
@@ -592,7 +628,7 @@ export const getNearbyDrivers = async (req, res) => {
 
     if (rows.length === 0) {
       const [allRows] = await db.query(
-        `SELECT d.id, d.name, d.phone, d.status, d.vehicle_type,
+        `SELECT d.id, d.name, d.phone, d.status, d.vehicle_type, d.avatar,
           d.latitude, d.longitude, d.region_id,
           ROUND(6371 * ACOS(LEAST(1, GREATEST(-1,
             COS(RADIANS(?)) * COS(RADIANS(d.latitude)) *
@@ -772,7 +808,7 @@ export const cancelFailedShipment = async (req, res) => {
         await sendNotificationToCustomer(
           shipment.customer_id,
           id,
-          `Đơn hàng #${shipment.tracking_code} đã bị hủy do giao thất bại ${failCount} lần.`,
+          `Đơn hàng #${shipment.tracking_code} đã bị hủy do giao thất bại ${failCount} lần. Vui lòng liên hệ hotline để hỗ trợ.`,
         );
       }
     } catch (_) {}

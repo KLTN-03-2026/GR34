@@ -34,7 +34,13 @@ export const getAllShipments = async (req, res) => {
           JOIN drivers d ON d.id = a.driver_id
           WHERE a.shipment_id = s.id
           ORDER BY a.assigned_at DESC LIMIT 1
-        ) AS driver_phone
+        ) AS driver_phone,
+        (
+          SELECT d.avatar FROM assignments a
+          JOIN drivers d ON d.id = a.driver_id
+          WHERE a.shipment_id = s.id
+          ORDER BY a.assigned_at DESC LIMIT 1
+        ) AS driver_avatar
       FROM shipments s
       LEFT JOIN regions r ON s.region_id = r.id
     `;
@@ -149,14 +155,14 @@ export const createShipment = async (req, res) => {
       await sendNotificationToDispatcher(
         1,
         result.insertId,
-        `🆕 Đơn hàng mới tại ${prefix}: #${tracking_code}`,
+        `Đơn hàng mới tại ${prefix}: #${tracking_code} — chờ phân công.`,
       );
 
       if (customer_id) {
         await sendNotificationToCustomer(
           customer_id,
           result.insertId,
-          `🎉 Đơn hàng #${tracking_code} của bạn đã được tạo thành công!`,
+          `Đơn hàng #${tracking_code} của bạn đã được tạo thành công! Chúng tôi sẽ sớm liên hệ để lấy hàng.`,
         );
       }
     } catch (notifyErr) {
@@ -271,7 +277,7 @@ export const assignShipment = async (req, res) => {
         await sendNotificationToCustomer(
           shipment.customer_id,
           shipment_id,
-          `🚚 Đơn hàng #${shipment.tracking_code} đã được phân công cho tài xế và đang chờ đi lấy!`
+          `Đơn hàng #${shipment.tracking_code} đã được phân công cho tài xế và đang chờ đi lấy hàng.`
         );
       }
     } catch (e) {
@@ -420,7 +426,7 @@ export const assignShipmentsBulk = async (req, res) => {
     sendNotificationToDriver(
       driver_id,
       null,
-      `Bạn vừa được phân công ${shipment_ids.length} đơn hàng mới!`,
+      `Bạn vừa được phân công ${shipment_ids.length} đơn hàng mới. Vui lòng kiểm tra danh sách và lấy hàng sớm.`,
     ).catch(() => {});
 
 
@@ -435,7 +441,7 @@ export const assignShipmentsBulk = async (req, res) => {
           await sendNotificationToCustomer(
             ship.customer_id,
             ship.id,
-            `🚚 Đơn hàng #${ship.tracking_code} đã được phân công cho tài xế và đang chờ đi lấy!`
+            `Đơn hàng #${ship.tracking_code} đã được phân công cho tài xế và đang chờ đi lấy hàng.`
           );
         }
       }

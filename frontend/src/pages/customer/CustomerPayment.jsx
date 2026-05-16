@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import API from "../../services/api";
-import toast from "react-hot-toast";
+import toast from "../../lib/toast";
 import {
   CreditCard,
   Banknote,

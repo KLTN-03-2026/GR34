@@ -35,6 +35,7 @@ import shippingRoutes from "./routes/shippingRoutes.js";
 import newsRoutes from "./routes/newsRoutes.js";
 import driverApplicationRoutes from "./routes/driverApplicationRoutes.js";
 import regionRoutes from "./routes/regionRoutes.js";
+import chatRoutes from "./routes/chatRoutes.js";
 
 dotenv.config();
 // Khởi tạo Express app và cấu hình middleware
@@ -110,6 +111,7 @@ app.use("/api/wallet", walletRoutes);
 app.use("/api/shipping", shippingRoutes);
 app.use("/api/news", newsRoutes);
 app.use("/api/regions", regionRoutes);
+app.use("/api/chats", chatRoutes);
 
 app.get("/", (_req, res) =>
   res.send(" SpeedyShip API running with realtime chat & notifications"),

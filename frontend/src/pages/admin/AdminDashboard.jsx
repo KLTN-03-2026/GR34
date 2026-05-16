@@ -21,6 +21,7 @@ import {
   TrendingUp,
   Activity,
   Award,
+  CircleCheck,
 } from "lucide-react";
 
 // Trang tổng quan quản trị hệ thống
@@ -308,7 +309,10 @@ export default function AdminDashboard() {
                       </div>
                     </td>
                     <td className="p-4 text-right">
-                      <span className="px-3 py-1 bg-green-50 text-green-600 text-xs font-bold rounded-full border border-green-100">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border min-w-[100px] justify-center bg-emerald-50 text-emerald-700 border-emerald-200">
+                        <span className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 shadow-sm bg-emerald-100 text-emerald-600">
+                          <CircleCheck size={11} />
+                        </span>
                         Hoạt động
                       </span>
                     </td>

@@ -2,7 +2,7 @@
 import { useEffect, useState, useMemo, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import API from "../../services/api";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "../../lib/toast";
 import { motion, AnimatePresence } from "framer-motion";
 import Pagination from "../../components/Pagination";
 import {
@@ -221,7 +221,7 @@ export default function DriverAssignments() {
       );
       toast.success("Đã cập nhật trạng thái!", { id: toastId });
     } catch {
-      toast.error("❌ Lỗi cập nhật trạng thái!", { id: toastId });
+      toast.error("Lỗi cập nhật trạng thái!", { id: toastId });
       fetchAssignments();
     }
   };
@@ -245,10 +245,10 @@ export default function DriverAssignments() {
           a.shipment_id === shipmentId ? { ...a, status: 'failed' } : a
         )
       );
-      toast.success("⚠️ Đã ghi nhận giao hàng thất bại!", { id: toastId });
+      toast.success("Đã ghi nhận giao hàng thất bại!", { id: toastId });
       setFailedModal(null);
     } catch {
-      toast.error("❌ Lỗi cập nhật!", { id: toastId });
+      toast.error("Lỗi cập nhật!", { id: toastId });
     }
   };
 
@@ -490,7 +490,7 @@ export default function DriverAssignments() {
                         a.service_type === 'fast' ? 'text-red-700' : 'text-[#113e48]'
                       }`}>
                         {a.service_type === 'fast' && <Rocket size={18} className="text-red-500" />}
-                        {a.tracking_code}
+                        #{a.tracking_code}
                       </div>
                       <p className="text-xs text-gray-400 mt-1 font-medium flex items-center gap-1">
                         <Clock size={12} />{" "}

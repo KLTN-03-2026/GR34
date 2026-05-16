@@ -1,7 +1,7 @@
 ﻿import { useEffect, useState, useRef } from "react";
 import API from "../../services/api";
 import Pagination from "../../components/Pagination";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "../../lib/toast";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import jsPDF from "jspdf";
@@ -684,7 +684,7 @@ export default function CustomerInvoice() {
 
   return (
     <div className="animate-in fade-in duration-500 space-y-6 pb-10">
-      <Toaster position="top-right" />
+      
 
       {/* Phần giao diện */}
       <div
@@ -773,7 +773,7 @@ export default function CustomerInvoice() {
                     className="hover:bg-gray-50/50 transition-colors group"
                   >
                     <td className="px-6 py-4 font-bold text-[#113e48] font-mono">
-                      {s.tracking_code}
+                      #{s.tracking_code}
                     </td>
                     <td className="px-6 py-4">
                       <div className="font-medium text-gray-900">
@@ -849,7 +849,7 @@ export default function CustomerInvoice() {
           <div className="flex justify-between items-center px-5 py-3 bg-[#113e48] text-white">
             <h3 className="font-bold flex items-center gap-2 text-sm">
               <FileText size={16} className="text-orange-400" />
-              Xem trước — {previewData.tracking_code}
+              Xem trước — #{previewData.tracking_code}
             </h3>
             <div className="flex items-center gap-2">
               <button
@@ -889,9 +889,13 @@ export default function CustomerInvoice() {
             {/* Phần giao diện */}
             {previewData.driver_name ? (
               <div className="bg-orange-50 p-4 rounded-xl border border-orange-100 flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-orange-200 flex items-center justify-center text-orange-700 font-bold text-xl">
-                  {previewData.driver_name.charAt(0)}
-                </div>
+                {previewData.driver_avatar ? (
+                  <img src={previewData.driver_avatar} alt={previewData.driver_name} className="w-12 h-12 rounded-full object-cover border-2 border-orange-200 shrink-0" />
+                ) : (
+                  <div className="w-12 h-12 rounded-full bg-orange-200 flex items-center justify-center text-orange-700 font-bold text-xl shrink-0 leading-none select-none">
+                    TX
+                  </div>
+                )}
                 <div className="flex-1">
                   <p className="text-[10px] font-bold text-orange-600 uppercase mb-0.5">Tài xế phụ trách</p>
                   <p className="font-bold text-[#113e48]">{previewData.driver_name}</p>

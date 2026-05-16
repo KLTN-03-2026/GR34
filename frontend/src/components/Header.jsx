@@ -1,5 +1,6 @@
 ﻿import React from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { Truck, Hand } from "lucide-react";
 
 // Phần đầu trang
 export default function Header() {
@@ -31,7 +32,8 @@ export default function Header() {
           onClick={() => navigate("/")}
           className="font-extrabold text-xl cursor-pointer select-none"
         >
-          🚚 <span className="text-blue-600">SpeedyShip</span>
+          <Truck className="inline w-6 h-6 mr-1 text-orange-500" />
+          <span className="text-blue-600">SpeedyShip</span>
         </h1>
 
         {/* Phần giao diện */}
@@ -39,7 +41,8 @@ export default function Header() {
           {token && user?.name ? (
             <>
               <span className="text-sm text-gray-700 font-medium">
-                👋 Xin chào,{" "}
+                <Hand className="inline w-4 h-4 mr-1 text-orange-400" />
+                Xin chào,{" "}
                 <span className="text-blue-600 font-semibold">{user.name}</span>{" "}
                 ({user.role})
               </span>

@@ -1,6 +1,6 @@
-﻿import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import toast from "react-hot-toast";
+import toast from "../../lib/toast";
 import API from "../../services/api";
 
 import DiaChiSelector from "../../components/DiaChiSelector";
@@ -158,7 +158,8 @@ export default function AdminShipments() {
         s.receiver_name?.toLowerCase().includes(keyword) ||
         s.sender_phone?.includes(keyword);
 
-      const matchRegion = filterRegion === "all" || s.region_id === filterRegion;
+      const matchRegion =
+        filterRegion === "all" || s.region_id === Number(filterRegion);
       const matchStatus = filterStatus === "all" || s.status === filterStatus;
 
       return matchSearch && matchRegion && matchStatus;
@@ -242,36 +243,32 @@ export default function AdminShipments() {
 
 // Tạo badge hiển thị trạng thái
   const getStatusBadge = (status) => {
-    const styles = {
-      pending: "bg-yellow-100 text-yellow-800 border-yellow-200",
-      assigned: "bg-sky-100 text-sky-800 border-sky-200",
-      picking: "bg-purple-100 text-purple-800 border-purple-200",
-      picked: "bg-indigo-100 text-indigo-800 border-indigo-200",
-      delivering: "bg-blue-100 text-blue-800 border-blue-200",
-      delivered: "bg-green-100 text-green-800 border-green-200",
-      completed: "bg-green-100 text-green-800 border-green-200",
-      failed: "bg-red-100 text-red-800 border-red-200",
-      canceled: "bg-gray-100 text-gray-800 border-gray-200",
+    const config = {
+      pending:    { bg: "bg-amber-50",  text: "text-amber-700",  border: "border-amber-200",  icon: Clock3,      bgIcon: "bg-amber-100",  txIcon: "text-amber-600" },
+      assigned:   { bg: "bg-sky-50",    text: "text-sky-700",    border: "border-sky-200",    icon: Send,       bgIcon: "bg-sky-100",    txIcon: "text-sky-600" },
+      picking:    { bg: "bg-purple-50", text: "text-purple-700", border: "border-purple-200", icon: Package,   bgIcon: "bg-purple-100", txIcon: "text-purple-600" },
+      picked:     { bg: "bg-indigo-50", text: "text-indigo-700", border: "border-indigo-200", icon: PackageCheck,bgIcon: "bg-indigo-100",txIcon: "text-indigo-600" },
+      delivering: { bg: "bg-blue-50",   text: "text-blue-700",   border: "border-blue-200",   icon: Truck,     bgIcon: "bg-blue-100",   txIcon: "text-blue-600" },
+      delivered:  { bg: "bg-emerald-50",text: "text-emerald-700",border: "border-emerald-200",icon: CircleCheck, bgIcon: "bg-emerald-100",txIcon: "text-emerald-600" },
+      completed:  { bg: "bg-green-50",  text: "text-green-700",  border: "border-green-200",  icon: CircleCheck, bgIcon: "bg-green-100",  txIcon: "text-green-600" },
+      failed:     { bg: "bg-red-50",    text: "text-red-700",    border: "border-red-200",    icon: CircleX,   bgIcon: "bg-red-100",    txIcon: "text-red-600" },
+      canceled:   { bg: "bg-gray-50",   text: "text-gray-600",   border: "border-gray-200",   icon: Ban,       bgIcon: "bg-gray-100",   txIcon: "text-gray-500" },
     };
 
     const labels = {
-      pending: "Chờ xử lý",
-      assigned: "Đã điều phối",
-      picking: "Đang lấy hàng",
-      picked: "Đã lấy hàng",
-      delivering: "Đang giao hàng",
-      delivered: "Giao thành công",
-      completed: "Hoàn tất",
-      failed: "Giao thất bại",
-      canceled: "Đã hủy",
+      pending: "Chờ xử lý", assigned: "Đã điều phối", picking: "Đang lấy hàng",
+      picked: "Đã lấy hàng", delivering: "Đang giao hàng", delivered: "Giao thành công",
+      completed: "Hoàn tất", failed: "Giao thất bại", canceled: "Đã hủy",
     };
 
+    const c = config[status] || config.canceled;
+    const Icon = c.icon;
+
     return (
-      <span
-        className={`inline-flex items-center justify-center min-w-[130px] px-2.5 py-1.5 rounded-full text-xs font-bold border ${
-          styles[status] || styles.canceled
-        } whitespace-nowrap`}
-      >
+      <span className={`inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${c.bg} ${c.text} ${c.border} whitespace-nowrap min-w-[136px]`}>
+        <span className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 shadow-sm ${c.bgIcon}`}>
+          <Icon size={11} className={c.txIcon} />
+        </span>
         {labels[status] || status}
       </span>
     );
@@ -304,9 +301,9 @@ export default function AdminShipments() {
             className="px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all cursor-pointer"
           >
             <option value="all">Tất cả khu vực</option>
-            <option value="HN">Hà Nội (HN)</option>
-            <option value="HCM">TP.HCM (HCM)</option>
-            <option value="DN">Đà Nẵng (DN)</option>
+            <option value="1">TP.HCM (HCM)</option>
+            <option value="2">Đà Nẵng (DN)</option>
+            <option value="3">Hà Nội (HN)</option>
           </select>
           <select
             value={filterStatus}

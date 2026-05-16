@@ -108,7 +108,7 @@ export default function ExpressDelivery() {
         <div className="max-w-7xl mx-auto w-full flex items-center justify-between gap-4">
           {/* Tên dịch vụ */}
           <span className="text-orange-300 font-bold text-sm tracking-widest uppercase whitespace-nowrap">
-            ⚡ Giao Hàng Hỏa Tốc — Nhanh Như Chớp
+            <FaBolt className="inline w-5 h-5 mr-1" /> Giao Hàng Hỏa Tốc — Nhanh Như Chớp
           </span>
           {/* 4 stat pills */}
           <div className="flex items-center gap-3">
@@ -154,7 +154,7 @@ export default function ExpressDelivery() {
             <h1 className="text-4xl md:text-5xl font-extrabold mb-5 leading-tight text-white">
               Giao Hàng Hỏa Tốc <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-orange-400 to-yellow-300">
-                Nhanh Như Chớp ⚡
+                Nhanh Như Chớp
               </span>
             </h1>
             <p className="text-red-100/80 text-lg leading-relaxed mb-8 max-w-xl">

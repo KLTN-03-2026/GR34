@@ -1,7 +1,7 @@
 ﻿
 import { useEffect, useState } from "react";
 import API from "../../services/api";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "../../lib/toast";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   AlertTriangle,
@@ -95,7 +95,7 @@ export default function FailedShipmentsPanel() {
     setSubmitting(true);
     try {
       await API.post(`/dispatcher/shipments/${actionModal.shipment.id}/cancel`);
-      toast.success(`🗑️ Đã hủy đơn hàng thành công`);
+      toast.success(`Đã hủy đơn hàng thành công`);
       setActionModal(null);
       fetchData();
     } catch (err) {
@@ -115,14 +115,14 @@ export default function FailedShipmentsPanel() {
       );
     return (
       <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">
-        ⚠️ {n}/3 lần thất bại
+        <AlertTriangle className="w-3 h-3" /> {n}/3 lần thất bại
       </span>
     );
   };
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] p-4 lg:p-8 pb-20 space-y-6">
-      <Toaster position="top-right" />
+      
 
       {/* Phần giao diện */}
       <AnimatePresence>
@@ -180,7 +180,8 @@ export default function FailedShipmentsPanel() {
                     {/* Phần giao diện */}
                     <div>
                       <label className="text-sm font-bold text-gray-700 mb-1.5 block">
-                        📅 Ngày giao lại
+                        <Calendar className="w-4 h-4 inline-block mr-1" />
+                        Ngày giao lại
                       </label>
                       <input
                         type="date"
@@ -270,7 +271,7 @@ export default function FailedShipmentsPanel() {
                   <div className="p-5 space-y-4">
                     <div className="bg-yellow-50 border border-yellow-200 rounded-xl px-4 py-3">
                       <p className="font-bold text-yellow-700 text-sm">
-                        ⚠️ Xác nhận hủy đơn hoàn toàn?
+                        <AlertTriangle className="w-4 h-4 inline-block mr-1" /> Xác nhận hủy đơn hoàn toàn?
                       </p>
                       <p className="text-yellow-600 text-xs mt-1">
                         Hành động này không thể hoàn tác. Đơn hàng sẽ bị hủy và
@@ -281,7 +282,7 @@ export default function FailedShipmentsPanel() {
                       <p>
                         <span className="text-gray-500">Mã đơn:</span>{" "}
                         <span className="font-bold">
-                          {actionModal.shipment.tracking_code}
+                          #{actionModal.shipment.tracking_code}
                         </span>
                       </p>
                       <p>
@@ -432,7 +433,7 @@ export default function FailedShipmentsPanel() {
                         </span>
                       )}
                       <h3 className="font-bold text-gray-800">
-                        {s.tracking_code}
+                        #{s.tracking_code}
                       </h3>
                       {failBadge(failsCount)}
                     </div>

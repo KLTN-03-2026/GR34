@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { FaRocket, FaArrowLeft } from "react-icons/fa";
+import { Bell } from "lucide-react";
 import AOS from "aos";
 import "aos/dist/aos.css";
 
@@ -52,7 +53,7 @@ export default function ComingSoon({ title = "Dịch vụ mới", icon, bannerSr
           <div className="flex items-center gap-3">
             {[
               { num: "Soon", label: "Ra mắt" },
-              { num: "🔔", label: "Thông báo" },
+              { num: "Notify", label: "Thông báo" },
               { num: "24/7", label: "Hỗ trợ" },
               { num: "VIP", label: "Ưu tiên" },
             ].map((s, i) => (

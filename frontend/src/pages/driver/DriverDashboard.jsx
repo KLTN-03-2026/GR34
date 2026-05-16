@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "../../lib/toast";
 
 
 const STATUS_LABELS = {
@@ -26,6 +26,7 @@ import {
   X,
   Calendar,
   Home,
+  Hand,
 } from "lucide-react";
 
 import Map, { Marker, NavigationControl, GeolocateControl } from "react-map-gl";
@@ -126,7 +127,7 @@ export default function DriverDashboard() {
               <PackageCheck size={20} className="text-white" />
             </div>
             <div className="flex-1">
-              <p className="font-bold text-blue-800 text-sm">📦 Đơn hàng mới!</p>
+              <p className="font-bold text-blue-800 text-sm">Đơn hàng mới!</p>
               <p className="text-gray-600 text-xs mt-0.5">
                 {tracking ? `Mã vận đơn: ${tracking}` : 'Bạn vừa được phân công đơn hàng.'}
               </p>
@@ -218,7 +219,7 @@ export default function DriverDashboard() {
             Dashboard Tài xế
           </h1>
           <p className="text-sm text-gray-600 mt-1 flex items-center gap-2">
-            👋 Xin chào, <strong className="text-blue-700">{localStorage.getItem("username") || "Tài xế"}</strong>
+            <Hand className="inline w-4 h-4 mr-1" /> Xin chào, <strong className="text-blue-700">{localStorage.getItem("username") || "Tài xế"}</strong>
           </p>
         </div>
         <div className="flex flex-col sm:flex-row items-center gap-3">
@@ -355,7 +356,7 @@ export default function DriverDashboard() {
                   </div>
                   <div>
                     <h4 className="font-bold text-gray-800 text-sm flex items-center gap-2">
-                      {s.tracking_code}
+                      #{s.tracking_code}
                       {s.service_type === 'fast' && (
                         <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-black bg-red-500 text-white">
                           <Rocket size={9} /> ƯU TIÊN

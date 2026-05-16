@@ -23,9 +23,12 @@ export const createAddress = async (req, res) => {
   try {
     const { customer_id, name, phone, address, type, is_default } = req.body;
 
-    if (!customer_id || !name || !phone || !address) {
+    if (!customer_id || !name || !address) {
       return res.status(400).json({ error: "Thiếu thông tin" });
     }
+
+    // Số điện thoại cho phép = 0 (dữ liệu cũ) hoặc chuỗi rỗng
+    const phoneVal = phone === 0 ? "0" : (phone || "");
 
     if (is_default) {
       await db.query(
@@ -44,7 +47,7 @@ export const createAddress = async (req, res) => {
 
     await db.query(
       "INSERT INTO customer_addresses (user_id, name, phone, address, type, is_default) VALUES (?, ?, ?, ?, ?, ?)",
-      [customer_id, name, phone, address, type || "other", isDefaultVal],
+      [customer_id, name, phoneVal, address, type || "other", isDefaultVal],
     );
 
     res.status(201).json({ message: "Thêm thành công" });
@@ -68,9 +71,11 @@ export const updateAddress = async (req, res) => {
 
     const isDefaultVal = is_default ? 1 : 0;
 
+    const phoneVal = phone === 0 ? "0" : (phone || "");
+
     await db.query(
       "UPDATE customer_addresses SET name = ?, phone = ?, address = ?, type = ?, is_default = ? WHERE id = ? AND user_id = ?",
-      [name, phone, address, type, isDefaultVal, id, customer_id],
+      [name, phoneVal, address, type, isDefaultVal, id, customer_id],
     );
 
     res.json({ message: "Cập nhật thành công" });
@@ -89,5 +94,37 @@ export const deleteAddress = async (req, res) => {
     res.json({ message: "Xóa thành công" });
   } catch (err) {
     res.status(500).json({ error: "Lỗi xóa" });
+  }
+};
+
+// Dọn dẹp địa chỉ: bỏ postal code & "Việt Nam" cho tất cả địa chỉ
+export const cleanupAddresses = async (req, res) => {
+  try {
+    const [rows] = await db.query("SELECT id, address FROM customer_addresses");
+
+    let updated = 0;
+    for (const row of rows) {
+      const raw = row.address || "";
+      const parts = raw.split(",").map((p) => p.trim()).filter(Boolean);
+      while (
+        parts.length > 1 &&
+        (/^Việt Nam$/i.test(parts[parts.length - 1]) ||
+          /^\d{4,6}$/.test(parts[parts.length - 1]))
+      ) {
+        parts.pop();
+      }
+      const cleaned = parts.join(", ");
+      if (cleaned !== raw) {
+        await db.query(
+          "UPDATE customer_addresses SET address = ? WHERE id = ?",
+          [cleaned, row.id],
+        );
+        updated++;
+      }
+    }
+
+    res.json({ message: `Đã cập nhật ${updated} địa chỉ` });
+  } catch (err) {
+    res.status(500).json({ error: "Lỗi dọn dẹp" });
   }
 };

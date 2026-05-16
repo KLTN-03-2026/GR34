@@ -81,16 +81,28 @@ export const login = async (req, res) => {
     const role = roles[0]?.code || "customer";
 
 
+    // Get JWT secret from env, use placeholder only in development
+    const jwtSecret = process.env.JWT_SECRET || "dev-secret-change-in-production";
+    
     const token = jwt.sign(
       {
         id: user.id,
         role: role,
         region_id: user.region_id,
       },
-      process.env.JWT_SECRET || "secret-key",
+      jwtSecret,
       { expiresIn: "1d" }
     );
 
+
+    // Build avatar full URL if stored as relative path
+    let avatarUrl = null;
+    if (user.avatar) {
+      const baseUrl = process.env.BASE_URL || "http://localhost:5000";
+      avatarUrl = user.avatar.startsWith("/uploads")
+        ? `${baseUrl}${user.avatar}`
+        : user.avatar;
+    }
 
     res.json({
       message: "Đăng nhập thành công",
@@ -101,6 +113,7 @@ export const login = async (req, res) => {
         email: user.email,
         role: role,
         region_id: user.region_id,
+        avatar: avatarUrl,
       },
     });
   } catch (err) {
@@ -179,11 +192,18 @@ export const verifyOtp = async (req, res) => {
       return res.status(400).json({ message: "Không tìm thấy mã OTP!" });
 
     const record = rows[0];
-    if (Date.now() > record.expires_at)
+    
+    // Check expiration first
+    if (Date.now() > record.expires_at) {
+      await pool.query("DELETE FROM otp_codes WHERE id = ?", [record.id]);
       return res.status(400).json({ message: "Mã OTP đã hết hạn!" });
+    }
 
     if (record.code !== otp)
       return res.status(400).json({ message: "Mã OTP không đúng!" });
+
+    // Delete OTP after successful verification to prevent reuse
+    await pool.query("DELETE FROM otp_codes WHERE id = ?", [record.id]);
 
     res.json({ message: "Xác thực OTP thành công!" });
   } catch (err) {

@@ -4,7 +4,7 @@ import "aos/dist/aos.css";
 import { useChat } from "../hooks/useChat";
 import ChatBubble from "../components/ChatBubble";
 import API from "../services/api";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "../lib/toast";
 import {
   FaMapMarkerAlt,
   FaPhoneAlt,
@@ -130,7 +130,7 @@ export default function Contact() {
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-      return toast.error("⚠️ Vui lòng kiểm tra lại thông tin!");
+      return toast.error("Vui lòng kiểm tra lại thông tin!");
     }
     setErrors({});
 
@@ -140,7 +140,7 @@ export default function Contact() {
       toast.success("Gửi yêu cầu thành công! Cảm ơn bạn đã liên hệ.");
       setForm({ name: "", email: "", phone: "", message: "" });
     } catch {
-      toast.error("❌ Không thể gửi yêu cầu, vui lòng thử lại sau!");
+      toast.error("Không thể gửi yêu cầu, vui lòng thử lại sau!");
     } finally {
       setLoading(false);
     }
@@ -148,7 +148,7 @@ export default function Contact() {
 
   return (
     <div className="font-sans bg-gray-50">
-      <Toaster position="top-center" />
+      
 
       {/* Mini-bar */}
       <div
@@ -162,7 +162,7 @@ export default function Contact() {
       >
         <div className="max-w-7xl mx-auto w-full flex items-center justify-between gap-4">
           <span className="text-orange-300 font-bold text-sm tracking-widest uppercase whitespace-nowrap">
-            📞 Liên Hệ & Hỗ Trợ SpeedyShip
+            Liên Hệ & Hỗ Trợ SpeedyShip
           </span>
           <div className="flex items-center gap-3">
             {[
@@ -239,7 +239,8 @@ export default function Contact() {
                 href="tel:1900888999"
                 className="px-8 py-4 bg-white/10 backdrop-blur-sm border border-white/30 hover:bg-white hover:text-[#113e48] text-white font-bold rounded-full transition-all flex items-center gap-2"
               >
-                📞 1900 888 999
+                <FaPhoneAlt className="w-4 h-4 mr-1" />
+                1900 888 999
               </a>
             </div>
           </div>

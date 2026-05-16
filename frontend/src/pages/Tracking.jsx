@@ -24,6 +24,7 @@ import {
   FaTimesCircle,
   FaClock,
 } from "react-icons/fa";
+import { AlertTriangle, Home, Package, Truck } from "lucide-react";
 
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
@@ -222,7 +223,7 @@ export default function Tracking() {
     if (animationRef.current) clearInterval(animationRef.current);
 
     if (!code.trim()) {
-      setError("⚠️ Vui lòng nhập mã vận đơn!");
+      setError("Vui lòng nhập mã vận đơn!");
       return;
     }
 
@@ -235,7 +236,7 @@ export default function Tracking() {
         url += `?customer_id=${customerId}`;
       } else {
         if (!last4 || last4.length !== 4) {
-          setError("⚠️ Vui lòng nhập 4 số cuối SĐT người nhận!");
+          setError("Vui lòng nhập 4 số cuối SĐT người nhận!");
           setLoading(false);
           return;
         }
@@ -244,7 +245,7 @@ export default function Tracking() {
 
       const res = await API.get(url);
       if (!res.data) {
-        setError("❌ Không tìm thấy đơn hàng!");
+        setError("Không tìm thấy đơn hàng!");
         return;
       }
 
@@ -281,7 +282,7 @@ export default function Tracking() {
         setRouteGeoJSON(null);
       }
     } catch (err) {
-      setError("❌ Mã vận đơn không hợp lệ hoặc không có quyền!");
+      setError("Mã vận đơn không hợp lệ hoặc không có quyền!");
     } finally {
       setLoading(false);
     }
@@ -379,7 +380,7 @@ export default function Tracking() {
       >
         <div className="max-w-7xl mx-auto w-full flex items-center justify-between gap-4">
           <span className="text-orange-300 font-bold text-sm tracking-widest uppercase whitespace-nowrap">
-            🔍 Tra Cứu Đơn Hàng — Realtime Tracking
+            Tra Cứu Đơn Hàng — Realtime Tracking
           </span>
           <div className="flex items-center gap-3">
             {[
@@ -506,7 +507,7 @@ export default function Tracking() {
 
           {error && (
             <div className="mt-4 p-3 bg-red-50 text-red-600 rounded-lg text-sm font-medium flex items-center gap-2 animate-pulse">
-              ⚠️ {error}
+              <AlertTriangle className="w-4 h-4" /> {error}
             </div>
           )}
           {success && (
@@ -643,7 +644,8 @@ export default function Tracking() {
                         anchor="top"
                       >
                         <div className="font-bold text-xs p-1">
-                          📦 Điểm lấy hàng
+                          <Package size={12} className="inline-block mr-1 text-blue-600" />
+                          Điểm lấy hàng
                         </div>
                       </Popup>
                     </Marker>
@@ -670,7 +672,8 @@ export default function Tracking() {
                         anchor="top"
                       >
                         <div className="font-bold text-xs p-1">
-                          🏠 Điểm giao hàng
+                          <Home size={12} className="inline-block mr-1 text-orange-600" />
+                          Điểm giao hàng
                         </div>
                       </Popup>
                     </Marker>
@@ -704,7 +707,7 @@ export default function Tracking() {
                             </span>
                           ) : (
                             <>
-                              🚚 Đang vận chuyển <br />
+                              <Truck size={14} className="inline-block mr-1 text-teal-600" /> Đang vận chuyển <br />
                               <span className="text-[10px] text-gray-500 font-normal">
                                 Tốc độ: 50km/h
                               </span>
@@ -719,8 +722,14 @@ export default function Tracking() {
                 {/* Phần giao diện */}
                 <div className="absolute bottom-6 left-6 z-[1000] bg-white/90 backdrop-blur-sm p-4 rounded-2xl shadow-lg max-w-xs">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
-                      <FaTruck />
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                      shipment?.status === "completed" || shipment?.status === "delivered"
+                        ? "bg-green-100 text-green-600"
+                        : shipment?.status === "failed" || shipment?.status?.includes("cancel")
+                        ? "bg-red-100 text-red-600"
+                        : "bg-blue-100 text-blue-600"
+                    }`}>
+                      <Truck />
                     </div>
                     <div>
                       <p className="text-xs text-gray-500 font-bold uppercase">

@@ -42,6 +42,17 @@ export default function DriverLayout() {
     paramId || localStorage.getItem("userId")
   );
   const username = localStorage.getItem("username") || "Tài xế";
+  const [avatar, setAvatar] = useState(localStorage.getItem("userAvatar") || "");
+
+  useEffect(() => {
+    const handleAvatarUpdate = () => setAvatar(localStorage.getItem("userAvatar") || "");
+    window.addEventListener("avatarUpdated", handleAvatarUpdate);
+    window.addEventListener("storage", handleAvatarUpdate);
+    return () => {
+      window.removeEventListener("avatarUpdated", handleAvatarUpdate);
+      window.removeEventListener("storage", handleAvatarUpdate);
+    };
+  }, []);
 
 
   useEffect(() => {
@@ -68,11 +79,11 @@ export default function DriverLayout() {
 
 // Xử lý đăng xuất
   const handleLogout = () => {
-
     localStorage.removeItem("token");
     localStorage.removeItem("userId");
     localStorage.removeItem("username");
     localStorage.removeItem("role");
+    localStorage.removeItem("userAvatar");
     navigate("/login");
   };
 
@@ -167,9 +178,13 @@ export default function DriverLayout() {
         <div className="p-4 bg-blue-950 border-t border-white/10 shrink-0">
           <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors cursor-pointer group">
             <div className="flex items-center gap-3 overflow-hidden">
-              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-sm font-bold text-white shadow-inner shrink-0">
-                {username.charAt(0).toUpperCase()}
-              </div>
+              {avatar ? (
+                <img src={avatar} alt="Avatar" className="w-9 h-9 rounded-full object-cover bg-white shadow-inner shrink-0" />
+              ) : (
+                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-sm font-bold text-white shadow-inner shrink-0 leading-none select-none">
+                  TX
+                </div>
+              )}
               <div className="overflow-hidden">
                 <h4 className="text-sm font-bold text-white truncate max-w-[100px] group-hover:text-orange-400 transition-colors">
                   {username}
@@ -212,9 +227,13 @@ export default function DriverLayout() {
             >
               Trang chủ <ChevronRight size={14} />
             </button>
-            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-bold ml-1">
-              {username.charAt(0)}
-            </div>
+            {avatar ? (
+              <img src={avatar} alt="Avatar" className="w-8 h-8 rounded-full object-cover bg-white shadow-sm shrink-0" />
+            ) : (
+              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-bold shrink-0 leading-none select-none">
+                TX
+              </div>
+            )}
           </div>
         </header>
 

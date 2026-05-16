@@ -211,7 +211,7 @@ export default function CustomerLayout() {
           <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors cursor-pointer group">
             <div className="flex items-center gap-3 overflow-hidden">
               <img
-                src={avatar || `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(username)}`}
+                src={avatar || `https://api.dicebear.com/9.x/lorelei/svg?seed=${encodeURIComponent(username)}&backgroundColor=0ea5e9&hairColor=3b3b3b`}
                 alt="Avatar"
                 className="w-9 h-9 rounded-full object-cover bg-white shadow-inner shrink-0"
               />
