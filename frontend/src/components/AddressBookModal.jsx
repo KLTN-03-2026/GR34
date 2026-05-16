@@ -50,7 +50,7 @@ export default function AddressBookModal({
                   </span>
                 </div>
                 <div className="text-sm text-gray-600 flex items-center gap-2 mb-1">
-                  <Phone size={14} /> {addr.phone}
+                  <Phone size={14} /> {addr.phone || "—"}
                 </div>
                 <div className="text-sm text-gray-500 flex items-start gap-2">
                   <MapPin size={14} className="mt-0.5 flex-shrink-0" />

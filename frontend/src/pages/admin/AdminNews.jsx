@@ -1,6 +1,6 @@
 ﻿import { useEffect, useState, useRef, useMemo, useCallback } from "react";
 import API from "../../services/api";
-import toast from "react-hot-toast";
+import toast from "../../lib/toast";
 import {
   Newspaper,
   Search,
@@ -56,7 +56,7 @@ export default function AdminNews() {
       setNewsList(res.data);
       setFiltered(res.data);
     } catch {
-      toast.error("❌ Lỗi tải danh sách tin tức");
+      toast.error("Lỗi tải danh sách tin tức");
     } finally {
       setLoading(false);
     }

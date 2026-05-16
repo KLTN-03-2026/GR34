@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import API from "../../services/api";
-import toast from "react-hot-toast";
+import toast from "../../lib/toast";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import {
@@ -9,6 +9,7 @@ import {
   CheckCircle,
   DollarSign,
   PieChart as PieChartIcon,
+  Hand,
 } from "lucide-react";
 import {
   PieChart,
@@ -126,7 +127,7 @@ export default function CustomerDashboard() {
             <span className="text-orange-500 truncate max-w-[150px] md:max-w-none">
               {localStorage.getItem("username") || "Khách hàng"}
             </span>{" "}
-            👋
+            <Hand className="inline w-5 h-5 text-orange-400 ml-1" />
           </h1>
           <p className="text-xs md:text-sm text-gray-500 mt-1">
             Tổng quan tình hình vận đơn hôm nay.
@@ -270,7 +271,7 @@ export default function CustomerDashboard() {
                         <div>
                           <p className="text-xs text-gray-400 font-medium">Mã VĐ</p>
                           <p className="font-bold text-[#113e48] text-sm">
-                            {s.tracking_code}
+                            #{s.tracking_code}
                           </p>
                         </div>
                         <StatusBadge status={s.status} />
@@ -316,7 +317,7 @@ export default function CustomerDashboard() {
                           className="hover:bg-gray-50/50 transition-colors"
                         >
                           <td className="px-4 py-4 font-bold text-[#113e48]">
-                            {s.tracking_code}
+                            #{s.tracking_code}
                           </td>
                           <td className="px-4 py-4">
                             <div className="font-medium text-gray-900">{s.receiver_name}</div>

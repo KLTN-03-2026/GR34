@@ -49,9 +49,13 @@ export const createMomoPayment = async (req, res) => {
     );
 
     const finalAmount = Math.round(Number(amount));
-    const partnerCode = "MOMO";
-    const accessKey = "F8BBA842ECF85";
-    const secretKey = "K951B6PE1waDMi640xX08PD3vg6EkVlz";
+    const partnerCode = process.env.MOMO_PARTNER_CODE || "MOMO";
+    const accessKey = process.env.MOMO_ACCESS_KEY || "F8BBA842ECF85";
+    const secretKey = process.env.MOMO_SECRET_KEY;
+    
+    if (!secretKey) {
+      return res.status(500).json({ error: "MoMo secret key chưa được cấu hình" });
+    }
 
     const orderId = `SHIP${Date.now()}`;
     const requestId = orderId;
@@ -111,9 +115,13 @@ export const createWalletDepositMomo = async (req, res) => {
       return res.status(400).json({ error: "Thiếu dữ liệu nạp tiền" });
 
     const finalAmount = Math.round(Number(amount));
-    const partnerCode = "MOMO";
-    const accessKey = "F8BBA842ECF85";
-    const secretKey = "K951B6PE1waDMi640xX08PD3vg6EkVlz";
+    const partnerCode = process.env.MOMO_PARTNER_CODE || "MOMO";
+    const accessKey = process.env.MOMO_ACCESS_KEY || "F8BBA842ECF85";
+    const secretKey = process.env.MOMO_SECRET_KEY;
+    
+    if (!secretKey) {
+      return res.status(500).json({ error: "MoMo secret key chưa được cấu hình" });
+    }
 
     const orderId = `WALLET${Date.now()}`;
     const requestId = orderId;
@@ -163,8 +171,23 @@ export const createWalletDepositMomo = async (req, res) => {
 // Nhận IPN callback từ MoMo, cập nhật trạng thái thanh toán và số dư ví
 export const momoIPN = async (req, res) => {
   try {
-    const { orderId, resultCode } = req.body;
+    const { orderId, resultCode, signature } = req.body;
     if (!orderId) return res.status(400).json({ message: "Thiếu orderId" });
+
+    // Verify signature to prevent fake IPN
+    const secretKey = process.env.MOMO_SECRET_KEY;
+    if (secretKey && signature) {
+      const rawSignature = `orderId=${orderId}&resultCode=${resultCode}&message=${req.body.message || ""}`;
+      const expectedSignature = crypto
+        .createHmac("sha256", secretKey)
+        .update(rawSignature)
+        .digest("hex");
+      
+      if (signature !== expectedSignature) {
+        console.error(`[MoMo IPN] Invalid signature for order ${orderId}`);
+        return res.status(403).json({ message: "Invalid signature" });
+      }
+    }
 
     const status = resultCode === 0 ? "success" : "failed";
 
@@ -181,25 +204,42 @@ export const momoIPN = async (req, res) => {
         );
       }
     } else if (orderId.startsWith("WALLET")) {
-      await db.query("UPDATE transactions SET status=? WHERE order_id=?", [
-        status,
-        orderId,
-      ]);
-
-      if (status === "success") {
-        const [trans] = await db.query(
-          "SELECT wallet_id, amount FROM transactions WHERE order_id = ?",
-          [orderId],
+      // Use transaction for wallet deposit to prevent race conditions
+      const connection = await db.getConnection();
+      try {
+        await connection.beginTransaction();
+        
+        // Update transaction status with row lock
+        await connection.query(
+          "UPDATE transactions SET status=? WHERE order_id=? AND status='pending'",
+          [status, orderId]
         );
-
-        if (trans.length > 0) {
-          const { wallet_id, amount } = trans[0];
-
-          await db.query(
-            "UPDATE wallets SET balance = balance + ? WHERE id = ?",
-            [amount, wallet_id],
+        
+        if (status === "success") {
+          // Get transaction details with lock
+          const [trans] = await connection.query(
+            "SELECT wallet_id, amount FROM transactions WHERE order_id = ? FOR UPDATE",
+            [orderId],
           );
+
+          if (trans.length > 0) {
+            const { wallet_id, amount } = trans[0];
+            
+            // Update wallet balance atomically
+            await connection.query(
+              "UPDATE wallets SET balance = balance + ?, updated_at = NOW() WHERE id = ?",
+              [amount, wallet_id],
+            );
+          }
         }
+        
+        await connection.commit();
+      } catch (err) {
+        await connection.rollback();
+        console.error(`[MoMo IPN] Wallet deposit error for ${orderId}:`, err.message);
+        return res.status(500).json({ message: "Lỗi xử lý nạp tiền" });
+      } finally {
+        connection.release();
       }
     }
 

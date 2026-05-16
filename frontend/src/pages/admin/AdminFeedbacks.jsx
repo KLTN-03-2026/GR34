@@ -1,6 +1,6 @@
 ﻿import { useEffect, useState } from "react";
 import API from "../../services/api";
-import toast from "react-hot-toast";
+import toast from "../../lib/toast";
 import {
   MessageSquare,
   Search,
@@ -33,7 +33,7 @@ export default function AdminFeedbacks() {
       setFeedbacks(res.data);
       setFiltered(res.data);
     } catch {
-      toast.error("❌ Lỗi tải danh sách đánh giá");
+      toast.error("Lỗi tải danh sách đánh giá");
     } finally {
       setLoading(false);
     }
@@ -62,10 +62,10 @@ export default function AdminFeedbacks() {
     if (confirm("Bạn có chắc muốn xóa đánh giá này không?")) {
       try {
         await API.delete(`/feedbacks/${id}`);
-        toast.success("🗑️ Đã xóa feedback");
+        toast.success("Đã xóa feedback");
         fetchFeedbacks();
       } catch {
-        toast.error("❌ Xóa thất bại");
+        toast.error("Xóa thất bại");
       }
     }
   };

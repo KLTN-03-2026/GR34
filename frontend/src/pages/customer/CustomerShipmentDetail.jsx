@@ -11,7 +11,7 @@ import Map, {
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import bbox from "@turf/bbox";
-import toast from "react-hot-toast";
+import toast from "../../lib/toast";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import {
@@ -432,9 +432,13 @@ export default function CustomerShipmentDetail() {
             >
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 group-hover:bg-white/20 transition-all"></div>
               <div className="relative z-10 flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-orange-500 flex items-center justify-center text-xl font-bold border-2 border-white/20">
-                  {shipment.driver_name.charAt(0)}
-                </div>
+                {shipment.driver_avatar ? (
+                  <img src={shipment.driver_avatar} alt={shipment.driver_name} className="w-12 h-12 rounded-full object-cover border-2 border-white/20" />
+                ) : (
+                  <div className="w-12 h-12 rounded-full bg-orange-500 flex items-center justify-center text-xl font-bold border-2 border-white/20 leading-none select-none shrink-0">
+                    TX
+                  </div>
+                )}
                 <div className="flex-1">
                   <p className="text-xs text-blue-200 uppercase font-bold mb-0.5">
                     Tài xế phụ trách
@@ -618,10 +622,10 @@ export default function CustomerShipmentDetail() {
             </p>
             <p className="text-lg font-extrabold text-[#113e48]">
               {shipment.status === "delivering"
-                ? "🚚 Đang giao hàng"
+                ? "Đang giao hàng"
                 : shipment.status === "completed"
                 ? "Giao thành công"
-                : "📦 " + shipment.status}
+                : shipment.status}
             </p>
           </div>
         </div>

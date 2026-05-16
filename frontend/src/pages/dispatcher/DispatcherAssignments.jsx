@@ -1,6 +1,6 @@
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback, Fragment } from "react";
 import { useNavigate } from "react-router-dom";
-import toast from "react-hot-toast";
+import toast from "../../lib/toast";
 import API from "../../services/api";
 import Pagination from "../../components/Pagination";
 import {
@@ -19,6 +19,7 @@ import {
   Navigation,
   Loader2,
   Zap,
+  ChevronDown,
 } from "lucide-react";
 
 export default function DispatcherAssignmentsUIPro() {
@@ -59,7 +60,7 @@ export default function DispatcherAssignmentsUIPro() {
         API.get("/dispatcher/drivers"),
       ]);
       setUnassigned(resUnassigned.data || []);
-      setAssignments(resAssigned.data || []);
+      setAssignments(resAssigned.data.data || []);
       setDrivers(resDrivers.data);
       setSelectedIds([]);
     } catch (err) {
@@ -163,59 +164,83 @@ export default function DispatcherAssignmentsUIPro() {
     });
   }, [unassigned, searchTerm, filterZone]);
 
-  // Lọc đơn đã phân công theo từ khóa tìm kiếm
-  const filteredAssigned = useMemo(() => {
-    const searchLower = searchTerm.toLowerCase();
-    return assignments.filter((item) =>
-      item.tracking_code?.toLowerCase().includes(searchLower) ||
-      item.delivery_address?.toLowerCase().includes(searchLower) ||
-      item.driver_name?.toLowerCase().includes(searchLower)
+  // --- Group assignments by driver for "Đang vận hành" ---
+  const [expandedDriverId, setExpandedDriverId] = useState(null);
+
+  const driverGroups = useMemo(() => {
+    // Only active assignments: assigned, picking, delivering
+    const active = assignments.filter((a) =>
+      ["assigned", "picking", "delivering"].includes(a.assignment_status)
     );
-  }, [assignments, searchTerm]);
 
+    const map = {};
+    for (const a of active) {
+      const did = a.driver_id;
+      if (!map[did]) {
+        map[did] = {
+          driver_id: did,
+          driver_name: a.driver_name,
+          driver_phone: a.driver_phone,
+          driver_avatar: a.driver_avatar,
+          vehicle_type: a.vehicle_type,
+          assignments: [],
+          statusCounts: { assigned: 0, picking: 0, delivering: 0, completed: 0, failed: 0 },
+        };
+      }
+      map[did].assignments.push(a);
+      if (map[did].statusCounts[a.assignment_status] !== undefined) {
+        map[did].statusCounts[a.assignment_status]++;
+      }
+    }
 
-  // Tính toán dữ liệu phân trang cho cả hai tab
+    // Sort: most active first, then by driver name
+    return Object.values(map).sort((a, b) => {
+      const aActive = a.assignments.length;
+      const bActive = b.assignments.length;
+      if (bActive !== aActive) return bActive - aActive;
+      return (a.driver_name || "").localeCompare(b.driver_name || "");
+    });
+  }, [assignments]);
+
+  const STATUS_STATS_CONFIG = {
+    assigned:   { label: "Đã gán",   color: "bg-blue-50 text-blue-700 ring-blue-600/20",    dot: "fill-blue-500" },
+    picking:    { label: "Đang lấy",  color: "bg-purple-50 text-purple-700 ring-purple-600/20","dot": "fill-purple-500" },
+    delivering: { label: "Đang giao", color: "bg-orange-50 text-orange-700 ring-orange-600/20","dot": "fill-orange-500" },
+    completed:  { label: "Hoàn tất",  color: "bg-green-50 text-green-700 ring-green-600/20",   dot: "fill-green-500" },
+    failed:     { label: "Thất bại",  color: "bg-red-50 text-red-700 ring-red-600/20",        dot: "fill-red-500" },
+  };
+
+  const STATUS_ROW_CONFIG = {
+    picking:    { label: "Đang lấy hàng",  bg: "bg-purple-50 border-purple-200",   badge: "bg-purple-100 text-purple-700" },
+    delivering: { label: "Đang giao hàng", bg: "bg-orange-50 border-orange-200",   badge: "bg-orange-100 text-orange-700" },
+    assigned:   { label: "Chờ lấy hàng",   bg: "bg-blue-50 border-blue-200",        badge: "bg-blue-100 text-blue-700" },
+    completed:  { label: "Hoàn tất",       bg: "bg-green-50 border-green-200",      badge: "bg-green-100 text-green-700" },
+    failed:     { label: "Giao thất bại",  bg: "bg-red-50 border-red-200",         badge: "bg-red-100 text-red-700" },
+  };
+
+  const toggleDriver = (driverId) =>
+    setExpandedDriverId((prev) => (prev === driverId ? null : driverId));
+
+  // Reset page when switching to assigned tab
+  const handleTabChange = (tabId) => {
+    setActiveTab(tabId);
+    if (tabId === "assigned") setPageAssigned(1);
+  };
+
+  // --- Pagination for "Chờ phân công" tab ---
   const PAGE_SIZE = 15;
   const totalPagesUnassigned = Math.ceil(filteredUnassigned.length / PAGE_SIZE);
-  const totalPagesAssigned = Math.ceil(filteredAssigned.length / PAGE_SIZE);
   const pagedUnassigned = filteredUnassigned.slice(
     (pageUnassigned - 1) * PAGE_SIZE, pageUnassigned * PAGE_SIZE
   );
-  const pagedAssigned = filteredAssigned.slice(
-    (pageAssigned - 1) * PAGE_SIZE, pageAssigned * PAGE_SIZE
-  );
 
-
-  useMemo(() => { setPageUnassigned(1); }, [filteredUnassigned.length, filterZone, searchTerm]);
-  useMemo(() => { setPageAssigned(1); }, [filteredAssigned.length, searchTerm]);
-
-
-  // Phân nhóm tài xế theo khoảng cách: cùng quận, quận khác, liên tỉnh
-  const driverGroups = useMemo(() => {
-    const selectedShipments = unassigned.filter((s) => selectedIds.includes(s.id));
-    const orderRegions = [...new Set(selectedShipments.map((s) => s.region_id).filter(Boolean))];
-    const dispatcherRegion = drivers[0]?.region_id || null;
-    const isInterCity = orderRegions.length > 0 && orderRegions.some((r) => r !== dispatcherRegion);
-
-    if (isInterCity) {
-      return { nearDistrict: [], farDistrict: [], crossRegion: drivers };
-    }
-
-    if (nearbyDrivers.length > 0) {
-      const nearbyIds = new Set(nearbyDrivers.map((d) => d.id));
-      return {
-        nearDistrict: drivers.filter((d) => nearbyIds.has(d.id)),
-        farDistrict: drivers.filter((d) => !nearbyIds.has(d.id)),
-        crossRegion: [],
-      };
-    }
-
-
-    return { nearDistrict: [], farDistrict: drivers, crossRegion: [] };
-  }, [selectedIds, unassigned, drivers, nearbyDrivers]);
-
-
-  const driversForZone = [...driverGroups.nearDistrict, ...driverGroups.farDistrict];
+  // --- Stats for the assigned tab ---
+  const assignedTabStats = useMemo(() => {
+    const byStatus = { assigned: 0, picking: 0, delivering: 0, completed: 0, failed: 0 };
+    const active = assignments.filter((a) => ["assigned","picking","delivering"].includes(a.assignment_status));
+    for (const a of active) byStatus[a.assignment_status]++;
+    return byStatus;
+  }, [assignments]);
 
 
   // Chọn/bỏ chọn tất cả đơn trong danh sách hiện tại
@@ -255,7 +280,7 @@ export default function DispatcherAssignmentsUIPro() {
       setSelectedDriverBulk("");
     } catch (err) {
       const msg = err.response?.data?.message || "Lỗi hệ thống!";
-      toast.error(`❌ ${msg}`, { id: toastId });
+      toast.error(`${msg}`, { id: toastId });
     }
   };
 
@@ -341,14 +366,14 @@ export default function DispatcherAssignmentsUIPro() {
                 id: "assigned",
                 icon: CheckCircle,
                 label: "Đang vận hành",
-                count: assignments.length,
+                count: driverGroups.reduce((sum, d) => sum + d.assignments.filter(a => ["assigned","picking","delivering"].includes(a.assignment_status)).length, 0),
                 activeColor:
                   "bg-green-50 text-green-700 shadow-sm ring-1 ring-green-200",
               },
             ].map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => handleTabChange(tab.id)}
                 className={`px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2.5 transition-all duration-200 ${
                   activeTab === tab.id
                     ? tab.activeColor
@@ -371,7 +396,9 @@ export default function DispatcherAssignmentsUIPro() {
 
         {/* Bảng dữ liệu chính */}
         <div className="bg-white rounded-[24px] shadow-xl shadow-slate-200/40 ring-1 ring-slate-100 overflow-hidden">
-          {/* Thanh tìm kiếm và bộ lọc quận/huyện */}
+          {/* Thanh tìm kiếm và bộ lọc quận/huyện — chỉ hiện ở tab Chờ phân công */}
+        {activeTab === "unassigned" && (
+          <>
           <div className="p-5 border-b border-slate-100 bg-slate-50/30 flex flex-wrap items-center gap-4 sticky top-0 z-10 backdrop-blur-md">
             <div className="relative flex-1 min-w-[280px] group">
               <Search
@@ -387,43 +414,41 @@ export default function DispatcherAssignmentsUIPro() {
               />
             </div>
 
-            {activeTab === "unassigned" && (
-              <div className="flex items-center gap-3 bg-white py-2 px-4 rounded-2xl ring-1 ring-slate-200 shadow-sm hover:ring-slate-300 transition-all">
-                <Filter size={18} className="text-slate-500" />
-                <span className="text-sm font-semibold text-slate-600 whitespace-nowrap">
-                  Quận/Huyện:
-                </span>
-                <select
-                  className="bg-transparent text-sm outline-none cursor-pointer font-bold text-blue-700 pl-1 pr-8 py-1"
-                  value={filterZone}
-                  onChange={(e) => { setFilterZone(e.target.value); setPageUnassigned(1); }}
-                  style={{
-                    backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%231d4ed8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-                    backgroundPosition: `right center`,
-                    backgroundRepeat: `no-repeat`,
-                    backgroundSize: `1.5em 1.5em`,
-                    appearance: "none",
-                  }}
-                >
-                  <option value="All">Tất cả quận/huyện</option>
-                  {uniqueZones.filter((z) => z !== "All").map((z) => (
-                    <option key={z} value={z}>
-                      {z}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
+            <div className="flex items-center gap-3 bg-white py-2 px-4 rounded-2xl ring-1 ring-slate-200 shadow-sm hover:ring-slate-300 transition-all">
+              <Filter size={18} className="text-slate-500" />
+              <span className="text-sm font-semibold text-slate-600 whitespace-nowrap">
+                Quận/Huyện:
+              </span>
+              <select
+                className="bg-transparent text-sm outline-none cursor-pointer font-bold text-blue-700 pl-1 pr-8 py-1"
+                value={filterZone}
+                onChange={(e) => { setFilterZone(e.target.value); setPageUnassigned(1); }}
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%231d4ed8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                  backgroundPosition: `right center`,
+                  backgroundRepeat: `no-repeat`,
+                  backgroundSize: `1.5em 1.5em`,
+                  appearance: "none",
+                }}
+              >
+                <option value="All">Tất cả quận/huyện</option>
+                {uniqueZones.filter((z) => z !== "All").map((z) => (
+                  <option key={z} value={z}>
+                    {z}
+                  </option>
+                ))}
+              </select>
+            </div>
             <div className="ml-auto text-sm font-medium text-slate-500">
               Hiển thị{" "}
               <span className="font-bold text-slate-800">
-                {activeTab === "unassigned"
-                  ? filteredUnassigned.length
-                  : filteredAssigned.length}
+                {filteredUnassigned.length}
               </span>{" "}
               kết quả
             </div>
           </div>
+          </>
+        )}
 
           {/* Bảng danh sách đơn hàng */}
           <div className="overflow-x-auto">
@@ -431,10 +456,10 @@ export default function DispatcherAssignmentsUIPro() {
               <thead className="bg-slate-50/70 text-slate-600 font-bold uppercase text-[11px] tracking-wider leading-normal border-b border-slate-100">
                 <tr>
                   {activeTab === "unassigned" && (
-                    <th className="px-6 py-4 w-[60px] text-center">
+                    <th className="px-5 py-3 w-[48px] text-center">
                       <input
                         type="checkbox"
-                        className="w-5 h-5 rounded-[6px] border-2 border-slate-300 text-blue-600 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer transition-all checked:border-blue-600"
+                        className="w-4 h-4 rounded-[6px] border-2 border-slate-300 text-blue-600 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer transition-all checked:border-blue-600"
                         onChange={handleSelectAll}
                         checked={
                           filteredUnassigned.length > 0 &&
@@ -443,11 +468,16 @@ export default function DispatcherAssignmentsUIPro() {
                       />
                     </th>
                   )}
-                  <th className="px-6 py-4">Đơn hàng</th>
-                  <th className="px-6 py-4">Địa điểm & Thời gian</th>
-                  <th className="px-6 py-4 text-center">
-                    {activeTab === "unassigned" ? "Thu hộ (COD)" : "Trạng thái"}
-                  </th>
+                  {activeTab === "assigned" && (
+                    <th className="px-6 py-4 w-[60px] text-center">
+                      <Truck size={16} className="text-slate-400 mx-auto" />
+                    </th>
+                  )}
+                  {activeTab === "unassigned" && (
+                    <th className="px-5 py-3">Đơn hàng</th>
+                  )}
+                  <th className="px-5 py-3">Địa điểm & Thời gian</th>
+                  <th className="px-5 py-3 text-center">Giá trị</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
@@ -465,18 +495,18 @@ export default function DispatcherAssignmentsUIPro() {
                             : "hover:bg-slate-50 border-transparent hover:border-slate-300"
                         }`}
                       >
-                        <td className="px-6 py-4 text-center">
+                        <td className="px-5 py-3 text-center">
                           <input
                             type="checkbox"
                             checked={isSelected}
                             readOnly
-                            className="w-5 h-5 rounded-[6px] border-2 border-slate-300 text-blue-600 pointer-events-none transition-all checked:border-blue-600"
+                            className="w-4 h-4 rounded-[6px] border-2 border-slate-300 text-blue-600 pointer-events-none transition-all checked:border-blue-600"
                           />
                         </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-start gap-4">
+                        <td className="px-5 py-3">
+                          <div className="flex items-center gap-3">
                             <div
-                              className={`p-2.5 rounded-xl ${
+                              className={`p-2 rounded-lg shrink-0 ${
                                 s.service_type === 'fast'
                                   ? isSelected
                                     ? "bg-red-100 text-red-600"
@@ -487,31 +517,31 @@ export default function DispatcherAssignmentsUIPro() {
                               }`}
                             >
                               {s.service_type === 'fast' ? (
-                                <Rocket size={20} strokeWidth={2} />
+                                <Rocket size={16} strokeWidth={2} />
                               ) : (
-                                <Package size={20} strokeWidth={2} />
+                                <Package size={16} strokeWidth={2} />
                               )}
                             </div>
-                            <div>
+                            <div className="min-w-0">
                               <div className="flex items-center gap-2">
-                                <span className="font-extrabold text-slate-800 text-base tracking-tight hover:text-blue-600 transition-colors">
-                                  {s.tracking_code}
+                                <span className="font-extrabold text-slate-800 text-sm tracking-tight hover:text-blue-600 transition-colors">
+                                  #{s.tracking_code}
                                 </span>
                                 {s.service_type === 'fast' && (
-                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-500 text-white shadow-sm animate-pulse">
-                                    <Rocket size={10} />
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold bg-red-500 text-white shadow-sm animate-pulse">
+                                    <Rocket size={8} />
                                     HỎA TỐC
                                   </span>
                                 )}
                                 {s.service_type === 'express' && (
-                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-100 text-orange-700 ring-1 ring-orange-200">
-                                    <Zap size={10} />
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold bg-orange-100 text-orange-700 ring-1 ring-orange-200">
+                                    <Zap size={8} />
                                     NHANH
                                   </span>
                                 )}
                               </div>
-                              <div className="flex items-center gap-2 text-xs text-slate-500 mt-1.5 font-medium">
-                                <User size={14} className="text-slate-400" />
+                              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                                <User size={12} className="text-slate-400 shrink-0" />
                                 {s.sender_name}{" "}
                                 <span className="text-slate-300">→</span>{" "}
                                 <b>{s.receiver_name}</b>
@@ -519,43 +549,64 @@ export default function DispatcherAssignmentsUIPro() {
                             </div>
                           </div>
                         </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-start gap-2 mb-2">
-                            <MapPin
-                              size={16}
-                              className="text-orange-500 mt-0.5 flex-shrink-0"
-                            />
-                            <div>
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-orange-50 text-orange-700 ring-1 ring-inset ring-orange-600/20 mb-1.5">
-                                {getDistrict(s.delivery_address)}
-                              </span>
-                              <p
-                                className="text-slate-600 text-xs leading-relaxed line-clamp-2 font-medium"
-                                title={s.delivery_address}
-                              >
-                                {s.delivery_address}
-                              </p>
+                        <td className="px-5 py-3">
+                          <div className="flex flex-col gap-2">
+                            {/* Pickup */}
+                            <div className="flex items-start gap-1.5">
+                              <Package
+                                size={13}
+                                className="text-green-500 mt-0.5 flex-shrink-0"
+                              />
+                              <div className="min-w-0">
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20 mb-0.5">
+                                  Lấy hàng
+                                </span>
+                                <p
+                                  className="text-slate-600 text-[11px] leading-relaxed line-clamp-1 font-medium"
+                                  title={s.pickup_address}
+                                >
+                                  {s.pickup_address}
+                                </p>
+                              </div>
+                            </div>
+                            {/* Delivery */}
+                            <div className="flex items-start gap-1.5">
+                              <MapPin
+                                size={13}
+                                className="text-orange-500 mt-0.5 flex-shrink-0"
+                              />
+                              <div className="min-w-0">
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-orange-50 text-orange-700 ring-1 ring-inset ring-orange-600/20 mb-0.5">
+                                  {getDistrict(s.delivery_address)}
+                                </span>
+                                <p
+                                  className="text-slate-600 text-[11px] leading-relaxed line-clamp-1 font-medium"
+                                  title={s.delivery_address}
+                                >
+                                  {s.delivery_address}
+                                </p>
+                              </div>
+                            </div>
+                            {/* Time */}
+                            <div className="flex items-center gap-1 text-[10px] text-slate-400 font-medium ml-[22px]">
+                              <CalendarClock size={11} />
+                              {new Date(s.created_at).toLocaleDateString(
+                                "vi-VN",
+                                { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }
+                              )}
                             </div>
                           </div>
-                          <div className="flex items-center gap-2 text-xs text-slate-400 font-medium ml-6">
-                            <CalendarClock size={14} />
-                            Tạo lúc:{" "}
-                            {new Date(s.created_at).toLocaleDateString(
-                              "vi-VN",
-                              { hour: "2-digit", minute: "2-digit" }
-                            )}
-                          </div>
                         </td>
-                        <td className="px-6 py-4 text-center">
+                        <td className="px-5 py-3 text-center">
                           <div className="inline-flex flex-col items-end">
-                            <span className="font-mono font-extrabold text-lg text-slate-700 tracking-tight">
+                            <span className="font-mono font-extrabold text-base text-slate-700 tracking-tight">
                               {Number(s.cod_amount).toLocaleString()}
-                              <span className="text-xs text-slate-400 ml-0.5 font-bold">
+                              <span className="text-[10px] text-slate-400 ml-0.5 font-bold">
                                 đ
                               </span>
                             </span>
-                            <span className="text-[10px] uppercase font-bold text-slate-400 bg-slate-100 px-1.5 rounded-md">
-                              {s.payment_method === "WALLET" ? "Ví nội bộ" : s.payment_method === "MOMO" ? "Ví MoMo" : "Tiền mặt"}
+                            <span className="text-[9px] uppercase font-bold text-slate-400 bg-slate-100 px-1 rounded">
+                              {s.payment_method === "WALLET" ? "Ví nội bộ" : s.payment_method === "MOMO" ? "MoMo" : "Tiền mặt"}
                             </span>
                           </div>
                         </td>
@@ -563,117 +614,201 @@ export default function DispatcherAssignmentsUIPro() {
                     );
                   })}
 
-                {/* Dòng dữ liệu tab Đang vận hành */}
-                {activeTab === "assigned" &&
-                  pagedAssigned.map((a) => {
-                    // Xác định màu sắc icon theo trạng thái
-                    const statusColors = {
-                      assigned:   "bg-blue-50 text-blue-600",
-                      picking:    "bg-purple-50 text-purple-600",
-                      delivering: "bg-orange-50 text-orange-600",
-                      completed:  "bg-green-50 text-green-600",
-                      failed:     "bg-red-50 text-red-600",
-                    };
-                    const iconBg = statusColors[a.status] || "bg-slate-50 text-slate-500";
-                    
-                    // Icon theo trạng thái
-                    const StatusIcon = a.status === "picking" ? Package 
-                      : a.status === "delivering" ? Truck 
-                      : a.status === "completed" ? CheckCircle 
-                      : a.status === "failed" ? AlertCircle 
-                      : Truck;
-                    
-                    return (
-                      <tr
-                        key={a.id}
-                        className="group hover:bg-slate-50 transition-all duration-200 border-l-[4px] border-transparent hover:border-slate-300"
-                      >
-                        <td className="px-6 py-4">
-                          <div className="flex items-start gap-4">
-                            <div className={`p-2.5 rounded-xl ${iconBg} group-hover:shadow-sm transition-all shrink-0`}>
-                              <StatusIcon size={20} strokeWidth={2} />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              {/* Mã đơn + loại dịch vụ */}
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <span 
-                                  className="font-extrabold text-base tracking-tight hover:text-blue-600 transition-colors cursor-pointer"
-                                  onClick={(e) => { e.stopPropagation(); navigate(`/dispatcher/tracking/${a.id}`); }}
-                                >
-                                  {a.tracking_code}
-                                </span>
-                                {a.service_type === 'fast' && (
-                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-500 text-white shadow-sm animate-pulse">
-                                    <Rocket size={10} />
-                                    HỎA TỐC
-                                  </span>
-                                )}
-                                {a.service_type === 'express' && (
-                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-100 text-orange-700 ring-1 ring-orange-200">
-                                    <Zap size={10} />
-                                    NHANH
-                                  </span>
-                                )}
+                {/* ── Tab Đang vận hành: thống kê & danh sách theo tài xế ── */}
+                {activeTab === "assigned" && (
+                  <>
+                    {/* Stats summary bar */}
+                    <tr>
+                      <td colSpan="3" className="px-6 py-4 bg-gradient-to-r from-slate-50 to-blue-50/30">
+                        <div className="flex flex-wrap items-center gap-3">
+                          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Tổng đơn đang chạy:</span>
+                          {Object.entries(STATUS_STATS_CONFIG).map(([key, cfg]) => {
+                            const count = assignedTabStats[key] || 0;
+                            return (
+                              <div key={key} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ring-1 ring-inset ${cfg.color}`}>
+                                <svg className={"w-2 h-2 flex-shrink-0 " + cfg.dot} viewBox="0 0 8 8"><circle cx="4" cy="4" r="3"/></svg>
+                                {cfg.label}: <span className="font-black text-base leading-none">{count}</span>
                               </div>
-                              {/* Thông tin tài xế */}
-                              <div className="flex items-center gap-2 mt-2">
-                                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white text-[10px] font-bold">
-                                  {a.driver_name ? a.driver_name.charAt(0).toUpperCase() : "?"}
-                                </div>
-                                <span className="text-xs font-semibold text-slate-700">
-                                  {a.driver_name || "Chưa có tài xế"}
-                                </span>
-                                {a.driver_phone && (
-                                  <span className="text-xs text-slate-400">
-                                    • {a.driver_phone}
-                                  </span>
-                                )}
-                              </div>
+                            );
+                          })}
+                          <span className="ml-auto text-xs font-semibold text-slate-500">
+                            {driverGroups.length} tài xế đang hoạt động
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+
+                    {/* Driver cards */}
+                    {driverGroups.length === 0 ? (
+                      <tr>
+                        <td colSpan="3" className="px-6 py-20 text-center">
+                          <div className="flex flex-col items-center">
+                            <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-4 shadow-inner">
+                              <Truck size={40} className="text-slate-300" strokeWidth={1.5} />
                             </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          {/* Địa chỉ lấy hàng */}
-                          <div className="mb-3">
-                            <div className="flex items-center gap-1.5 mb-1">
-                              <Package size={12} className="text-green-500" />
-                              <span className="text-[10px] font-bold text-green-600 uppercase tracking-wide">Lấy hàng</span>
-                            </div>
-                            <p className="text-xs text-slate-600 font-medium line-clamp-2 leading-relaxed">
-                              {a.pickup_address || "—"}
-                            </p>
-                          </div>
-                          {/* Địa chỉ giao hàng */}
-                          <div>
-                            <div className="flex items-center gap-1.5 mb-1">
-                              <MapPin size={12} className="text-orange-500" />
-                              <span className="text-[10px] font-bold text-orange-600 uppercase tracking-wide">Giao hàng</span>
-                            </div>
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-50 text-orange-700 ring-1 ring-orange-200 mb-1 mr-1">
-                              {getDistrict(a.delivery_address)}
-                            </span>
-                            <p className="text-xs text-slate-600 font-medium line-clamp-2 leading-relaxed">
-                              {a.delivery_address}
-                            </p>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <div className="flex flex-col items-center gap-2">
-                            <StatusPill status={a.status} />
-                            <span className="text-[10px] text-slate-400 font-medium">
-                              {a.assigned_at ? `Phân công ${new Date(a.assigned_at).toLocaleDateString("vi-VN", { hour: "2-digit", minute: "2-digit" })}` : ""}
-                            </span>
+                            <p className="text-slate-500 font-medium text-lg">Không có tài xế nào đang hoạt động.</p>
+                            <p className="text-slate-400 text-sm mt-1">Phân công đơn hàng cho tài xế ở tab "Chờ phân công".</p>
                           </div>
                         </td>
                       </tr>
-                    );
-                  })}
+                    ) : (
+                      driverGroups.map((driver) => {
+                        const isOpen = expandedDriverId === driver.driver_id;
+                        const totalActive = driver.assignments.filter(a =>
+                          ["assigned","picking","delivering"].includes(a.assignment_status)
+                        ).length;
+
+                        return (
+                          <Fragment key={`driver-${driver.driver_id}`}>
+                            {/* Driver summary row */}
+                            <tr
+                              onClick={() => toggleDriver(driver.driver_id)}
+                              className={`cursor-pointer transition-all duration-200 hover:bg-slate-50 border-l-[4px] ${
+                                isOpen ? "bg-blue-50/40 border-blue-400" : "border-transparent"
+                              }`}
+                            >
+                              <td colSpan="3" className="px-6 py-4">
+                                <div className="flex items-center gap-4">
+                                  {driver.driver_avatar ? (
+                                    <img src={driver.driver_avatar} alt={driver.driver_name} className="w-12 h-12 rounded-full object-cover shadow-sm shrink-0" />
+                                  ) : (
+                                    <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white text-lg font-black shadow-sm shrink-0 leading-none select-none ${
+                                      isOpen
+                                        ? "bg-gradient-to-br from-blue-500 to-blue-700"
+                                        : "bg-gradient-to-br from-slate-400 to-slate-600"
+                                    }`}>
+                                      TX
+                                    </div>
+                                  )}
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <span className="font-extrabold text-slate-800 text-base">
+                                        {driver.driver_name || "Không rõ"}
+                                      </span>
+                                      {driver.driver_phone && (
+                                        <span className="text-xs text-slate-400 font-medium">
+                                          {driver.driver_phone}
+                                        </span>
+                                      )}
+                                      <span className="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full ring-1 ring-slate-200">
+                                        {driver.vehicle_type || "—"}
+                                      </span>
+                                    </div>
+                                    <div className="flex flex-wrap items-center gap-2 mt-2">
+                                      {["assigned","picking","delivering"].map((st) => {
+                                        const cnt = driver.statusCounts[st] || 0;
+                                        if (cnt === 0) return null;
+                                        const cfg = STATUS_STATS_CONFIG[st];
+                                        return (
+                                          <div key={st} className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ring-1 ring-inset ${cfg.color}`}>
+                                            <svg className={"w-1.5 h-1.5 flex-shrink-0 " + cfg.dot} viewBox="0 0 8 8"><circle cx="4" cy="4" r="3"/></svg>
+                                            {cfg.label}: <span className="font-black">{cnt}</span>
+                                          </div>
+                                        );
+                                      })}
+                                      <span className="ml-1 text-xs font-semibold text-slate-400">
+                                        Tổng: <span className="font-bold text-slate-700">{totalActive}</span> đơn
+                                      </span>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-3 shrink-0">
+                                    <span className={`text-xs font-bold px-3 py-1.5 rounded-full transition-all duration-200 ${
+                                      isOpen
+                                        ? "bg-blue-500 text-white shadow-sm"
+                                        : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+                                    }`}>
+                                      {isOpen ? "Thu gọn" : `Xem ${totalActive} đơn`}
+                                    </span>
+                                    <ChevronDown
+                                      size={18}
+                                      className={`text-slate-400 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
+                                    />
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>
+
+                            {/* Expanded order list */}
+                            {isOpen && driver.assignments.map((a) => {
+                              const rowCfg = STATUS_ROW_CONFIG[a.assignment_status] || STATUS_ROW_CONFIG.assigned;
+                              return (
+                                <tr
+                                  key={`order-${a.id}`}
+                                  className={`border-l-[4px] border-transparent hover:bg-slate-50 transition-colors ${rowCfg.bg}`}
+                                >
+                                  {/* Col 1: Tracking + service */}
+                                  <td className="px-6 py-3 pl-[72px]">
+                                    <div className="flex flex-col gap-1">
+                                      <div className="flex items-center gap-1.5">
+                                        <span
+                                          className="font-extrabold text-slate-800 text-sm hover:text-blue-600 transition-colors cursor-pointer"
+                                          onClick={(e) => { e.stopPropagation(); navigate(`/dispatcher/tracking/${a.id}`); }}
+                                        >
+                                          #{a.tracking_code}
+                                        </span>
+                                        {a.service_type === "fast" && (
+                                          <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-red-500 text-white animate-pulse shrink-0">
+                                            <Rocket size={8} /> HỎA TỐC
+                                          </span>
+                                        )}
+                                        {a.service_type === "express" && (
+                                          <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-orange-100 text-orange-700 ring-1 ring-orange-200 shrink-0">
+                                            <Zap size={8} /> NHANH
+                                          </span>
+                                        )}
+                                      </div>
+                                      <div className="flex items-center gap-1 text-xs text-slate-400">
+                                        <span>{a.sender_name}</span>
+                                        <span className="text-slate-300">→</span>
+                                        <span className="font-medium text-slate-600">{a.receiver_name}</span>
+                                      </div>
+                                    </div>
+                                  </td>
+
+                                  {/* Col 2: Pickup → Delivery */}
+                                  <td className="px-6 py-3">
+                                    <div className="flex items-center gap-3">
+                                      <div className="flex items-start gap-1 min-w-0 flex-1">
+                                        <Package size={12} className="text-green-500 mt-0.5 shrink-0" />
+                                        <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+                                          {a.pickup_address || "—"}
+                                        </p>
+                                      </div>
+                                      <span className="text-slate-300 shrink-0">→</span>
+                                      <div className="flex items-start gap-1 min-w-0 flex-1">
+                                        <MapPin size={12} className="text-orange-500 mt-0.5 shrink-0" />
+                                        <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+                                          {a.delivery_address || "—"}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  </td>
+
+                                  {/* Col 3: Status + time */}
+                                  <td className="px-6 py-3 text-center">
+                                    <div className="flex flex-col items-center gap-1">
+                                      <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ring-1 ring-inset ${rowCfg.badge}`}>
+                                        {rowCfg.label}
+                                      </span>
+                                      <span className="text-[10px] text-slate-400 font-medium whitespace-nowrap">
+                                        {a.assigned_at
+                                          ? `${new Date(a.assigned_at).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit" })} · ${new Date(a.assigned_at).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}`
+                                          : "—"}
+                                      </span>
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </Fragment>
+                        );
+                      })
+                    )}
+                  </>
+                )}
 
                 {/* Thông báo khi không có dữ liệu */}
-                {((activeTab === "unassigned" &&
-                  filteredUnassigned.length === 0) ||
-                  (activeTab === "assigned" &&
-                    filteredAssigned.length === 0)) && (
+                {activeTab === "unassigned" && filteredUnassigned.length === 0 && (
                   <tr>
                     <td colSpan="4" className="px-6 py-20 text-center">
                       <div className="flex flex-col items-center justify-center">
@@ -698,19 +833,12 @@ export default function DispatcherAssignmentsUIPro() {
             </table>
           </div>
 
-          {/* Phân trang cho từng tab */}
+          {/* Phân trang */}
           {activeTab === "unassigned" && (
             <Pagination
               currentPage={pageUnassigned}
               totalPages={totalPagesUnassigned}
               onPageChange={setPageUnassigned}
-            />
-          )}
-          {activeTab === "assigned" && (
-            <Pagination
-              currentPage={pageAssigned}
-              totalPages={totalPagesAssigned}
-              onPageChange={setPageAssigned}
             />
           )}
         </div>
@@ -857,14 +985,14 @@ export default function DispatcherAssignmentsUIPro() {
                       <option disabled>⏳ Đang tìm tài xế gần đơn...</option>
                     )}
 
-                    {/* Nhóm tài xế cùng khu vực */}
-                    {!loadingNearby && driverGroups.nearDistrict.length > 0 && (
+  // Nhóm tài xế cùng khu vực
+                    {drivers.slice(0, 20).length > 0 && (
                       <optgroup label={
                         hasExpressSelected
-                          ? `⚡ Cùng khu vực — Hỏa tốc (${driverGroups.nearDistrict.length})`
-                          : `📍 Cùng khu vực (${driverGroups.nearDistrict.length})`
+                          ? `Tài xế khả dụng (${drivers.length})`
+                          : `Tài xế khả dụng (${drivers.length})`
                       }>
-                        {driverGroups.nearDistrict.map((d) => {
+                        {drivers.slice(0, 50).map((d) => {
                           const nearby = nearbyDrivers.find((n) => n.id === d.id);
                           return (
                             <option key={d.id} value={d.id}>
@@ -873,32 +1001,6 @@ export default function DispatcherAssignmentsUIPro() {
                             </option>
                           );
                         })}
-                      </optgroup>
-                    )}
-
-                    {/* Nhóm tài xế quận/huyện khác */}
-                    {driverGroups.farDistrict.length > 0 && (
-                      <optgroup label={
-                        driverGroups.nearDistrict.length > 0
-                          ? `🏙️ Quận/Huyện khác (${driverGroups.farDistrict.length})`
-                          : `🏙️ Tài xế trong vùng (${driverGroups.farDistrict.length})`
-                      }>
-                        {driverGroups.farDistrict.map((d) => (
-                          <option key={d.id} value={d.id}>
-                            {d.name} — {d.vehicle_type || "N/A"}
-                          </option>
-                        ))}
-                      </optgroup>
-                    )}
-
-                    {/* Nhóm tài xế liên tỉnh */}
-                    {driverGroups.crossRegion.length > 0 && (
-                      <optgroup label={`🔀 Liên tỉnh — Đơn ngoài vùng (${driverGroups.crossRegion.length})`}>
-                        {driverGroups.crossRegion.map((d) => (
-                          <option key={`cross-${d.id}`} value={d.id}>
-                            {d.name} — {d.vehicle_type || "N/A"} ({REGION_LABELS[d.region_id] || d.region_id || "N/A"})
-                          </option>
-                        ))}
                       </optgroup>
                     )}
 

@@ -1,13 +1,14 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import API from "../../services/api";
-import toast from "react-hot-toast";
+import toast from "../../lib/toast";
 import {
   MapPin,
   Plus,
   Edit2,
   Trash2,
   Home,
-  Briefcase,
+  Building2,
+  MapPinned,
   X,
   Save,
   Check,
@@ -21,13 +22,12 @@ import LocationMapModal from "../../components/LocationMapModal.jsx";
 export default function CustomerAddress() {
   const [addresses, setAddresses] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const [customerName, setCustomerName] = useState("");
 
   const [showModal, setShowModal] = useState(false);
   const [showMap, setShowMap] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [submitting, setSubmitting] = useState(false);
-
 
   const [formData, setFormData] = useState({
     name: "",
@@ -37,14 +37,13 @@ export default function CustomerAddress() {
   });
 
   const [street, setStreet] = useState("");
-  const [region, setRegion] = useState("");
+  const [ward, setWard] = useState("");
   const [geo, setGeo] = useState({ lat: null, lng: null });
 
   const customerId =
     localStorage.getItem("customer_id") || localStorage.getItem("userId");
 
-
-// Tải danh sách địa chỉ
+  // Tải danh sách địa chỉ
   const fetchAddresses = async () => {
     try {
       const res = await API.get(`/addresses/${customerId}`);
@@ -56,12 +55,36 @@ export default function CustomerAddress() {
     }
   };
 
+  // Tải tên khách hàng
+  const fetchCustomerName = async () => {
+    try {
+      const res = await API.get(`/customers/${customerId}`);
+      const name = res.data?.full_name || res.data?.name || "";
+      setCustomerName(name);
+      return name;
+    } catch {
+      return "";
+    }
+  };
+
   useEffect(() => {
-    if (customerId) fetchAddresses();
+    const init = async () => {
+      // Dọn dẹp địa chỉ cũ (bỏ postal code & Việt Nam) — chỉ chạy 1 lần
+      const cleaned = localStorage.getItem("addrs_cleaned");
+      if (!cleaned) {
+        try {
+          await API.post("/addresses/cleanup");
+          localStorage.setItem("addrs_cleaned", "1");
+        } catch (_) {}
+      }
+
+      if (customerId) fetchAddresses();
+      else setLoading(false);
+    };
+    init();
   }, [customerId]);
 
-
-  const openModal = (address = null) => {
+  const openModal = async (address = null) => {
     if (address) {
       setEditingId(address.id);
       setFormData({
@@ -71,14 +94,19 @@ export default function CustomerAddress() {
         is_default: address.is_default === 1 || address.is_default === true,
       });
       setStreet(address.address);
-      setRegion("");
+      setWard("");
       setGeo({ lat: address.lat, lng: address.lng });
     } else {
       setEditingId(null);
-      setFormData({ name: "", phone: "", type: "home", is_default: false });
+      setWard("");
       setStreet("");
-      setRegion("");
       setGeo({ lat: null, lng: null });
+      setFormData({ name: "", phone: "", type: "home", is_default: false });
+      // Pre-fill customer name
+      const name = await fetchCustomerName();
+      if (name) {
+        setFormData((prev) => ({ ...prev, name }));
+      }
     }
     setShowModal(true);
   };
@@ -102,8 +130,8 @@ export default function CustomerAddress() {
 
     try {
       let finalAddress = street;
-      if (region) {
-        finalAddress = street ? `${street}, ${region}` : region;
+      if (ward) {
+        finalAddress = street ? `${street}, ${ward}` : ward;
       }
 
       if (!finalAddress) {
@@ -180,15 +208,15 @@ export default function CustomerAddress() {
               {addr.type === "home" ? (
                 <Home size={24} />
               ) : addr.type === "office" ? (
-                <Briefcase size={24} />
+                <Building2 size={24} />
               ) : (
-                <MapPin size={24} />
+                <MapPinned size={24} />
               )}
             </div>
             <h3 className="font-bold text-[#113e48] text-lg mb-1 truncate pr-16">
               {addr.name}
             </h3>
-            <p className="text-sm text-gray-500 mb-4 font-mono">{addr.phone}</p>
+            <p className="text-sm text-gray-500 mb-4 font-mono">{addr.phone || "—"}</p>
             <div className="p-3 bg-gray-50 rounded-xl text-sm text-gray-700 leading-relaxed border border-gray-100 min-h-[80px]">
               {addr.address}
             </div>
@@ -278,10 +306,8 @@ export default function CustomerAddress() {
               <div className="bg-blue-50/50 p-5 rounded-2xl border border-blue-100 space-y-4">
                 <div className="flex justify-between items-center">
                   <label className="text-sm font-bold text-[#113e48] flex items-center gap-2">
-                    <MapPin size={18} className="text-blue-500" /> Vị trí địa
-                    chỉ
+                    <MapPin size={18} className="text-blue-500" /> Địa chỉ giao hàng
                   </label>
-                  {/* Nút hành động */}
                   <button
                     type="button"
                     onClick={() => setShowMap(true)}
@@ -292,24 +318,22 @@ export default function CustomerAddress() {
                 </div>
 
                 <DiaChiSelector
-                  required={false}
                   onChange={(data) => {
-                    setRegion(data.address);
+                    setWard(data.address);
                     setGeo({ lat: data.lat, lng: data.lng });
                   }}
                 />
 
                 <div>
                   <label className="block text-[10px] font-black text-gray-400 uppercase mb-1 ml-1">
-                    Số nhà, Tên đường, Kiệt...
+                    Số nhà, Tên đường
                   </label>
                   <input
                     type="text"
-                    placeholder="Ví dụ: K62/23 Nguyễn Huy Tưởng..."
+                    placeholder="Ví dụ: Số nhà, tên đường, phường/xã,..."
                     className="w-full p-3 border border-gray-200 rounded-xl outline-none focus:border-blue-500 bg-white shadow-inner"
                     value={street}
                     onChange={(e) => setStreet(e.target.value)}
-                    required={!region && !editingId}
                   />
                 </div>
 
@@ -324,20 +348,30 @@ export default function CustomerAddress() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
+                  <label className="block text-xs font-bold text-gray-500 uppercase mb-2">
                     Loại địa chỉ
                   </label>
-                  <select
-                    className="w-full p-3 border border-gray-200 rounded-xl outline-none focus:border-orange-500 bg-white"
-                    value={formData.type}
-                    onChange={(e) =>
-                      setFormData({ ...formData, type: e.target.value })
-                    }
-                  >
-                    <option value="home">🏠 Nhà riêng</option>
-                    <option value="office">🏢 Văn phòng</option>
-                    <option value="other">📍 Khác</option>
-                  </select>
+                  <div className="flex gap-2">
+                    {[
+                      { value: "home", icon: Home, label: "Nhà riêng" },
+                      { value: "office", icon: Building2, label: "Văn phòng" },
+                      { value: "other", icon: MapPinned, label: "Khác" },
+                    ].map(({ value, icon: Icon, label }) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, type: value })}
+                        className={`flex-1 flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all ${
+                          formData.type === value
+                            ? "border-orange-500 bg-orange-50 text-orange-600"
+                            : "border-gray-200 bg-white text-gray-500 hover:border-orange-200"
+                        }`}
+                      >
+                        <Icon size={20} />
+                        <span className="text-[10px] font-bold uppercase">{label}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 <div className="flex items-end">
                   <label className="flex items-center gap-3 cursor-pointer p-3 border border-gray-200 rounded-xl w-full hover:bg-gray-50 transition-colors h-[46px]">
@@ -392,7 +426,7 @@ export default function CustomerAddress() {
         onClose={() => setShowMap(false)}
         onConfirm={(data) => {
           setStreet(data.address);
-          setRegion("");
+          setWard("");
           setGeo({ lat: data.lat, lng: data.lng });
           setShowMap(false);
           toast.success("Đã lấy vị trí từ bản đồ!");

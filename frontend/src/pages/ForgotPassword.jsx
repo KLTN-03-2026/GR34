@@ -18,6 +18,7 @@ import {
   FaCheckCircle,
   FaPaperPlane,
 } from "react-icons/fa";
+import { AlertTriangle } from "lucide-react";
 
 // Quên mật khẩu
 export default function ForgotPassword() {
@@ -148,7 +149,7 @@ export default function ForgotPassword() {
                     : "bg-green-50 text-green-600 border-green-100"
                 }`}
               >
-                <span>{message.type === "error" ? "⚠️" : ""}</span>{" "}
+                <AlertTriangle className="w-4 h-4 inline mr-1" />
                 {message.text}
               </motion.div>
             )}

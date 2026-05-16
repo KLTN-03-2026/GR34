@@ -13,7 +13,7 @@ import {
   Filter,
   Clock,
 } from "lucide-react";
-import toast from "react-hot-toast";
+import toast from "../../lib/toast";
 
 export default function DispatcherContactsPro() {
   const [contacts, setContacts] = useState([]);
@@ -37,7 +37,7 @@ export default function DispatcherContactsPro() {
       const res = await API.get(`/contact/dispatcher/${dispatcherId}`);
       setContacts(res.data);
     } catch {
-      toast.error("❌ Lỗi khi tải danh sách liên hệ!");
+      toast.error("Lỗi khi tải danh sách liên hệ!");
     } finally {
       setLoading(false);
     }

@@ -1,7 +1,7 @@
 ﻿import { useEffect, useState } from "react";
 import API from "../../services/api";
-import toast from "react-hot-toast";
-import { CreditCard, Search, Trash2, DollarSign, Wallet } from "lucide-react";
+import toast from "../../lib/toast";
+import { CreditCard, Search, Trash2, DollarSign, Wallet, Smartphone, Clock3, CircleCheck, CircleX } from "lucide-react";
 import Pagination from "../../components/Pagination";
 
 // Quản lý thanh toán
@@ -23,7 +23,7 @@ export default function AdminPayments() {
       setPayments(res.data);
       setFiltered(res.data);
     } catch {
-      toast.error("❌ Lỗi khi tải danh sách thanh toán");
+      toast.error("Lỗi khi tải danh sách thanh toán");
     } finally {
       setLoading(false);
     }
@@ -52,7 +52,7 @@ export default function AdminPayments() {
       toast.success("Đã cập nhật trạng thái");
       fetchPayments();
     } catch {
-      toast.error("❌ Cập nhật thất bại");
+      toast.error("Cập nhật thất bại");
     }
   };
 
@@ -62,10 +62,10 @@ export default function AdminPayments() {
     if (confirm("Bạn có chắc muốn xóa lịch sử thanh toán này không?")) {
       try {
         await API.delete(`/payments/${id}`);
-        toast.success("🗑️ Đã xóa thanh toán");
+        toast.success("Đã xóa thanh toán");
         fetchPayments();
       } catch {
-        toast.error("❌ Lỗi khi xóa thanh toán");
+        toast.error("Lỗi khi xóa thanh toán");
       }
     }
   };
@@ -80,19 +80,28 @@ export default function AdminPayments() {
     const m = method?.toLowerCase();
     if (m === "momo")
       return (
-        <span className="flex items-center gap-1 text-pink-600 font-bold bg-pink-50 px-2 py-1 rounded border border-pink-200 text-xs">
-          <Wallet size={12} /> MoMo
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border bg-pink-50 text-pink-700 border-pink-200">
+          <span className="w-5 h-5 rounded-md flex items-center justify-center bg-pink-100 text-pink-600 shadow-sm">
+            <Smartphone size={11} />
+          </span>
+          MoMo
         </span>
       );
-    if (m === "banktransfer" || m === "banking")
+    if (m === "ewallet" || m === "vi" || m === "wallet")
       return (
-        <span className="flex items-center gap-1 text-blue-600 font-bold bg-blue-50 px-2 py-1 rounded border border-blue-200 text-xs">
-          <CreditCard size={12} /> Chuyển khoản
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border bg-violet-50 text-violet-700 border-violet-200">
+          <span className="w-5 h-5 rounded-md flex items-center justify-center bg-violet-100 text-violet-600 shadow-sm">
+            <Wallet size={11} />
+          </span>
+          Ví điện tử
         </span>
       );
     return (
-      <span className="flex items-center gap-1 text-green-600 font-bold bg-green-50 px-2 py-1 rounded border border-green-200 text-xs">
-        <DollarSign size={12} /> Tiền mặt
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border bg-green-50 text-green-700 border-green-200">
+        <span className="w-5 h-5 rounded-md flex items-center justify-center bg-green-100 text-green-600 shadow-sm">
+          <DollarSign size={11} />
+        </span>
+        Tiền mặt
       </span>
     );
   };
@@ -169,21 +178,35 @@ export default function AdminPayments() {
                     </td>
                     <td className="px-6 py-4">{getMethodBadge(p.method)}</td>
                     <td className="px-6 py-4 text-center">
-                      <select
-                        value={p.status}
-                        onChange={(e) => handleUpdate(p.id, e.target.value)}
-                        className={`border outline-none font-bold text-xs cursor-pointer px-2.5 py-0.5 rounded-full ${
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border min-w-[120px] justify-center ${
                           p.status === "completed"
-                            ? "bg-green-100 text-green-800 border-green-200"
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                             : p.status === "pending"
-                            ? "bg-yellow-100 text-yellow-800 border-yellow-200"
-                            : "bg-red-100 text-red-800 border-red-200"
+                            ? "bg-amber-50 text-amber-700 border-amber-200"
+                            : "bg-red-50 text-red-700 border-red-200"
                         }`}
                       >
-                        <option value="pending">Đang xử lý</option>
-                        <option value="completed">Hoàn tất</option>
-                        <option value="failed">Thất bại</option>
-                      </select>
+                        <span className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 shadow-sm ${
+                          p.status === "completed"
+                            ? "bg-emerald-100 text-emerald-600"
+                            : p.status === "pending"
+                            ? "bg-amber-100 text-amber-600"
+                            : "bg-red-100 text-red-600"
+                        }`}>
+                          {p.status === "completed"
+                            ? <CircleCheck size={11} />
+                            : p.status === "pending"
+                            ? <Clock3 size={11} />
+                            : <CircleX size={11} />
+                          }
+                        </span>
+                        {p.status === "completed"
+                          ? "Hoàn tất"
+                          : p.status === "pending"
+                          ? "Đang xử lý"
+                          : "Thất bại"}
+                      </span>
                     </td>
                     <td className="px-6 py-4 text-center text-gray-500 text-xs">
                       {new Date(p.created_at).toLocaleString("vi-VN")}

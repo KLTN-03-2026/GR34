@@ -1,7 +1,7 @@
 ﻿import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import API from "../../services/api";
-import toast from "react-hot-toast";
+import toast from "../../lib/toast";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import {
@@ -54,11 +54,11 @@ export default function CustomerFeedback() {
         rating: Number(rating),
       });
 
-      toast.success("🎉 Cảm ơn bạn đã đánh giá!");
+      toast.success("Cảm ơn bạn đã đánh giá!");
 
       setTimeout(() => navigate("/customer/history"), 1500);
     } catch (err) {
-      toast.error("❌ Lỗi khi gửi đánh giá, vui lòng thử lại!");
+      toast.error("Lỗi khi gửi đánh giá, vui lòng thử lại!");
     } finally {
       setLoading(false);
     }

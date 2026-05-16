@@ -66,7 +66,7 @@ export default function PriceList() {
       >
         <div className="max-w-7xl mx-auto w-full flex items-center justify-between gap-4">
           <span className="text-orange-300 font-bold text-sm tracking-widest uppercase whitespace-nowrap">
-            💰 Bảng Giá Cước — Minh Bạch & Tối Ưu
+            Bảng Giá Cước — Minh Bạch & Tối Ưu
           </span>
           <div className="flex items-center gap-3">
             {[

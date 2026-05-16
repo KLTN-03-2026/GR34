@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import API from "../../services/api";
-import toast from "react-hot-toast";
+import toast from "../../lib/toast";
 import { useNavigate } from "react-router-dom";
 import AOS from "aos";
 import "aos/dist/aos.css";
@@ -25,7 +25,8 @@ import {
   X,
   CheckCircle,
   AlertCircle,
-  Wallet
+  Wallet,
+  Lightbulb,
 } from "lucide-react";
 
 
@@ -79,6 +80,7 @@ export default function CustomerCreateShipment() {
   const [addressTarget, setAddressTarget] = useState(null);
   const [savedAddresses, setSavedAddresses] = useState([]);
   const [loadingAddresses, setLoadingAddresses] = useState(false);
+  const [showSenderHint, setShowSenderHint] = useState(false);
 
   const customerId =
     JSON.parse(localStorage.getItem("user"))?.id ||
@@ -92,7 +94,6 @@ export default function CustomerCreateShipment() {
       offset: 50,
     });
   }, []);
-
 
   useEffect(() => {
     if (!form.pickup_address || !form.delivery_address) {
@@ -308,7 +309,7 @@ export default function CustomerCreateShipment() {
 // Xử lý submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!customerId) return toast.error("⚠️ Bạn chưa đăng nhập!");
+    if (!customerId) return toast.error("Bạn chưa đăng nhập!");
     if (!form.pickup_lat || !form.delivery_lat)
       return toast.error("Vui lòng chọn vị trí lấy và giao hàng");
 
@@ -336,7 +337,6 @@ export default function CustomerCreateShipment() {
       return toast.error("Tên hàng hóa chứa từ khóa cấm (vũ khí, chất cháy nổ, ma túy...). Vui lòng kiểm tra lại!", {
         id: "forbidden-toast",
         style: { background: "#fee2e2", color: "#b91c1c", fontWeight: "bold", border: "1px solid #ef4444" },
-        icon: "⚠️"
       });
     }
 
@@ -365,7 +365,7 @@ export default function CustomerCreateShipment() {
         toast.success("Tạo đơn thành công");
         return navigate("/customer/history");
       }
-      toast.success("🎉 Đang chuyển sang thanh toán...");
+      toast.success("Đang chuyển sang thanh toán...");
       navigate("/customer/payment", {
         state: {
           shipment_id: newShipmentId,
@@ -375,7 +375,7 @@ export default function CustomerCreateShipment() {
         },
       });
     } catch (err) {
-      toast.error("❌ Không thể tạo đơn hàng.");
+      toast.error("Không thể tạo đơn hàng.");
     } finally {
       setCreating(false);
     }
@@ -443,30 +443,52 @@ export default function CustomerCreateShipment() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="text-xs font-bold text-gray-500 block mb-1">
-                  Họ tên
+                  Họ tên người gửi
                 </label>
-                <input
-                  name="sender_name"
-                  value={form.sender_name}
-                  onChange={handleChange}
-                  placeholder="VD: Trần Thị B"
-                  className="w-full p-3.5 border-2 border-gray-100 bg-gray-50 rounded-xl outline-none focus:border-blue-500 focus:bg-white transition-all duration-300 input-glow"
-                  required
-                />
+                <div className="relative">
+                  <input
+                    name="sender_name"
+                    value={form.sender_name}
+                    onChange={handleChange}
+                    placeholder="VD: Trần Thị B"
+                    className="w-full p-3.5 border-2 border-gray-100 bg-gray-50 rounded-xl outline-none focus:border-blue-500 focus:bg-white transition-all duration-300 input-glow pr-10"
+                    required
+                  />
+                  {showSenderHint && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 group cursor-pointer" onClick={() => setShowSenderHint(false)}>
+                      <Lightbulb size={16} className="text-yellow-500" />
+                      <div className="absolute bottom-full right-0 mb-2 w-56 bg-gray-800 text-white text-xs rounded-xl p-3 shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50">
+                        Đây là tên từ hồ sơ của bạn. Bạn có thể sửa lại nếu cần.
+                        <div className="absolute top-full right-4 w-0 h-0 border-l-8 border-r-8 border-t-8 border-transparent border-t-gray-800"></div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
               <div>
                 <label className="text-xs font-bold text-gray-500 block mb-1">
-                  Số điện thoại
+                  Số điện thoại người gửi
                 </label>
-                <input
-                  name="sender_phone"
-                  value={form.sender_phone}
-                  onChange={handleChange}
-                  maxLength={10}
-                  placeholder="VD: 0987654321"
-                  className="w-full p-3.5 border-2 border-gray-100 bg-gray-50 rounded-xl outline-none focus:border-blue-500 focus:bg-white transition-all duration-300 input-glow"
-                  required
-                />
+                <div className="relative">
+                  <input
+                    name="sender_phone"
+                    value={form.sender_phone}
+                    onChange={handleChange}
+                    maxLength={10}
+                    placeholder="VD: 0987654321"
+                    className="w-full p-3.5 border-2 border-gray-100 bg-gray-50 rounded-xl outline-none focus:border-blue-500 focus:bg-white transition-all duration-300 input-glow pr-10"
+                    required
+                  />
+                  {showSenderHint && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 group cursor-pointer" onClick={() => setShowSenderHint(false)}>
+                      <Lightbulb size={16} className="text-yellow-500" />
+                      <div className="absolute bottom-full right-0 mb-2 w-56 bg-gray-800 text-white text-xs rounded-xl p-3 shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50">
+                        Đây là SĐT từ hồ sơ của bạn. Bạn có thể sửa lại nếu cần.
+                        <div className="absolute top-full right-4 w-0 h-0 border-l-8 border-r-8 border-t-8 border-transparent border-t-gray-800"></div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
             {/* Phần giao diện */}
@@ -584,7 +606,7 @@ export default function CustomerCreateShipment() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="text-xs font-bold text-gray-500 block mb-1">
-                  Họ tên
+                  Họ tên người nhận
                 </label>
                 <input
                   name="receiver_name"

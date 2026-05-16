@@ -1,5 +1,6 @@
 import db from "../config/db.js";
 import bcrypt from "bcryptjs";
+import fs from "fs";
 import { sendNotificationToCustomer } from "../server.js";
 
 // Lấy dữ liệu dashboard tài xế
@@ -8,7 +9,7 @@ export const getDriverDashboard = async (req, res) => {
     const { id } = req.params;
 
     const [driverRecords] = await db.query(
-      "SELECT id, name, latitude, longitude FROM drivers WHERE user_id = ?",
+      "SELECT id, name, latitude, longitude, avatar FROM drivers WHERE user_id = ?",
       [id],
     );
 
@@ -81,7 +82,7 @@ export const getDriverAssignments = async (req, res) => {
     const { id } = req.params;
 
     const [driverRecords] = await db.query(
-      "SELECT id FROM drivers WHERE user_id = ?",
+      "SELECT id, avatar FROM drivers WHERE user_id = ?",
       [id],
     );
 
@@ -199,7 +200,7 @@ export const updateDriverShipmentStatus = async (req, res) => {
         else if (status === "completed")
           msg = `Đơn hàng #${tracking_code} đã được giao thành công!`;
         else if (status === "failed")
-          msg = `❌ Đơn hàng #${tracking_code} giao thất bại${note ? `: ${note}` : "."}.`;
+          msg = `Đơn hàng #${tracking_code} giao thất bại${note ? `: ${note}` : ". Điều phối viên sẽ liên hệ để xử lý"}.`;
 
         await sendNotificationToCustomer(customer_id, shipment_id, msg);
       }
@@ -218,15 +219,16 @@ export const getDriverProfile = async (req, res) => {
 
     let [rows] = await db.query(
       `
-      SELECT 
-        d.id, 
-        d.name, 
-        d.email, 
-        d.phone, 
+      SELECT
+        d.id,
+        d.name,
+        d.email,
+        d.phone,
         d.status,
         d.vehicle_type,
         d.license_no,
         d.region_id,
+        d.avatar,
         v.plate_no,
         v.type,
         v.capacity_kg,
@@ -241,15 +243,16 @@ export const getDriverProfile = async (req, res) => {
     if (rows.length === 0) {
       [rows] = await db.query(
         `
-        SELECT 
-          d.id, 
-          d.name, 
-          d.email, 
-          d.phone, 
+        SELECT
+          d.id,
+          d.name,
+          d.email,
+          d.phone,
           d.status,
           d.vehicle_type,
           d.license_no,
           d.region_id,
+          d.avatar,
           v.plate_no,
           v.type,
           v.capacity_kg,
@@ -265,7 +268,17 @@ export const getDriverProfile = async (req, res) => {
     if (rows.length === 0)
       return res.status(404).json({ message: "Không tìm thấy tài xế" });
 
-    res.json(rows[0]);
+    const driver = rows[0];
+
+    // Convert avatar relative path to full URL
+    if (driver.avatar) {
+      const baseUrl = process.env.BASE_URL || "http://localhost:5000";
+      driver.avatar = driver.avatar.startsWith("/uploads")
+        ? `${baseUrl}${driver.avatar}`
+        : driver.avatar;
+    }
+
+    res.json(driver);
   } catch (err) {
     res.status(500).json({ message: "Lỗi khi lấy thông tin tài xế" });
   }
@@ -506,13 +519,14 @@ export const getDriverProfileByUser = async (req, res) => {
 
     const [rows] = await db.query(
       `
-      SELECT 
+      SELECT
         d.id,
         d.user_id,
         d.name,
         d.email,
         d.phone,
         d.status,
+        d.avatar,
         v.plate_no,
         v.type,
         v.capacity_kg,
@@ -527,7 +541,17 @@ export const getDriverProfileByUser = async (req, res) => {
     if (!rows.length)
       return res.status(404).json({ message: "Không tìm thấy tài xế" });
 
-    res.json(rows[0]);
+    const driver = rows[0];
+
+    // Convert avatar relative path to full URL
+    if (driver.avatar) {
+      const baseUrl = process.env.BASE_URL || "http://localhost:5000";
+      driver.avatar = driver.avatar.startsWith("/uploads")
+        ? `${baseUrl}${driver.avatar}`
+        : driver.avatar;
+    }
+
+    res.json(driver);
   } catch (err) {
     res.status(500).json({ message: "Lỗi khi lấy thông tin tài xế" });
   }
@@ -551,5 +575,34 @@ export const updateDriverLocation = async (req, res) => {
     res.json({ message: "Đã cập nhật vị trí." });
   } catch (err) {
     res.status(500).json({ message: "Lỗi server khi cập nhật vị trí." });
+  }
+};
+
+export const uploadDriverAvatar = async (req, res) => {
+  try {
+    const driverId = req.params.id;
+
+    if (!req.file) {
+      return res.status(400).json({ message: "Không có file được upload" });
+    }
+
+    const baseUrl = process.env.BASE_URL || "http://localhost:5000";
+    const avatarUrl = `${baseUrl}/uploads/avatars/${req.file.filename}`;
+    const relativePath = `/uploads/avatars/${req.file.filename}`;
+
+    try {
+      await db.query("ALTER TABLE drivers ADD COLUMN avatar VARCHAR(500)");
+    } catch {
+      // Column already exists, ignore
+    }
+    await db.query("UPDATE drivers SET avatar = ? WHERE user_id = ?", [relativePath, driverId]);
+
+    res.json({ message: "Upload avatar thành công", avatarUrl });
+  } catch (err) {
+    console.error("[uploadDriverAvatar] Error:", err);
+    if (req.file?.path) {
+      try { fs.unlinkSync(req.file.path); } catch {}
+    }
+    res.status(500).json({ message: "Lỗi upload avatar" });
   }
 };

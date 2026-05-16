@@ -15,7 +15,7 @@ export default function ServicePlans({ onCreate }) {
     <section className="py-20 bg-white">
       <div className="max-w-6xl mx-auto px-6">
         <h3 className="text-3xl font-bold text-center mb-4" data-aos="fade-up">
-          📦 Chọn gói dịch vụ phù hợp
+          Chọn gói dịch vụ phù hợp
         </h3>
         <p
           className="text-center text-gray-600 mb-10"

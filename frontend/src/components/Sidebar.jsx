@@ -1,9 +1,12 @@
 import { NavLink } from "react-router-dom";
+import { Truck } from "lucide-react";
 
 export default function Sidebar({ title = "SpeedyShip", items = [] }) {
   return (
     <aside className="bg-blue-700 text-white min-h-screen w-64 p-5">
-      <h1 className="text-2xl font-bold mb-6">🚚 {title}</h1>
+      <h1 className="text-2xl font-bold mb-6">
+        <Truck className="inline w-6 h-6 mr-1" /> {title}
+      </h1>
       <nav className="space-y-2">
         {items.map((it) => (
           <NavLink

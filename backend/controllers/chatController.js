@@ -26,6 +26,86 @@ export const startChat = async (req, res) => {
   }
 };
 
+// Lấy danh sách tất cả phiên chat (dùng cho dispatcher - bao gồm active và closed)
+export const getChats = async (req, res) => {
+  try {
+    const [rows] = await pool.query(`
+      SELECT
+        c.id,
+        c.customer_id,
+        c.dispatcher_id,
+        c.status,
+        c.started_at,
+        c.ended_at,
+        u.name AS customer_name,
+        u.phone AS customer_phone,
+        (
+          SELECT content
+          FROM messages m
+          WHERE m.chat_id = c.id
+          ORDER BY m.created_at DESC
+          LIMIT 1
+        ) AS last_message,
+        (
+          SELECT created_at
+          FROM messages m
+          WHERE m.chat_id = c.id
+          ORDER BY m.created_at DESC
+          LIMIT 1
+        ) AS last_message_at
+      FROM chats c
+      LEFT JOIN users u ON u.id = c.customer_id
+      ORDER BY
+        CASE WHEN c.status = 'active' THEN 0 ELSE 1 END,
+        COALESCE(c.ended_at, c.started_at) DESC
+      LIMIT 200
+    `);
+    res.json(rows);
+  } catch (err) {
+    console.error("[getChats] Error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+// Lấy danh sách tất cả phiên chat đã đóng (dùng cho admin xem lịch sử)
+export const getClosedChats = async (req, res) => {
+  try {
+    const [rows] = await pool.query(`
+      SELECT
+        c.id,
+        c.customer_id,
+        c.status,
+        c.started_at,
+        c.ended_at,
+        u.name AS customer_name,
+        u.phone AS customer_phone,
+        (
+          SELECT content
+          FROM messages m
+          WHERE m.chat_id = c.id
+          ORDER BY m.created_at DESC
+          LIMIT 1
+        ) AS last_message,
+        (
+          SELECT created_at
+          FROM messages m
+          WHERE m.chat_id = c.id
+          ORDER BY m.created_at DESC
+          LIMIT 1
+        ) AS last_message_at
+      FROM chats c
+      LEFT JOIN users u ON u.id = c.customer_id
+      WHERE c.status = 'closed'
+      ORDER BY c.ended_at DESC
+      LIMIT 200
+    `);
+    res.json(rows);
+  } catch (err) {
+    console.error("[getClosedChats] Error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
 // Lấy lịch sử tin nhắn của một phiên chat theo chatId
 export const getMessages = async (req, res) => {
   const { chatId } = req.params;
@@ -47,7 +127,9 @@ export const saveMessage = async (chatId, senderId, role, content) => {
       "INSERT INTO messages (chat_id, sender_id, role, content, created_at) VALUES (?, ?, ?, ?, NOW())",
       [chatId, senderId, role, content],
     );
-  } catch (err) {}
+  } catch (err) {
+    console.error(`[saveMessage] Error saving message: ${err.message}`);
+  }
 };
 
 // Kết thúc phiên chat, cập nhật trạng thái thành closed

@@ -1,7 +1,7 @@
 ﻿import { useState, useEffect, useRef } from "react";
 import API from "../../services/api";
 import Pagination from "../../components/Pagination";
-import toast from "react-hot-toast";
+import toast from "../../lib/toast";
 import { useSearchParams } from "react-router-dom";
 import {
   Wallet,
@@ -111,7 +111,7 @@ export default function CustomerWallet() {
           setTransactions(resTrans.data);
 
           toast.success(
-            `🎉 Nạp thành công +${(newBalance - oldBalance).toLocaleString()}đ`,
+            `Nạp thành công +${(newBalance - oldBalance).toLocaleString()}đ`,
           );
           setAmount("");
         }

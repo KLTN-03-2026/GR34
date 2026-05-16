@@ -1,7 +1,6 @@
 ﻿import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import io from "socket.io-client";
 import {
   LogOut,
   LayoutDashboard,
@@ -12,14 +11,14 @@ import {
   Bell,
   Menu,
   ChevronRight,
-  UserCog,
   AlertTriangle,
 } from "lucide-react";
 import DispatcherNotifications from "../components/DispatcherNotifications";
+import DispatcherChatPopup from "../components/DispatcherChatPopup";
+import { socket } from "../lib/socket";
+import { useDispatcherChatState } from "../hooks/useDispatcherChat";
 
-const socket = io("http://localhost:5000", { transports: ["websocket"] });
-
-// Animation variants cho page transition - nhanh nhẹ
+// Animation variants cho page transition
 const pageVariants = {
   initial: { opacity: 0 },
   enter: {
@@ -37,31 +36,23 @@ export default function DispatcherLayout() {
   const location = useLocation();
   const username = localStorage.getItem("username") || "Dispatcher";
   const dispatcherId = localStorage.getItem("dispatcher_id") || 1;
-  const [hasNewMessage, setHasNewMessage] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { state, clearAlert } = useDispatcherChatState();
 
+  // Khi vào tab chat → clear alert
+  useEffect(() => {
+    if (location.pathname === "/dispatcher/chat") {
+      clearAlert();
+    }
+  }, [location.pathname, clearAlert]);
 
-// Xử lý đăng xuất
+  // Xử lý đăng xuất
   const handleLogout = () => {
     if (window.confirm("Bạn có chắc chắn muốn đăng xuất?")) {
       localStorage.clear();
       navigate("/login");
     }
   };
-
-
-  useEffect(() => {
-    socket.emit("joinDispatcher");
-    socket.on("newMessage", (msg) => {
-      if (msg.role === "customer") {
-        if (!location.pathname.includes("/dispatcher/chat")) {
-          setHasNewMessage(true);
-        }
-      }
-    });
-    return () => socket.off("newMessage");
-  }, [location.pathname]);
-
 
   const navLinkClasses = ({ isActive }) => `
     relative flex items-center gap-3 px-4 py-3.5 text-sm font-medium rounded-xl transition-all duration-300 group
@@ -71,7 +62,6 @@ export default function DispatcherLayout() {
         : "text-blue-100 hover:bg-white/10 hover:text-white"
     }
   `;
-
 
   const getPageTitle = () => {
     switch (location.pathname) {
@@ -86,7 +76,7 @@ export default function DispatcherLayout() {
       case "/dispatcher/chat":
         return "Hỗ trợ trực tuyến";
       case "/dispatcher/failed-orders":
-        return "⚠️ Cần xử lý gấp";
+        return "Cần xử lý gấp";
       default:
         return "Trung tâm điều hành";
     }
@@ -94,7 +84,7 @@ export default function DispatcherLayout() {
 
   return (
     <div className="flex h-screen bg-[#F8FAFC] overflow-hidden font-sans">
-      {/* Render điều kiện */}
+      {/* Overlay mobile */}
       {isSidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-30 lg:hidden"
@@ -102,16 +92,14 @@ export default function DispatcherLayout() {
         />
       )}
 
-      {/* Phần giao diện */}
+      {/* Sidebar */}
       <aside
         className={`
         fixed lg:static inset-y-0 left-0 z-40 w-72 bg-[#113e48] text-white flex flex-col shadow-2xl transition-transform duration-300
-        ${
-          isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-        }
+        ${isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
       `}
       >
-        {/* Phần giao diện */}
+        {/* Logo */}
         <div className="h-20 flex items-center px-8 border-b border-white/10 bg-[#0d2f36]">
           <div
             className="flex items-center gap-2 cursor-pointer"
@@ -130,7 +118,7 @@ export default function DispatcherLayout() {
           </div>
         </div>
 
-        {/* Phần giao diện */}
+        {/* Nav */}
         <div className="flex-1 overflow-y-auto py-8 px-4 space-y-1 custom-scrollbar">
           <p className="px-4 mb-4 text-xs font-bold text-blue-200/60 uppercase tracking-widest">
             Điều hành
@@ -149,19 +137,17 @@ export default function DispatcherLayout() {
               <Map size={20} /> <span>Theo dõi đơn hàng</span>
             </NavLink>
 
-            <NavLink to="/dispatcher/contacts" className={navLinkClasses}>
-              <Phone size={20} /> <span>Liên hệ khách hàng</span>
-            </NavLink>
-
-            {/* Thanh điều hướng */}
-            <NavLink to="/dispatcher/failed-orders" className={({ isActive }) => `
-              relative flex items-center gap-3 px-4 py-3.5 text-sm font-medium rounded-xl transition-all duration-300 group
-              ${
-                isActive
-                  ? "bg-orange-500 text-white shadow-lg shadow-orange-500/30 translate-x-1"
-                  : "text-orange-300 hover:bg-orange-500/20 hover:text-orange-200"
-              }
-            `}>
+            <NavLink
+              to="/dispatcher/failed-orders"
+              className={({ isActive }) => `
+                relative flex items-center gap-3 px-4 py-3.5 text-sm font-medium rounded-xl transition-all duration-300 group
+                ${
+                  isActive
+                    ? "bg-orange-500 text-white shadow-lg shadow-orange-500/30 translate-x-1"
+                    : "text-orange-300 hover:bg-orange-500/20 hover:text-orange-200"
+                }
+              `}
+            >
               <AlertTriangle size={20} />
               <span className="flex-1">Cần xử lý gấp</span>
               <span className="w-2 h-2 bg-orange-400 rounded-full animate-pulse" />
@@ -171,29 +157,33 @@ export default function DispatcherLayout() {
               Hỗ trợ & CSKH
             </p>
 
-            <NavLink
-              to="/dispatcher/chat"
-              onClick={() => setHasNewMessage(false)}
-              className={navLinkClasses}
+            {/* Hỗ trợ khách hàng — dot thông báo */}
+            <button
+              onClick={() => { clearAlert(); navigate("/dispatcher/chat"); }}
+              className={`${navLinkClasses({ isActive: location.pathname === "/dispatcher/chat" })} w-full text-left`}
             >
               <MessageSquare size={20} />
               <span className="flex-1">Hỗ trợ khách hàng</span>
-              {hasNewMessage && (
-                <span className="absolute right-4 w-2.5 h-2.5 bg-red-500 rounded-full animate-ping" />
+              {state.hasAlert && (
+                <>
+                  <span className="absolute right-4 w-2.5 h-2.5 bg-red-500 rounded-full animate-ping" />
+                  <span className="absolute right-4 w-2.5 h-2.5 bg-red-500 rounded-full border border-[#113e48]" />
+                </>
               )}
-              {hasNewMessage && (
-                <span className="absolute right-4 w-2.5 h-2.5 bg-red-500 rounded-full border border-[#113e48]" />
-              )}
+            </button>
+
+            <NavLink to="/dispatcher/contacts" className={navLinkClasses}>
+              <Phone size={20} /> <span>Liên hệ khách hàng</span>
             </NavLink>
           </nav>
         </div>
 
-        {/* Phần giao diện */}
+        {/* User info */}
         <div className="p-4 bg-[#0d2f36] border-t border-white/5">
           <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
             <div className="flex items-center gap-3 overflow-hidden">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-inner shrink-0">
-                <UserCog size={20} />
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-base shadow-inner shrink-0 leading-none select-none">
+                ĐP
               </div>
               <div className="overflow-hidden">
                 <h4 className="text-sm font-bold text-white truncate max-w-[100px]">
@@ -202,7 +192,6 @@ export default function DispatcherLayout() {
                 <p className="text-[10px] text-blue-200">Điều phối viên</p>
               </div>
             </div>
-
             <button
               onClick={handleLogout}
               className="p-2 text-blue-200 hover:text-white hover:bg-red-500/20 rounded-lg transition-colors"
@@ -214,9 +203,9 @@ export default function DispatcherLayout() {
         </div>
       </aside>
 
-      {/* Phần giao diện */}
+      {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Phần giao diện */}
+        {/* Header */}
         <header className="h-20 bg-white shadow-sm border-b border-gray-100 flex items-center justify-between px-6 lg:px-10 z-40 relative">
           <div className="flex items-center gap-4">
             <button
@@ -236,24 +225,21 @@ export default function DispatcherLayout() {
           </div>
 
           <div className="flex items-center gap-3 sm:gap-6">
-            {/* Phần giao diện */}
             <div className="relative">
               <DispatcherNotifications dispatcherId={dispatcherId} />
             </div>
-
-            <div className="h-8 w-[1px] bg-gray-200 hidden sm:block"></div>
-
+            <div className="h-8 w-[1px] bg-gray-200 hidden sm:block" />
             <button
               onClick={() => navigate("/")}
               className="flex items-center gap-2 text-sm font-bold text-[#113e48] hover:text-orange-600 transition-colors px-3 py-2 rounded-lg hover:bg-gray-50"
             >
-              <span className="hidden sm:inline">Trang chủ</span>{" "}
+              <span className="hidden sm:inline">Trang chủ</span>
               <ChevronRight size={16} />
             </button>
           </div>
         </header>
 
-        {/* Phần giao diện */}
+        {/* Page content */}
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-[#F8FAFC] p-6 lg:p-10 scroll-smooth">
           <div className="max-w-7xl mx-auto min-h-full">
             <AnimatePresence mode="wait" initial={false}>
@@ -270,6 +256,9 @@ export default function DispatcherLayout() {
           </div>
         </main>
       </div>
+
+      {/* Nút nổi — CHỈ hiện khi KHÔNG ở tab chat */}
+      {location.pathname !== "/dispatcher/chat" && <DispatcherChatPopup />}
     </div>
   );
 }

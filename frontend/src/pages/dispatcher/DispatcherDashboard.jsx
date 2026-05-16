@@ -23,6 +23,7 @@ import {
   DollarSign,
   Clock,
   MapPin,
+  Trophy,
 } from "lucide-react";
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
@@ -268,7 +269,8 @@ export default function DispatcherDashboard() {
         {/* Phần giao diện */}
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="font-bold text-gray-700">🏆 Top Tài Xế Xuất Sắc</h3>
+            <h3 className="font-bold text-gray-700"><Trophy className="w-5 h-5 text-yellow-500 inline-block mr-1" />
+            Top Tài Xế Xuất Sắc</h3>
             <button className="text-xs text-blue-600 font-bold hover:underline">
               Xem tất cả
             </button>

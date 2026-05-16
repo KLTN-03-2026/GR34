@@ -64,6 +64,11 @@ export default function Login() {
       else if (user.role === "dispatcher") navigate("/dispatcher");
       else if (user.role === "driver") navigate(`/driver/${user.id}`);
       else navigate("/customer");
+
+      // Restore avatar from database if available
+      if (user.avatar) {
+        localStorage.setItem("userAvatar", user.avatar);
+      }
     } catch (err) {
       const status = err?.response?.status;
       const msg = err?.response?.data?.message;
@@ -102,7 +107,7 @@ export default function Login() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
               <div className="bg-red-50 text-red-600 text-xs p-3 rounded-lg border border-red-100 flex items-center gap-2 animate-pulse">
-                <span>⚠️</span> {error}
+                <span>{error}</span>
               </div>
             )}
 

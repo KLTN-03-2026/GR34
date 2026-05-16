@@ -1,5 +1,5 @@
 import { Routes, Route, useLocation, Outlet } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import Navbar from "./components/Navbar.jsx";
 import Footer from "./components/Footer.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
@@ -94,17 +94,7 @@ const PublicLayout = () => (
   <>
     <Navbar />
     <main className="flex-1">
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.div
-          key={location.pathname}
-          variants={pageVariants}
-          initial="initial"
-          animate="enter"
-          exit="exit"
-        >
           <Outlet />
-        </motion.div>
-      </AnimatePresence>
     </main>
     <Footer />
   </>

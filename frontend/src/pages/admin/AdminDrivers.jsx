@@ -1,6 +1,6 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import API from "../../services/api";
-import toast from "react-hot-toast";
+import toast from "../../lib/toast";
 import {
   Users,
   Search,
@@ -15,6 +15,9 @@ import {
   Mail,
   Car,
   Package,
+  CircleCheck,
+  Ban,
+  ChevronRight,
 } from "lucide-react";
 
 import Pagination from "../../components/Pagination";
@@ -33,6 +36,7 @@ export default function AdminDrivers() {
   const [applications, setApplications] = useState([]);
 
   const [search, setSearch] = useState("");
+  const [filterRegion, setFilterRegion] = useState("all");
   const [loading, setLoading] = useState(true);
 
 
@@ -62,6 +66,8 @@ export default function AdminDrivers() {
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedDriverId, setSelectedDriverId] = useState(null);
   const [selectedVehicleId, setSelectedVehicleId] = useState("");
+  const [statusDropdownOpen, setStatusDropdownOpen] = useState(null); // driver id
+  const statusDropdownRef = useRef(null);
 
 
 // Tải danh sách tài xế
@@ -108,11 +114,14 @@ export default function AdminDrivers() {
     const keyword = search.toLowerCase();
 
     if (tab === "drivers") {
-      const result = drivers.filter(
-        (d) =>
+      const result = drivers.filter((d) => {
+        const matchSearch =
           d?.name?.toLowerCase().includes(keyword) ||
-          d?.email?.toLowerCase().includes(keyword)
-      );
+          d?.email?.toLowerCase().includes(keyword);
+        const matchRegion =
+          filterRegion === "all" || d.region_id === Number(filterRegion);
+        return matchSearch && matchRegion;
+      });
       setFilteredDrivers(result);
       setDriverPage(1);
     } else if (tab === "vehicles") {
@@ -124,7 +133,20 @@ export default function AdminDrivers() {
       setFilteredVehicles(result);
       setVehiclePage(1);
     }
-  }, [search, drivers, vehicles, tab]);
+  }, [search, filterRegion, drivers, vehicles, tab]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        statusDropdownRef.current &&
+        !statusDropdownRef.current.contains(event.target)
+      ) {
+        setStatusDropdownOpen(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
 
 
@@ -338,18 +360,30 @@ export default function AdminDrivers() {
         {tab === "drivers" && (
           <>
             <div className="p-5 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4 bg-gray-50/50">
-              <div className="relative w-full sm:w-72">
-                <Search
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                  size={18}
-                />
-                <input
-                  type="text"
-                  placeholder="Tìm tài xế..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:border-orange-500"
-                />
+              <div className="flex items-center gap-3 w-full">
+                <select
+                  value={filterRegion}
+                  onChange={(e) => setFilterRegion(e.target.value)}
+                  className="px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm font-semibold outline-none focus:border-orange-500 cursor-pointer"
+                >
+                  <option value="all">Tất cả khu vực</option>
+                  <option value="1">TP.HCM (HCM)</option>
+                  <option value="2">Đà Nẵng (DN)</option>
+                  <option value="3">Hà Nội (HN)</option>
+                </select>
+                <div className="relative flex-1 sm:w-72">
+                  <Search
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                    size={18}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Tìm tài xế..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:border-orange-500"
+                  />
+                </div>
               </div>
               <button
                 onClick={() => {
@@ -431,18 +465,87 @@ export default function AdminDrivers() {
                         </div>
                       </td>
                       <td className="px-6 py-4 text-center">
-                        <select
-                          value={normalizeDriverStatus(d.status)}
-                          onChange={(e) => handleStatusChange(d.id, e.target.value)}
-                          className={`border outline-none font-bold text-xs cursor-pointer px-2.5 py-0.5 rounded-full ${
-                            normalizeDriverStatus(d.status) === "free"
-                              ? "bg-green-100 text-green-800 border-green-200"
-                              : "bg-gray-100 text-gray-800 border-gray-200"
-                          }`}
-                        >
-                          <option value="free">Sẵn sàng</option>
-                          <option value="inactive">Tạm nghỉ</option>
-                        </select>
+                        <div className="relative inline-block" ref={statusDropdownOpen === d.id ? statusDropdownRef : null}>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setStatusDropdownOpen((prev) =>
+                                prev === d.id ? null : d.id
+                              )
+                            }
+                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border min-w-[120px] justify-center cursor-pointer transition-all ${
+                              normalizeDriverStatus(d.status) === "free"
+                                ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
+                                : "bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100"
+                            }`}
+                          >
+                            <span
+                              className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 shadow-sm ${
+                                normalizeDriverStatus(d.status) === "free"
+                                  ? "bg-emerald-100 text-emerald-600"
+                                  : "bg-gray-100 text-gray-500"
+                              }`}
+                            >
+                              {normalizeDriverStatus(d.status) === "free" ? (
+                                <CircleCheck size={11} />
+                              ) : (
+                                <Ban size={11} />
+                              )}
+                            </span>
+                            {normalizeDriverStatus(d.status) === "free"
+                              ? "Sẵn sàng"
+                              : "Tạm nghỉ"}
+                            <ChevronRight
+                              size={12}
+                              className={`ml-auto transition-transform ${
+                                statusDropdownOpen === d.id ? "rotate-90" : ""
+                              }`}
+                            />
+                          </button>
+
+                          {statusDropdownOpen === d.id && (
+                            <div className="absolute z-30 top-full mt-2 left-1/2 -translate-x-1/2 w-44 rounded-xl border border-gray-100 bg-white shadow-xl overflow-hidden">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  handleStatusChange(d.id, "free");
+                                  setStatusDropdownOpen(null);
+                                }}
+                                className={`w-full px-3 py-2.5 text-left flex items-center gap-2 hover:bg-gray-50 transition-colors ${
+                                  normalizeDriverStatus(d.status) === "free"
+                                    ? "bg-emerald-50"
+                                    : ""
+                                }`}
+                              >
+                                <span className="w-6 h-6 rounded-md flex items-center justify-center bg-emerald-100 text-emerald-600 flex-shrink-0 shadow-sm">
+                                  <CircleCheck size={12} />
+                                </span>
+                                <span className="text-sm font-semibold text-emerald-700">
+                                  Sẵn sàng
+                                </span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  handleStatusChange(d.id, "inactive");
+                                  setStatusDropdownOpen(null);
+                                }}
+                                className={`w-full px-3 py-2.5 text-left flex items-center gap-2 hover:bg-gray-50 transition-colors border-t border-gray-50 ${
+                                  normalizeDriverStatus(d.status) === "inactive"
+                                    ? "bg-gray-50"
+                                    : ""
+                                }`}
+                              >
+                                <span className="w-6 h-6 rounded-md flex items-center justify-center bg-gray-100 text-gray-500 flex-shrink-0 shadow-sm">
+                                  <Ban size={12} />
+                                </span>
+                                <span className="text-sm font-semibold text-gray-600">
+                                  Tạm nghỉ
+                                </span>
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-4 text-center">
                         <div className="flex justify-center gap-2">

@@ -1,11 +1,11 @@
-﻿
+
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import API from "../../services/api";
 import Map, { Marker, NavigationControl } from "react-map-gl";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "../../lib/toast";
 import {
   ArrowLeft,
   Phone,
@@ -313,7 +313,7 @@ export default function DriverShipmentDetail() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-24">
-      <Toaster position="top-center" />
+      
 
       {/* Phần giao diện */}
       <div className="bg-white px-4 py-4 sticky top-0 z-30 shadow-sm border-b border-gray-100 flex items-center justify-between">
@@ -325,7 +325,7 @@ export default function DriverShipmentDetail() {
         </button>
         <div className="text-center">
           <h1 className="text-lg font-bold text-[#113e48]">
-            {shipment.tracking_code}
+            #{shipment.tracking_code}
           </h1>
           <p className="text-xs text-gray-400 font-medium">Chi tiết đơn hàng</p>
         </div>

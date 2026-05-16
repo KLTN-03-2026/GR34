@@ -1,6 +1,6 @@
-﻿import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import API from "../../services/api";
-import toast from "react-hot-toast";
+import toast from "../../lib/toast";
 import {
   Search,
   User,
@@ -12,6 +12,16 @@ import {
   CheckCircle,
   AlertCircle,
   X,
+  CircleUserRound,
+  Warehouse,
+  Navigation,
+  PackageSearch,
+  PackageCheck,
+  Timer,
+  ShieldCheck,
+  CircleX,
+  Ban,
+  UserCheck,
 } from "lucide-react";
 import Map, {
   Marker,
@@ -108,7 +118,7 @@ export default function CustomerTrack() {
   const handleTrack = async (e) => {
     e.preventDefault();
     if (!trackingCode.trim())
-      return toast.error("⚠️ Vui lòng nhập mã vận đơn!");
+      return toast.error("Vui lòng nhập mã vận đơn!");
 
     setLoading(true);
     setShipment(null);
@@ -165,7 +175,7 @@ export default function CustomerTrack() {
 
       toast.success("Đã tìm thấy đơn hàng!");
     } catch (err) {
-      toast.error("❌ Không tìm thấy đơn hàng hoặc bạn không có quyền xem!");
+      toast.error("Không tìm thấy đơn hàng hoặc bạn không có quyền xem!");
     } finally {
       setLoading(false);
     }
@@ -333,8 +343,8 @@ export default function CustomerTrack() {
               {/* Phần giao diện */}
               <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
                 <div className="flex justify-between items-center mb-4">
-                  <span className="text-sm font-bold text-gray-400">
-                    TRẠNG THÁI
+                  <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                    Trạng thái hiện tại
                   </span>
                   <span
                     className={`px-3 py-1 rounded-full text-xs font-extrabold border ${getStatusColor(
@@ -344,9 +354,25 @@ export default function CustomerTrack() {
                     {getStatusLabel(shipment.status)}
                   </span>
                 </div>
-                <h2 className="text-2xl font-extrabold text-[#113e48] mb-1">
-                  #{shipment.tracking_code}
-                </h2>
+                <div className="flex items-center gap-3 mb-2">
+                  {(() => {
+                    const s = shipment.status;
+                    const iconMap = {
+                      pending: <Timer size={22} className="text-yellow-500" />,
+                      assigned: <UserCheck size={22} className="text-indigo-500" />,
+                      picking: <Warehouse size={22} className="text-blue-500" />,
+                      delivering: <Truck size={22} className="text-orange-500" />,
+                      delivered: <PackageCheck size={22} className="text-green-500" />,
+                      completed: <ShieldCheck size={22} className="text-green-600" />,
+                      failed: <CircleX size={22} className="text-red-500" />,
+                      cancelled: <Ban size={22} className="text-gray-400" />,
+                    };
+                    return iconMap[s] || <Package size={22} className="text-gray-400" />;
+                  })()}
+                  <h2 className="text-2xl font-extrabold text-[#113e48]">
+                    #{shipment.tracking_code}
+                  </h2>
+                </div>
                 <p className="text-sm text-gray-500 flex items-center gap-1">
                   <Clock size={14} /> Cập nhật:{" "}
                   {new Date(shipment.updated_at).toLocaleString("vi-VN")}
@@ -356,9 +382,13 @@ export default function CustomerTrack() {
               {/* Phần giao diện */}
               {shipment.driver_name ? (
                 <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center text-2xl border-2 border-white shadow-sm">
-                    👮‍♂️
-                  </div>
+                  {shipment.driver_avatar ? (
+                    <img src={shipment.driver_avatar} alt={shipment.driver_name} className="w-14 h-14 rounded-full object-cover border-2 border-gray-100 shadow-sm" />
+                  ) : (
+                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center text-xl font-bold border-2 border-white shadow-sm shrink-0 leading-none select-none">
+                      TX
+                    </div>
+                  )}
                   <div className="flex-1">
                     <p className="text-xs font-bold text-gray-400 uppercase">
                       Tài xế phụ trách
@@ -466,7 +496,7 @@ export default function CustomerTrack() {
                     anchor="bottom"
                   >
                     <CustomMarker
-                      icon={<Package size={20} />}
+                      icon={<Warehouse size={20} />}
                       bgColor="bg-blue-600"
                       ringColor="bg-blue-400"
                       onClick={(e) => {
@@ -491,7 +521,7 @@ export default function CustomerTrack() {
                     anchor="bottom"
                   >
                     <CustomMarker
-                      icon={<MapPin size={20} fill="currentColor" />}
+                      icon={<Navigation size={20} />}
                       bgColor="bg-orange-500"
                       ringColor="bg-orange-400"
                       onClick={(e) => {
@@ -573,8 +603,8 @@ export default function CustomerTrack() {
               className="bg-white rounded-2xl shadow-lg p-12 text-center border border-gray-100"
               data-aos="fade-up"
             >
-              <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-300">
-                <Package size={40} />
+              <div className="w-20 h-20 bg-gradient-to-br from-slate-50 to-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <PackageSearch size={38} className="text-slate-300" />
               </div>
               <h3 className="text-lg font-bold text-gray-700">
                 Chưa có kết quả tra cứu

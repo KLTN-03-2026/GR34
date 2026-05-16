@@ -71,10 +71,18 @@ export const verifyForgotOtp = async (req, res) => {
     if (record.code !== otp)
       return res.status(400).json({ message: "OTP sai" });
 
-    if (Date.now() > record.expires_at)
+    if (Date.now() > record.expires_at) {
+      await pool.query("DELETE FROM otp_codes WHERE id = ?", [record.id]);
       return res.status(400).json({ message: "OTP hết hạn" });
+    }
 
-    const resetToken = jwt.sign({ email }, "secret-reset", {
+    // Delete OTP after successful verification to prevent reuse
+    await pool.query("DELETE FROM otp_codes WHERE id = ?", [record.id]);
+
+    // Get reset secret from env, use placeholder only in development
+    const resetSecret = process.env.JWT_RESET_SECRET || process.env.JWT_SECRET || "dev-secret-change-in-production";
+
+    const resetToken = jwt.sign({ email }, resetSecret, {
       expiresIn: "15m",
     });
 
@@ -89,7 +97,10 @@ export const resetPassword = async (req, res) => {
   const { email, newPassword, token } = req.body;
 
   try {
-    const payload = jwt.verify(token, "secret-reset");
+    // Get reset secret from env, use placeholder only in development
+    const resetSecret = process.env.JWT_RESET_SECRET || process.env.JWT_SECRET || "dev-secret-change-in-production";
+
+    const payload = jwt.verify(token, resetSecret);
 
     if (payload.email !== email)
       return res.status(401).json({ message: "Token không khớp email!" });

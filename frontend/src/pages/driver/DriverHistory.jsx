@@ -1,7 +1,7 @@
-﻿import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import API from "../../services/api";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "../../lib/toast";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   CheckCircle2,
@@ -95,7 +95,7 @@ export default function DriverHistory() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] p-4 lg:p-8 space-y-6 pb-20">
-      <Toaster position="top-right" />
+      
 
       {/* Phần giao diện */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -201,7 +201,7 @@ export default function DriverHistory() {
                   <div className="flex-1 space-y-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <h3 className="text-lg font-bold text-gray-800">
-                        {h.tracking_code}
+                        #{h.tracking_code}
                       </h3>
                       <span
                         className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${statusConfig.bg} ${statusConfig.color} border ${statusConfig.border}`}

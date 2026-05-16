@@ -8,7 +8,7 @@ import "aos/dist/aos.css";
 import { Toaster } from "react-hot-toast";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
-AOS.init({ duration: 800, once: true });
+AOS.init({ duration: 800, once: false });
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>

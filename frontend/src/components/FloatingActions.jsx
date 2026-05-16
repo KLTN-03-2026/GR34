@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -6,30 +6,11 @@ import {
   faHeadset,
   faXmark,
   faCommentDots,
-  faComments,
 } from "@fortawesome/free-solid-svg-icons";
 
 // Nút hành động nổi
 export default function FloatingActions({ onOpenChatBubble, onOpenChatTop }) {
   const [open, setOpen] = useState(false);
-  const [showNotice, setShowNotice] = useState(true);
-
-
-  useEffect(() => {
-    if (!showNotice) return;
-    const t = setTimeout(() => setShowNotice(false), 5000);
-    return () => clearTimeout(t);
-  }, [showNotice]);
-
-
-  useEffect(() => {
-    if (!open) {
-      setTimeout(() => setShowNotice(true), 500);
-    } else {
-      setShowNotice(false);
-    }
-  }, [open]);
-
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20, scale: 0.5 },
@@ -50,37 +31,6 @@ export default function FloatingActions({ onOpenChatBubble, onOpenChatTop }) {
   return (
 
     <div className="fixed bottom-6 right-6 z-[9999] flex flex-col items-end gap-5">
-      {/* Phần giao diện */}
-      <AnimatePresence>
-        {!open && showNotice && (
-          <motion.div
-            initial={{ opacity: 0, x: 20, scale: 0.9 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, x: 20, scale: 0.9 }}
-            onClick={() => setOpen(true)}
-            className="
-              mr-2 mb-2 cursor-pointer
-              bg-white text-[#113e48] 
-              px-6 py-4 rounded-2xl rounded-br-none
-              shadow-[0_15px_40px_rgba(0,0,0,0.2)] 
-              border border-gray-100
-              flex items-center gap-4
-              max-w-[320px]
-            "
-          >
-            <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 flex-shrink-0 animate-bounce text-lg">
-              <FontAwesomeIcon icon={faComments} />
-            </div>
-            <div className="text-base leading-snug">
-              <span className="font-bold block text-orange-600 text-lg">
-                Cần hỗ trợ?
-              </span>
-              <span className="text-gray-500">Chúng tôi ở đây giúp bạn!</span>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* Phần giao diện */}
       <AnimatePresence>
         {open && (

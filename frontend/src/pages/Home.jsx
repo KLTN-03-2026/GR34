@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 import HeroBanner from "../components/homepage/HeroBanner";
 
@@ -23,6 +24,11 @@ import NewsSection from "../components/homepage/News";
 // Trang chủ SpeedyShip
 export default function Home() {
   const navigate = useNavigate();
+
+  // Scroll to top on every mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const {
     aiOpen,

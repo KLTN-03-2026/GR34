@@ -1,7 +1,7 @@
 ﻿import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../../services/api";
-import toast from "react-hot-toast";
+import toast from "../../lib/toast";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import {
@@ -92,9 +92,7 @@ export default function CustomerProfile() {
           avatar:
             savedAvatar ||
             data.avatar ||
-            `https://api.dicebear.com/9.x/avataaars/svg?seed=${
-              data.name || "User"
-            }`,
+            `https://api.dicebear.com/9.x/lorelei/svg?seed=${encodeURIComponent(data.name || "User")}&backgroundColor=0ea5e9&hairColor=3b3b3b`,
           rank: data.rank || "Thành viên mới",
           total_orders: data.total_orders || 0,
           wallet_balance: data.wallet_balance ?? 0,
@@ -118,7 +116,7 @@ export default function CustomerProfile() {
       toast.success("Cập nhật hồ sơ thành công!");
       setIsEditing(false);
     } catch (err) {
-      toast.error("❌ Lỗi cập nhật!");
+      toast.error("Lỗi cập nhật!");
     }
   };
 
@@ -141,10 +139,10 @@ export default function CustomerProfile() {
   const handleChangePassword = async (e) => {
     e.preventDefault();
     if (passData.newPassword !== passData.confirmPassword) {
-      return toast.error("⚠️ Mật khẩu xác nhận không khớp!");
+      return toast.error("Mật khẩu xác nhận không khớp!");
     }
     if (passData.newPassword.length < 6) {
-      return toast.error("⚠️ Mật khẩu mới quá ngắn!");
+      return toast.error("Mật khẩu mới quá ngắn!");
     }
 
     setPassLoading(true);
@@ -153,7 +151,7 @@ export default function CustomerProfile() {
         currentPassword: passData.currentPassword,
         newPassword: passData.newPassword,
       });
-      toast.success("🎉 Đổi mật khẩu thành công!");
+      toast.success("Đổi mật khẩu thành công!");
       setShowPassModal(false);
       setPassData({
         currentPassword: "",
@@ -161,7 +159,7 @@ export default function CustomerProfile() {
         confirmPassword: "",
       });
     } catch (err) {
-      toast.error(err.response?.data?.error || "❌ Đổi mật khẩu thất bại!");
+      toast.error(err.response?.data?.error || "Đổi mật khẩu thất bại!");
     } finally {
       setPassLoading(false);
     }
@@ -637,7 +635,7 @@ export default function CustomerProfile() {
                           {addr.address}
                         </p>
                         <p className="text-xs text-gray-400 mt-1 font-mono">
-                          {addr.phone}
+                          {addr.phone || "—"}
                         </p>
                       </div>
                       <div className="w-8 h-8 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
