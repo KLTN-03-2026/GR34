@@ -82,31 +82,34 @@ export const assignShipment = async (req, res) => {
   try {
     const { shipment_id, driver_id } = req.body;
     const region_id = ensureDispatcherRegion(req, res);
-    if (!region_id) return;
 
     if (!shipment_id || !driver_id)
       return res
         .status(400)
         .json({ message: "Thiếu shipment_id hoặc driver_id" });
 
-    const [shipmentCheck] = await db.query(
-      "SELECT id FROM shipments WHERE id = ? AND region_id = ?",
-      [shipment_id, region_id],
-    );
-    if (shipmentCheck.length === 0) {
-      return res
-        .status(403)
-        .json({ message: "Đơn hàng không thuộc khu vực quản lý của bạn!" });
+    if (region_id) {
+      const [shipmentCheck] = await db.query(
+        "SELECT id FROM shipments WHERE id = ? AND region_id = ?",
+        [shipment_id, region_id],
+      );
+      if (shipmentCheck.length === 0) {
+        return res
+          .status(403)
+          .json({ message: "Đơn hàng không thuộc khu vực quản lý của bạn!" });
+      }
     }
 
-    const [driverCheck] = await db.query(
-      "SELECT id FROM drivers WHERE id = ? AND region_id = ?",
-      [driver_id, region_id],
-    );
-    if (driverCheck.length === 0) {
-      return res
-        .status(403)
-        .json({ message: "Tài xế không thuộc khu vực quản lý của bạn!" });
+    if (region_id) {
+      const [driverCheck] = await db.query(
+        "SELECT id FROM drivers WHERE id = ? AND region_id = ?",
+        [driver_id, region_id],
+      );
+      if (driverCheck.length === 0) {
+        return res
+          .status(403)
+          .json({ message: "Tài xế không thuộc khu vực quản lý của bạn!" });
+      }
     }
 
     await db.query(
@@ -249,21 +252,22 @@ export const updateAssignmentStatus = async (req, res) => {
     const { id } = req.params;
     const { status, current_location } = req.body;
     const region_id = ensureDispatcherRegion(req, res);
-    if (!region_id) return;
 
     if (!status) return res.status(400).json({ message: "Thiếu status" });
 
-    const [[assignmentCheck]] = await db.query(
-      `SELECT a.id
-       FROM assignments a
-       JOIN shipments s ON s.id = a.shipment_id
-       WHERE a.id = ? AND s.region_id = ?`,
-      [id, region_id],
-    );
-    if (!assignmentCheck) {
-      return res
-        .status(403)
-        .json({ message: "Không có quyền cập nhật assignment ngoài khu vực." });
+    if (region_id) {
+      const [[assignmentCheck]] = await db.query(
+        `SELECT a.id
+         FROM assignments a
+         JOIN shipments s ON s.id = a.shipment_id
+         WHERE a.id = ? AND s.region_id = ?`,
+        [id, region_id],
+      );
+      if (!assignmentCheck) {
+        return res
+          .status(403)
+          .json({ message: "Không có quyền cập nhật assignment ngoài khu vực." });
+      }
     }
 
     await db.query(`UPDATE assignments SET status=? WHERE id=?`, [status, id]);
@@ -347,15 +351,16 @@ export const updateAssignmentStatus = async (req, res) => {
 export const getDispatcherDashboard = async (req, res) => {
   try {
     const region_id = ensureDispatcherRegion(req, res);
-    if (!region_id) return;
     let regionConditionShipment = "";
     let regionConditionDriver = "";
     let regionConditionTopDriver = "";
     const params = [];
 
-    regionConditionShipment = "WHERE region_id = ?";
-    regionConditionDriver = "WHERE region_id = ?";
-    regionConditionTopDriver = "WHERE d.region_id = ?";
+    if (region_id) {
+      regionConditionShipment = "WHERE region_id = ?";
+      regionConditionDriver = "WHERE region_id = ?";
+      regionConditionTopDriver = "WHERE d.region_id = ?";
+    }
 
     const [shipmentStats] = await db.query(
       `
@@ -364,7 +369,7 @@ export const getDispatcherDashboard = async (req, res) => {
       ${regionConditionShipment}
       GROUP BY LOWER(TRIM(status))
     `,
-      [region_id],
+      region_id ? [region_id] : [],
     );
 
     const [driverStats] = await db.query(
@@ -374,7 +379,7 @@ export const getDispatcherDashboard = async (req, res) => {
       ${regionConditionDriver}
       GROUP BY LOWER(TRIM(status))
     `,
-      [region_id],
+      region_id ? [region_id] : [],
     );
 
       const [topDrivers] = await db.query(
@@ -394,7 +399,7 @@ export const getDispatcherDashboard = async (req, res) => {
         ORDER BY completion_rate DESC, completed_deliveries DESC
         LIMIT 5
       `,
-      [region_id],
+      region_id ? [region_id] : [],
     );
 
     const [revenueData] = await db.query(
@@ -407,7 +412,7 @@ export const getDispatcherDashboard = async (req, res) => {
       GROUP BY MONTH(created_at)
       ORDER BY MONTH(created_at)
     `,
-      [region_id],
+      region_id ? [region_id] : [],
     );
 
     const monthNames = [
@@ -453,27 +458,28 @@ export const reassignDriver = async (req, res) => {
     const { id } = req.params;
     const { driver_id } = req.body;
     const region_id = ensureDispatcherRegion(req, res);
-    if (!region_id) return;
 
-    const [[assignmentCheck]] = await db.query(
-      `SELECT a.id
-       FROM assignments a
-       JOIN shipments s ON s.id = a.shipment_id
-       WHERE a.id = ? AND s.region_id = ?`,
-      [id, region_id],
-    );
-    if (!assignmentCheck) {
-      return res
-        .status(403)
-        .json({ message: "Không thể đổi tài xế cho đơn ngoài khu vực." });
-    }
+    if (region_id) {
+      const [[assignmentCheck]] = await db.query(
+        `SELECT a.id
+         FROM assignments a
+         JOIN shipments s ON s.id = a.shipment_id
+         WHERE a.id = ? AND s.region_id = ?`,
+        [id, region_id],
+      );
+      if (!assignmentCheck) {
+        return res
+          .status(403)
+          .json({ message: "Không thể đổi tài xế cho đơn ngoài khu vực." });
+      }
 
-    const [driverCheck] = await db.query(
-      "SELECT id FROM drivers WHERE id = ? AND region_id = ?",
-      [driver_id, region_id],
-    );
-    if (driverCheck.length === 0) {
-      return res.status(403).json({ message: "Tài xế không thuộc khu vực quản lý." });
+      const [driverCheck] = await db.query(
+        "SELECT id FROM drivers WHERE id = ? AND region_id = ?",
+        [driver_id, region_id],
+      );
+      if (driverCheck.length === 0) {
+        return res.status(403).json({ message: "Tài xế không thuộc khu vực quản lý." });
+      }
     }
 
     await db.query(`UPDATE assignments SET driver_id=? WHERE id=?`, [
@@ -497,8 +503,7 @@ export const getShipmentDetail = async (req, res) => {
     } else {
       region_id = ensureDispatcherRegion(req, res);
       if (!region_id) {
-        console.error(`[getShipmentDetail] Dispatcher ${req.user?.id} has no region_id`);
-        return;
+        region_id = "ALL";
       }
     }
 
@@ -534,17 +539,19 @@ export const getNearbyDrivers = async (req, res) => {
   try {
     const { shipment_id } = req.query;
     const region_id = ensureDispatcherRegion(req, res);
-    if (!region_id) return;
 
     if (!shipment_id) {
       return res.status(400).json({ message: "Thiếu shipment_id" });
     }
 
-    const [[shipment]] = await db.query(
-      `SELECT id, delivery_lat, delivery_lng, delivery_address, pickup_lat, pickup_lng, region_id
-       FROM shipments WHERE id = ? AND region_id = ?`,
-      [shipment_id, region_id],
-    );
+    let shipmentSql = `SELECT id, delivery_lat, delivery_lng, delivery_address, pickup_lat, pickup_lng, region_id
+       FROM shipments WHERE id = ?`;
+    const shipmentParams = [shipment_id];
+    if (region_id) {
+      shipmentSql += " AND region_id = ?";
+      shipmentParams.push(region_id);
+    }
+    const [[shipment]] = await db.query(shipmentSql, shipmentParams);
 
     if (!shipment) {
       return res.status(404).json({ message: "Không tìm thấy đơn hàng" });
@@ -655,7 +662,6 @@ export const getNearbyDrivers = async (req, res) => {
 export const getFailedShipments = async (req, res) => {
   try {
     const region_id = ensureDispatcherRegion(req, res);
-    if (!region_id) return;
 
     let sql = `
       SELECT
@@ -684,6 +690,11 @@ export const getFailedShipments = async (req, res) => {
           ORDER BY a2.assigned_at DESC LIMIT 1
         ) AS driver_phone,
         (
+          SELECT a2.driver_id FROM assignments a2
+          WHERE a2.shipment_id = s.id
+          ORDER BY a2.assigned_at DESC LIMIT 1
+        ) AS last_driver_id,
+        (
           SELECT COUNT(*) FROM assignments a3
           WHERE a3.shipment_id = s.id AND a3.status = 'failed'
         ) AS total_fails
@@ -691,8 +702,11 @@ export const getFailedShipments = async (req, res) => {
       WHERE s.status = 'failed'
     `;
 
-    const params = [region_id];
-    sql += " AND s.region_id = ?";
+    const params = [];
+    if (region_id) {
+      sql += " AND s.region_id = ?";
+      params.push(region_id);
+    }
     sql += " ORDER BY s.updated_at DESC";
 
     const [rows] = await db.query(sql, params);
@@ -710,16 +724,17 @@ export const rescheduleShipment = async (req, res) => {
     const { id } = req.params;
     const { scheduled_date, driver_id } = req.body;
     const region_id = ensureDispatcherRegion(req, res);
-    if (!region_id) return;
 
-    const [[shipmentCheck]] = await db.query(
-      "SELECT id FROM shipments WHERE id = ? AND region_id = ?",
-      [id, region_id],
-    );
-    if (!shipmentCheck) {
-      return res
-        .status(403)
-        .json({ message: "Không thể giao lại đơn ngoài khu vực quản lý." });
+    if (region_id) {
+      const [[shipmentCheck]] = await db.query(
+        "SELECT id FROM shipments WHERE id = ? AND region_id = ?",
+        [id, region_id],
+      );
+      if (!shipmentCheck) {
+        return res
+          .status(403)
+          .json({ message: "Không thể giao lại đơn ngoài khu vực quản lý." });
+      }
     }
 
     const targetDate = scheduled_date
@@ -748,12 +763,14 @@ export const rescheduleShipment = async (req, res) => {
     );
 
     if (driver_id) {
-      const [driverCheck] = await db.query(
-        "SELECT id FROM drivers WHERE id = ? AND region_id = ?",
-        [driver_id, region_id],
-      );
-      if (driverCheck.length === 0) {
-        return res.status(403).json({ message: "Tài xế không thuộc khu vực quản lý." });
+      if (region_id) {
+        const [driverCheck] = await db.query(
+          "SELECT id FROM drivers WHERE id = ? AND region_id = ?",
+          [driver_id, region_id],
+        );
+        if (driverCheck.length === 0) {
+          return res.status(403).json({ message: "Tài xế không thuộc khu vực quản lý." });
+        }
       }
       await db.query(
         `INSERT INTO assignments (driver_id, shipment_id, status, assigned_at)
@@ -777,12 +794,14 @@ export const cancelFailedShipment = async (req, res) => {
   try {
     const { id } = req.params;
     const region_id = ensureDispatcherRegion(req, res);
-    if (!region_id) return;
 
-    const [[shipment]] = await db.query(
-      "SELECT fail_count, status, tracking_code, customer_id FROM shipments WHERE id = ? AND region_id = ?",
-      [id, region_id],
-    );
+    let cancelSql = "SELECT fail_count, status, tracking_code, customer_id FROM shipments WHERE id = ?";
+    const cancelParams = [id];
+    if (region_id) {
+      cancelSql += " AND region_id = ?";
+      cancelParams.push(region_id);
+    }
+    const [[shipment]] = await db.query(cancelSql, cancelParams);
 
     if (!shipment)
       return res.status(404).json({ message: "Không tìm thấy đơn hàng" });
