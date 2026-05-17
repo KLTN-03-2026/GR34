@@ -10,11 +10,11 @@ import {
   Home,
   ArrowRight,
 } from "lucide-react";
+import toast from "../../lib/toast";
 
 // Kết quả thanh toán
 export default function PaymentResult() {
   const [params] = useSearchParams();
-
 
   const orderId = params.get("orderId");
   const resultCode = params.get("resultCode");
@@ -24,11 +24,18 @@ export default function PaymentResult() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-
-    const timer = setTimeout(() => setIsLoading(false), 1000);
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+      if (isSuccess) {
+        if (type === "shipment") {
+          window.dispatchEvent(new CustomEvent("showCustomToast", { detail: { message: "Đơn hàng của bạn đã được tạo thành công! Chúng tôi sẽ sớm liên hệ để lấy hàng." }}));
+        } else if (type === "wallet") {
+          window.dispatchEvent(new CustomEvent("showCustomToast", { detail: { message: `Nạp tiền thành công! Mã giao dịch: #${orderId}` }}));
+        }
+      }
+    }, 1000);
     return () => clearTimeout(timer);
-  }, []);
-
+  }, [isSuccess, type, orderId]);
 
   const backLink = type === "wallet" ? "/customer/wallet" : "/customer/history";
   const backLabel =
@@ -68,13 +75,23 @@ export default function PaymentResult() {
                 isSuccess ? "text-green-700" : "text-red-700"
               }`}
             >
-              {isSuccess ? "Thanh toán thành công!" : "Thanh toán thất bại"}
+              {isSuccess
+                ? type === "wallet"
+                  ? "Nạp tiền thành công!"
+                  : "Thanh toán thành công!"
+                : type === "wallet"
+                  ? "Nạp tiền thất bại"
+                  : "Thanh toán thất bại"}
             </h1>
 
             <p className="text-gray-500 mb-6 text-sm">
               {isSuccess
-                ? `Cảm ơn bạn! Đơn hàng #${orderId} đã được thanh toán.`
-                : "Giao dịch bị hủy hoặc xảy ra lỗi. Vui lòng thử lại."}
+                ? type === "wallet"
+                  ? `Nạp tiền thành công! Mã giao dịch: #${orderId}`
+                  : `Cảm ơn bạn! Đơn hàng #${orderId} đã được thanh toán.`
+                : type === "wallet"
+                  ? "Nạp tiền thất bại hoặc bị hủy. Vui lòng thử lại."
+                  : "Giao dịch bị hủy hoặc xảy ra lỗi. Vui lòng thử lại."}
             </p>
 
             <div className="space-y-3">
@@ -96,7 +113,7 @@ export default function PaymentResult() {
 
               {!isSuccess && (
                 <Link
-                  to="/customer/create-order"
+                  to={type === "wallet" ? "/customer/wallet" : "/customer/create-order"}
                   className="w-full py-3 rounded-xl border-2 border-red-100 text-red-600 font-bold hover:bg-red-50 flex items-center justify-center gap-2"
                 >
                   <ArrowRight size={18} /> Thử lại

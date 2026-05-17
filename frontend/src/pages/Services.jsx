@@ -94,7 +94,7 @@ export default function Service() {
 
   return (
     <div className="font-sans bg-slate-50 text-slate-700">
-      {/* Mini-bar - luôn tồn tại trong DOM, ẩn/hiện qua CSS transform */}
+      {/* Thanh mini - luôn tồn tại trong DOM, ẩn/hiện qua biến đổi CSS */}
       <div
         ref={miniBarRef}
         className="fixed top-[65px] left-0 right-0 z-30 h-16 bg-[#113e48]/97 backdrop-blur-md shadow-xl px-6 flex items-center"
@@ -174,7 +174,7 @@ export default function Service() {
             </div>
           </div>
 
-          {/* Phải: stats cards */}
+          {/* Phải: các thẻ thống kê */}
           <div className="grid grid-cols-2 gap-4" data-aos="fade-left">
             {[
               { num: "5+", label: "Dịch vụ", sub: "Toàn diện", color: "from-blue-400/25 to-blue-600/15" },

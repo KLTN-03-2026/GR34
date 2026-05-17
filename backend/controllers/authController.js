@@ -81,7 +81,7 @@ export const login = async (req, res) => {
     const role = roles[0]?.code || "customer";
 
 
-    // Get JWT secret from env, use placeholder only in development
+    // Lấy JWT secret từ biến môi trường, chỉ dùng giá trị mặc định trong môi trường phát triển
     const jwtSecret = process.env.JWT_SECRET || "dev-secret-change-in-production";
     
     const token = jwt.sign(
@@ -95,7 +95,7 @@ export const login = async (req, res) => {
     );
 
 
-    // Build avatar full URL if stored as relative path
+    // Tạo URL đầy đủ cho ảnh đại diện nếu đang lưu dưới dạng đường dẫn tương đối
     let avatarUrl = null;
     if (user.avatar) {
       const baseUrl = process.env.BASE_URL || "http://localhost:5000";
@@ -193,7 +193,7 @@ export const verifyOtp = async (req, res) => {
 
     const record = rows[0];
     
-    // Check expiration first
+    // Kiểm tra thời hạn trước
     if (Date.now() > record.expires_at) {
       await pool.query("DELETE FROM otp_codes WHERE id = ?", [record.id]);
       return res.status(400).json({ message: "Mã OTP đã hết hạn!" });
@@ -202,7 +202,7 @@ export const verifyOtp = async (req, res) => {
     if (record.code !== otp)
       return res.status(400).json({ message: "Mã OTP không đúng!" });
 
-    // Delete OTP after successful verification to prevent reuse
+    // Xóa OTP sau khi xác thực thành công để tránh dùng lại
     await pool.query("DELETE FROM otp_codes WHERE id = ?", [record.id]);
 
     res.json({ message: "Xác thực OTP thành công!" });

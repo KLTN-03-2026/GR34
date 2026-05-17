@@ -10,7 +10,7 @@ import {
   ClipboardList,
 } from "lucide-react";
 
-// Sidebar tiện ích
+// Thanh bên tiện ích
 export default function UtilitySidebar() {
   const navigate = useNavigate();
   const { openSupportChat, openAIChat } = useChat();
@@ -47,7 +47,7 @@ export default function UtilitySidebar() {
 
   return (
     <div className="fixed top-1/3 right-0 z-[9999]">
-      {/* Render điều kiện */}
+      {/* Hiển thị có điều kiện */}
       {!expanded && (
         <button
           onClick={() => setExpanded(true)}
@@ -59,7 +59,7 @@ export default function UtilitySidebar() {
         </button>
       )}
 
-      {/* Render điều kiện */}
+      {/* Hiển thị có điều kiện */}
       {expanded && (
         <div
           className="bg-blue-600 text-white rounded-l-2xl shadow-2xl w-[220px]

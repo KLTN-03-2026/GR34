@@ -1,7 +1,7 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-// Route bảo vệ yêu cầu đăng nhập
+// Bộ bảo vệ tuyến yêu cầu đăng nhập
 export default function ProtectedRoute({ children }) {
   const { user } = useAuth();
   const token = localStorage.getItem("token");

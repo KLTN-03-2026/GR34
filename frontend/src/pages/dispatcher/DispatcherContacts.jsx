@@ -305,7 +305,7 @@ export default function DispatcherContactsPro() {
         </div>
       </div>
 
-      {/* Render điều kiện */}
+      {/* Hiển thị có điều kiện */}
       {showNoteModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex justify-center items-center z-50 animate-in fade-in duration-200">
           <div className="bg-white p-0 rounded-2xl shadow-2xl w-[90%] max-w-md relative overflow-hidden animate-in zoom-in-95 duration-200">

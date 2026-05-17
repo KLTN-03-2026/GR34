@@ -150,7 +150,7 @@ export default function Contact() {
     <div className="font-sans bg-gray-50">
       
 
-      {/* Mini-bar */}
+      {/* Thanh mini */}
       <div
         ref={miniBarRef}
         className="fixed top-[65px] left-0 right-0 z-30 h-16 bg-[#113e48]/97 backdrop-blur-md shadow-xl px-6 flex items-center"
@@ -201,7 +201,7 @@ export default function Contact() {
         />
       </section>
 
-      {/* Header section */}
+      {/* Phần đầu trang */}
       <section
         className="relative overflow-hidden py-20 px-6"
         style={{
@@ -245,7 +245,7 @@ export default function Contact() {
             </div>
           </div>
 
-          {/* Phải: stats cards */}
+          {/* Phải: các thẻ thống kê */}
           <div className="grid grid-cols-2 gap-4" data-aos="fade-left">
             {[
               {
@@ -370,7 +370,7 @@ export default function Contact() {
                 <OfficeMarker onClick={() => setShowPopup(true)} />
               </Marker>
 
-              {/* Render điều kiện */}
+              {/* Hiển thị có điều kiện */}
               {showPopup && (
                 <Popup
                   longitude={OFFICE_COORDS.lng}

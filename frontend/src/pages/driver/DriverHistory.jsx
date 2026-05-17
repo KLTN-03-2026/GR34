@@ -13,6 +13,7 @@ import {
   History,
   Filter,
   ListFilter,
+  Wallet,
 } from "lucide-react";
 
 // Lịch sử giao hàng của tài xế
@@ -22,6 +23,7 @@ export default function DriverHistory() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [filterDate, setFilterDate] = useState("");
 
 // Tải lịch sử hoạt động
   const fetchHistory = async () => {
@@ -46,9 +48,23 @@ export default function DriverHistory() {
       const matchSearch =
         h.tracking_code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         h.delivery_address?.toLowerCase().includes(searchTerm.toLowerCase());
-      return matchStatus && matchSearch;
+      
+      const itemDate = new Date(h.completed_at || h.updated_at);
+      itemDate.setMinutes(itemDate.getMinutes() - itemDate.getTimezoneOffset());
+      const matchDate = !filterDate || itemDate.toISOString().split("T")[0] === filterDate;
+
+      return matchStatus && matchSearch && matchDate;
     });
-  }, [history, filter, searchTerm]);
+  }, [history, filter, searchTerm, filterDate]);
+
+  const totalCollected = useMemo(() => {
+    return filteredHistory.reduce((sum, h) => {
+      if (h.status === "completed" && h.cod_payer !== "customer") {
+        return sum + Number(h.cod_amount || 0) + Number(h.shipping_fee || 0);
+      }
+      return sum;
+    }, 0);
+  }, [filteredHistory]);
 
 
   const formatDate = (dateString) => {
@@ -108,15 +124,42 @@ export default function DriverHistory() {
           </p>
         </div>
 
-        <div className="w-full md:w-auto flex items-center gap-2 bg-white p-1 rounded-xl border border-gray-200 shadow-sm">
-          <Search className="text-gray-400 ml-2" size={18} />
-          <input
-            type="text"
-            placeholder="Tìm mã đơn, địa chỉ..."
-            className="w-full md:w-64 px-2 py-1.5 outline-none text-sm bg-transparent"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+        <div className="w-full md:w-auto flex flex-col sm:flex-row items-center gap-3">
+          <div className="w-full sm:w-auto flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-gray-200 shadow-sm cursor-pointer hover:border-blue-400 transition-colors">
+            <Calendar size={18} className="text-blue-500" />
+            <input
+              type="date"
+              value={filterDate}
+              onChange={(e) => setFilterDate(e.target.value)}
+              className="outline-none text-sm text-gray-700 bg-transparent font-medium"
+            />
+          </div>
+
+          <div className="w-full sm:w-auto flex items-center gap-2 bg-white p-1 rounded-xl border border-gray-200 shadow-sm">
+            <Search className="text-gray-400 ml-2" size={18} />
+            <input
+              type="text"
+              placeholder="Tìm mã đơn, địa chỉ..."
+              className="w-full sm:w-64 px-2 py-1.5 outline-none text-sm bg-transparent"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-gradient-to-r from-emerald-500 to-green-600 rounded-2xl p-5 shadow-lg shadow-green-200 text-white flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm shrink-0">
+            <Wallet size={28} className="text-white" />
+          </div>
+          <div>
+            <p className="text-green-100 text-sm font-medium mb-0.5">Tổng tiền mặt cần bàn giao</p>
+            <p className="text-xs text-green-100/80">Tính trong ngày được chọn ({filterDate ? new Date(filterDate).toLocaleDateString("vi-VN") : "Tất cả"})</p>
+          </div>
+        </div>
+        <div className="text-3xl font-black text-right">
+          {Number(totalCollected).toLocaleString()} đ
         </div>
       </div>
 
@@ -220,7 +263,14 @@ export default function DriverHistory() {
                       </p>
                     </div>
 
-                    {/* Render điều kiện */}
+                    {h.status === 'completed' && h.cod_payer !== 'customer' && (
+                      <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-50 text-green-700 rounded-lg border border-green-100 text-xs font-bold">
+                        <Wallet size={12} />
+                        Thu: {Number(Number(h.cod_amount || 0) + Number(h.shipping_fee || 0)).toLocaleString()} đ
+                      </div>
+                    )}
+
+                    {/* Hiển thị có điều kiện */}
                     {h.status === 'failed' && h.failure_note && (
                       <div className="flex items-start gap-2 mt-2 bg-red-50 border border-red-100 rounded-xl px-3 py-2">
                         <XCircle size={14} className="mt-0.5 shrink-0 text-red-500" />

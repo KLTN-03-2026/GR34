@@ -1,8 +1,8 @@
-﻿import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import API from "../../services/api";
 import Pagination from "../../components/Pagination";
 import toast from "../../lib/toast";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import {
   Wallet,
   CreditCard,
@@ -17,6 +17,7 @@ import {
 // Quản lý ví điện tử
 export default function CustomerWallet() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   const [wallet, setWallet] = useState(null);
   const [transactions, setTransactions] = useState([]);
@@ -78,6 +79,11 @@ export default function CustomerWallet() {
         setMomoUrl(res.data.payUrl);
         setShowMomoPopup(true);
 
+        toast.success("Vui lòng quét mã QR hoặc xác nhận trên app MoMo để thanh toán!", {
+          duration: 5000,
+          icon: "📱",
+        });
+
         const currentBalance = Number(wallet.balance);
 
         startCheckingDeposit(currentBalance);
@@ -103,17 +109,13 @@ export default function CustomerWallet() {
         if (newBalance > oldBalance) {
           clearInterval(checkIntervalRef.current);
           setShowMomoPopup(false);
-          setWallet(newWalletData);
 
-          const resTrans = await API.get(
-            `/wallet/transactions/${newWalletData.id}`,
-          );
-          setTransactions(resTrans.data);
-
-          toast.success(
-            `Nạp thành công +${(newBalance - oldBalance).toLocaleString()}đ`,
-          );
-          setAmount("");
+          const depositAmount = newBalance - oldBalance;
+          toast.success(`Nạp thành công +${depositAmount.toLocaleString("vi-VN")}đ vào ví!`, {
+            duration: 3000,
+            icon: "✅",
+          });
+          navigate(`/customer/payment-success?orderId=WALLET${Date.now()}&resultCode=0&type=wallet`);
         }
       } catch (err) {}
     }, 3000);
@@ -247,12 +249,12 @@ export default function CustomerWallet() {
                       <div className="flex items-center gap-2">
                         <div
                           className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                            t.type === "deposit"
+                            (t.type === "deposit" || t.type === "refund")
                               ? "bg-green-100 text-green-600"
                               : "bg-red-100 text-red-600"
                           }`}
                         >
-                          {t.type === "deposit" ? (
+                          {(t.type === "deposit" || t.type === "refund") ? (
                             <ArrowDownLeft size={16} />
                           ) : (
                             <ArrowUpRight size={16} />
@@ -272,10 +274,14 @@ export default function CustomerWallet() {
                     </td>
                     <td
                       className={`px-6 py-4 text-right font-bold ${
-                        t.type === "deposit" ? "text-green-600" : "text-red-600"
+                        t.status !== "success"
+                          ? "text-gray-400"
+                          : (t.type === "deposit" || t.type === "refund")
+                          ? "text-green-600"
+                          : "text-red-600"
                       }`}
                     >
-                      {t.type === "deposit" ? "+" : "-"}
+                      {t.status === "success" ? ((t.type === "deposit" || t.type === "refund") ? "+" : "-") : ""}
                       {Number(t.amount).toLocaleString()} ₫
                     </td>
                     <td className="px-6 py-4 text-center">
@@ -283,10 +289,10 @@ export default function CustomerWallet() {
                         className={`px-2.5 py-1 rounded-full text-xs font-bold border ${
                           t.status === "success"
                             ? "bg-green-50 text-green-700 border-green-200"
-                            : "bg-yellow-50 text-yellow-700 border-yellow-200"
+                            : "bg-red-50 text-red-700 border-red-200"
                         }`}
                       >
-                        {t.status === "success" ? "Thành công" : "Đang xử lý"}
+                        {t.status === "success" ? "Thành công" : "Thất bại"}
                       </span>
                     </td>
                   </tr>
@@ -311,17 +317,13 @@ export default function CustomerWallet() {
         />
       </div>
 
-      {/* Render điều kiện */}
+      {/* Hiển thị có điều kiện */}
       {showInputModal && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
           <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 animate-in zoom-in-95 duration-200 relative">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-bold text-[#113e48] flex items-center gap-2">
-                <img
-                  src="https://img.logo.dev/momo.vn?token=pk_Au5xjh-tSiKt4KCaxc9EcQ"
-                  className="w-6 h-6 rounded"
-                  alt="MoMo"
-                />
+                <img src="/assets/logo/Logo MoMo Square.png" className="w-6 h-6 rounded" alt="MoMo" />
                 Nạp tiền qua MoMo
               </h3>
               <button
@@ -339,11 +341,15 @@ export default function CustomerWallet() {
                 </label>
                 <div className="relative">
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
                     className="w-full p-3 pr-12 border border-gray-200 rounded-xl text-lg font-bold outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-100 text-pink-600"
-                    placeholder="VD: 50000"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
+                    placeholder="VD: 500.000"
+                    value={amount ? Number(amount).toLocaleString("vi-VN") : ""}
+                    onChange={(e) => {
+                      const rawValue = e.target.value.replace(/\D/g, "");
+                      setAmount(rawValue);
+                    }}
                     autoFocus
                   />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">
@@ -378,18 +384,14 @@ export default function CustomerWallet() {
         </div>
       )}
 
-      {/* Render điều kiện */}
+      {/* Hiển thị có điều kiện */}
       {showMomoPopup && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-[9999] animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl shadow-2xl p-2 w-full max-w-5xl h-[85vh] relative flex flex-col items-center">
             {/* Phần giao diện */}
             <div className="w-full flex justify-between items-center p-3 border-b border-gray-100 mb-2">
               <h3 className="text-lg font-bold text-pink-600 flex items-center gap-2">
-                <img
-                  src="https://upload.wikimedia.org/wikipedia/vi/f/fe/MoMo_Logo.png"
-                  className="w-6 h-6 rounded"
-                  alt=""
-                />
+                <img src="/assets/logo/Logo MoMo Square.png" className="w-6 h-6 rounded" alt="MoMo" />
                 Cổng thanh toán MoMo
               </h3>
               <button
@@ -414,12 +416,24 @@ export default function CustomerWallet() {
               </div>
             </div>
 
-            <p className="text-xs text-gray-500 mt-2 pb-2">
-              Đang chờ thanh toán... Popup sẽ tự đóng khi hoàn tất.
-            </p>
+            <div className="w-full flex items-center justify-between px-2 mt-2 pb-2">
+              <p className="text-xs text-gray-500">
+                Đang chờ thanh toán... Popup sẽ tự đóng khi hoàn tất.
+              </p>
+              <button
+                onClick={() => {
+                  closeMomoPopup();
+                  navigate("/customer/payment-success?orderId=CANCELLED&resultCode=1&type=wallet");
+                }}
+                className="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 font-bold text-sm rounded-xl border border-red-200 transition-all flex items-center gap-1.5 shrink-0"
+              >
+                <X size={14} /> Hủy thanh toán
+              </button>
+            </div>
           </div>
         </div>
       )}
     </div>
   );
 }
+

@@ -1,6 +1,6 @@
 import { Navigate, Outlet } from "react-router-dom";
 
-// Route bảo vệ yêu cầu đăng nhập
+// Bộ bảo vệ tuyến yêu cầu đăng nhập
 const ProtectedRoute = ({ allowedRoles, children }) => {
   const token = localStorage.getItem("token");
   const rawRole = localStorage.getItem("role");

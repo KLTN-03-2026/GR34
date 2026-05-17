@@ -17,13 +17,13 @@ export default function DriverProfile() {
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Edit profile state
+  // Trạng thái chỉnh sửa hồ sơ
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState("");
   const [editPhone, setEditPhone] = useState("");
   const [savingProfile, setSavingProfile] = useState(false);
 
-  // Change password state
+  // Trạng thái đổi mật khẩu
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -68,7 +68,7 @@ export default function DriverProfile() {
 
   useEffect(() => { fetchData(); }, [driverId]);
 
-  // Toggle online/offline status
+  // Bật hoặc tắt trạng thái trực tuyến
   const toggleStatus = async () => {
     if (!profile) return;
     if (profile.status === "delivering") {
@@ -87,7 +87,7 @@ export default function DriverProfile() {
     }
   };
 
-  // Save profile
+  // Lưu hồ sơ
   const handleSaveProfile = async () => {
     if (!editName.trim()) return toast.error("Họ tên không được để trống");
     setSavingProfile(true);
@@ -107,7 +107,7 @@ export default function DriverProfile() {
     }
   };
 
-  // Change password
+  // Đổi mật khẩu
   const handleChangePassword = async (e) => {
     e.preventDefault();
     if (!oldPassword || !newPassword) return toast.error("Vui lòng nhập đầy đủ");
@@ -126,7 +126,7 @@ export default function DriverProfile() {
     }
   };
 
-  // Upload avatar
+  // Tải ảnh đại diện lên
   const handleAvatarUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -172,7 +172,7 @@ export default function DriverProfile() {
     <div className="min-h-screen bg-[#F8FAFC] space-y-6 pb-24">
       
 
-      {/* Header Card */}
+      {/* Thẻ phần đầu */}
       <div className="relative bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="h-32 bg-gradient-to-r from-[#113e48] to-[#2a6f7d]"></div>
         <div className="px-6 pb-6 relative flex flex-col md:flex-row items-center md:items-end -mt-12 gap-4 md:gap-6">
@@ -222,7 +222,7 @@ export default function DriverProfile() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column */}
         <div className="lg:col-span-1 space-y-6">
-          {/* Personal Info */}
+          {/* Thông tin cá nhân */}
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
             <div className="flex justify-between items-center mb-6">
               <h3 className="font-bold text-gray-800 flex items-center gap-2">
@@ -282,7 +282,7 @@ export default function DriverProfile() {
 
         {/* Right Column */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Stats Cards */}
+          {/* Các thẻ thống kê */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <StatBox label="Tổng đơn" value={ratingStats?.total_orders || 0} icon={PackageCheck} color="blue" />
             <StatBox label="Hoàn tất" value={ratingStats?.completed_orders || 0} icon={Award} color="green" />
@@ -290,7 +290,7 @@ export default function DriverProfile() {
             <StatBox label="Đánh giá" value={avgRating.toFixed(1)} icon={Star} color="yellow" subValue="/ 5.0" />
           </div>
 
-          {/* Rating Detail */}
+          {/* Chi tiết đánh giá */}
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
             <div className="flex justify-between items-center mb-6">
               <h3 className="font-bold text-gray-800">Thống kê đánh giá</h3>
@@ -322,7 +322,7 @@ export default function DriverProfile() {
             </div>
           </motion.div>
 
-          {/* Recent Feedbacks */}
+          {/* Các phản hồi gần đây */}
           {ratingStats?.recent_feedbacks?.length > 0 && (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
               <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
@@ -354,7 +354,7 @@ export default function DriverProfile() {
         </div>
       </div>
 
-      {/* Password Modal */}
+      {/* Hộp thoại mật khẩu */}
       <AnimatePresence>
         {showPasswordModal && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowPasswordModal(false)}>
@@ -386,7 +386,7 @@ export default function DriverProfile() {
   );
 }
 
-// Sub-components
+// Các thành phần con
 const InfoRow = ({ icon: Icon, label, value }) => (
   <div className="flex items-center gap-4 py-2 border-b border-gray-50 last:border-0">
     <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-500 shrink-0"><Icon size={18} /></div>

@@ -36,7 +36,7 @@ export default function FinalCTA({ onChat }) {
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
         <div className="absolute -top-24 -left-24 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl"></div>
         <div className="absolute top-1/2 right-0 w-64 h-64 bg-orange-500/10 rounded-full blur-3xl"></div>
-        {/* Icon SVG */}
+        {/* Biểu tượng SVG */}
         <svg
           className="absolute inset-0 w-full h-full opacity-5"
           xmlns="http://www.w3.org/2000/svg"
@@ -98,7 +98,7 @@ export default function FinalCTA({ onChat }) {
         </div>
       </div>
 
-      {/* Render điều kiện */}
+      {/* Hiển thị có điều kiện */}
       {showChatSupport && !onChat && (
         <ChatBubble onClose={() => setShowChatSupport(false)} />
       )}

@@ -18,6 +18,8 @@ import {
   Truck,
   ChevronDown,
   ClipboardList,
+  MapPin,
+  ArrowRight,
   AlertTriangle,
 } from "lucide-react";
 import Pagination from "../../components/Pagination";
@@ -30,6 +32,7 @@ const STATUS_OPTIONS = [
   { value: "delivering", label: "Đang giao hàng", icon: Truck, color: "text-blue-600", bg: "bg-blue-100" },
   { value: "completed", label: "Hoàn thành", icon: CheckCircle, color: "text-green-600", bg: "bg-green-100" },
   { value: "failed", label: "Giao thất bại", icon: AlertTriangle, color: "text-red-600", bg: "bg-red-100" },
+  { value: "draft", label: "Chưa tạo thành công", icon: XCircle, color: "text-red-600", bg: "bg-red-100" },
   { value: "canceled", label: "Đã hủy", icon: Ban, color: "text-gray-500", bg: "bg-gray-100" },
 ];
 
@@ -189,7 +192,12 @@ export default function CustomerHistory() {
       },
       canceled: {
         label: "Đã hủy",
-        color: "bg-gray-100 text-gray-600 border-gray-200",
+        color: "bg-red-100 text-red-700 border-red-200",
+        icon: <XCircle size={12} />,
+      },
+      draft: {
+        label: "Chưa tạo thành công",
+        color: "bg-red-100 text-red-700 border-red-200",
         icon: <XCircle size={12} />,
       },
     };
@@ -248,11 +256,10 @@ export default function CustomerHistory() {
           <table className="w-full text-sm text-left">
             <thead className="bg-gray-50 text-gray-500 font-medium border-b border-gray-100 text-xs uppercase tracking-wider">
               <tr>
-                <th className="px-6 py-4">Mã vận đơn</th>
-                <th className="px-6 py-4">Người nhận</th>
+                <th className="px-6 py-4">Đơn hàng</th>
+                <th className="px-6 py-4">Địa điểm</th>
                 <th className="px-6 py-4 text-center">Trạng thái</th>
-                <th className="px-6 py-4 text-right">COD</th>
-                <th className="px-6 py-4 text-center">Ngày tạo</th>
+                <th className="px-6 py-4 text-center">Thanh toán</th>
                 <th className="px-6 py-4 text-center">Thao tác</th>
               </tr>
             </thead>
@@ -260,7 +267,7 @@ export default function CustomerHistory() {
               {loading ? (
                 [...Array(5)].map((_, i) => (
                   <tr key={i}>
-                    <td colSpan="6" className="px-6 py-4">
+                    <td colSpan="5" className="px-6 py-4">
                       <div className="h-4 bg-gray-100 rounded animate-pulse"></div>
                     </td>
                   </tr>
@@ -268,7 +275,7 @@ export default function CustomerHistory() {
               ) : currentShipments.length === 0 ? (
                 <tr>
                   <td
-                    colSpan="7"
+                    colSpan="5"
                     className="px-6 py-12 text-center text-gray-400 italic"
                   >
                     Không tìm thấy đơn hàng nào.
@@ -281,25 +288,96 @@ export default function CustomerHistory() {
                     onClick={() => navigate(`/customer/history/${s.id}`)}
                     className="hover:bg-gray-50/50 transition-colors group cursor-pointer"
                   >
-                    <td className="px-6 py-4 font-bold text-[#113e48]">
-                      #{s.tracking_code}
-                    </td>
                     <td className="px-6 py-4">
-                      <div className="font-medium text-gray-900">
-                        {s.receiver_name}
+                      <div className="flex items-center gap-2">
+                        <div className={`font-bold ${
+                          s.status === "draft" 
+                            ? "text-gray-400 line-through decoration-red-500 decoration-2" 
+                            : s.status === "canceled"
+                            ? "text-red-500 line-through decoration-red-500 decoration-2"
+                            : "text-[#113e48]"
+                        }`}>
+                          #{s.tracking_code}
+                        </div>
+                        {s.service_type === "fast" && (
+                          <span className="text-[10px] font-bold bg-gradient-to-r from-orange-500 to-red-500 text-white px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
+                            Hỏa tốc
+                          </span>
+                        )}
+                        {s.service_type === "express" && (
+                          <span className="text-[10px] font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
+                            Nhanh
+                          </span>
+                        )}
+                        {s.service_type === "standard" && (
+                          <span className="text-[10px] font-bold bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
+                            Tiết kiệm
+                          </span>
+                        )}
                       </div>
-                      <div className="text-xs text-gray-400">
-                        {s.receiver_phone}
+                      <div className="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                        <span className="font-medium text-gray-700">{s.sender_name}</span>
+                        <ArrowRight size={10} className="text-gray-400" />
+                        <span className="font-medium text-gray-700">{s.receiver_name}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 max-w-[280px]">
+                      <div className="flex items-start gap-1.5 text-xs text-gray-600">
+                        <Package size={12} className="text-blue-500 mt-0.5 shrink-0" />
+                        <span className="truncate" title={s.pickup_address}>{s.pickup_address}</span>
+                      </div>
+                      <div className="flex items-start gap-1.5 text-xs text-gray-600 mt-1.5">
+                        <MapPin size={12} className="text-orange-500 mt-0.5 shrink-0" />
+                        <span className="truncate" title={s.delivery_address}>{s.delivery_address}</span>
+                      </div>
+                      <div className="text-[10px] text-gray-400 mt-1.5">
+                        {new Date(s.created_at).toLocaleString("vi-VN", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" })}
                       </div>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      {getStatusBadge(s.status)}
+                      <div className="flex flex-col items-center gap-1">
+                        {getStatusBadge(s.status)}
+                        {(s.status === "canceled" || s.status === "failed") && Number(s.paid_amount) > 0 && (
+                          Number(s.is_refunded) ? (
+                            <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                              +{Number(s.paid_amount).toLocaleString()}đ đã hoàn tiền
+                            </span>
+                          ) : (
+                            <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                              Chờ hoàn tiền {Number(s.paid_amount).toLocaleString()}đ
+                            </span>
+                          )
+                        )}
+                      </div>
                     </td>
-                    <td className="px-6 py-4 text-right font-mono text-gray-600">
-                      {Number(s.cod_amount).toLocaleString("vi-VN")}₫
-                    </td>
-                    <td className="px-6 py-4 text-center text-xs text-gray-400">
-                      {new Date(s.created_at).toLocaleDateString("vi-VN")}
+                    <td className="px-6 py-4 text-center">
+                      {(() => {
+                        const isFailed = s.status === 'failed' || s.status === 'canceled' || s.status === 'draft';
+                        if (s.payment_method !== "COD") {
+                          return (
+                            <div className="inline-flex flex-col items-center">
+                              <span className={`font-mono font-extrabold text-base tracking-tight ${isFailed ? 'text-red-500' : 'text-emerald-600'}`}>
+                                0<span className="text-[10px] ml-0.5 font-bold">đ</span>
+                              </span>
+                              <span className={`text-[9px] uppercase font-bold px-1 rounded ring-1 mt-1 ${isFailed ? 'text-red-700 bg-red-100 ring-red-200' : 'text-emerald-700 bg-emerald-100 ring-emerald-200'}`}>
+                                Đã thanh toán
+                              </span>
+                            </div>
+                          );
+                        } else {
+                          return (
+                            <div className="inline-flex flex-col items-center">
+                              <span className={`font-mono font-extrabold text-base tracking-tight ${isFailed ? 'text-red-500' : 'text-slate-700'}`}>
+                                {Number(s.cod_amount || 0).toLocaleString()}
+                                <span className={`text-[10px] ml-0.5 font-bold ${isFailed ? 'text-red-400' : 'text-slate-400'}`}>đ</span>
+                              </span>
+                              <span className={`text-[9px] uppercase font-bold px-1 rounded mt-1 ${isFailed ? 'text-red-700 bg-red-100' : 'text-slate-400 bg-slate-100'}`}>
+                                Người nhận trả
+                              </span>
+                            </div>
+                          );
+                        }
+                      })()}
                     </td>
                     <td className="px-6 py-4 text-center">
                       <div className="flex justify-start gap-2 w-[72px] mx-auto opacity-80 group-hover:opacity-100 transition-opacity">
@@ -332,11 +410,23 @@ export default function CustomerHistory() {
                           <button
                             className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
                             title="Hủy đơn"
-                            onClick={(e) => {
+                            onClick={async (e) => {
                               e.stopPropagation();
-                              if (confirm("Bạn chắc chắn muốn hủy đơn này?")) {
-
-                                toast.success("Đã gửi yêu cầu hủy đơn");
+                              if (!confirm("Bạn chắc chắn muốn hủy đơn này?")) return;
+                              try {
+                                const res = await API.post(`/customers/shipments/${s.id}/cancel`);
+                                const data = res.data;
+                                if (data.refundAmount > 0) {
+                                  toast.success(`Đã hủy đơn hàng và hoàn ${Number(data.refundAmount).toLocaleString("vi-VN")}₫ về ví của bạn.`);
+                                } else {
+                                  toast.success("Đã hủy đơn hàng thành công.");
+                                }
+                                // Reload danh sách đơn hàng
+                                const updated = await API.get(`/customers/shipments/${customerId}`);
+                                setShipments(updated.data);
+                              } catch (err) {
+                                const msg = err?.response?.data?.message || "Lỗi khi hủy đơn hàng";
+                                toast.error(msg);
                               }
                             }}
                           >

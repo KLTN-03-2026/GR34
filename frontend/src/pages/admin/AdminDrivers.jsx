@@ -356,7 +356,7 @@ export default function AdminDrivers() {
 
       {/* Phần giao diện */}
       <div className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden">
-        {/* Render điều kiện */}
+        {/* Hiển thị có điều kiện */}
         {tab === "drivers" && (
           <>
             <div className="p-5 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4 bg-gray-50/50">
@@ -582,7 +582,7 @@ export default function AdminDrivers() {
           </>
         )}
 
-        {/* Render điều kiện */}
+        {/* Hiển thị có điều kiện */}
         {tab === "vehicles" && (
           <>
             <div className="p-5 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4 bg-gray-50/50">
@@ -695,7 +695,7 @@ export default function AdminDrivers() {
           </>
         )}
 
-        {/* Render điều kiện */}
+        {/* Hiển thị có điều kiện */}
         {tab === "applications" && (
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">

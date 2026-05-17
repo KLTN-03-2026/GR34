@@ -472,7 +472,7 @@ export default function CustomerTrack() {
               >
                 <NavigationControl position="bottom-right" />
 
-                {/* Render điều kiện */}
+                {/* Hiển thị có điều kiện */}
                 {routeGeoJSON && (
                   <Source id="route" type="geojson" data={routeGeoJSON}>
                     <Layer
@@ -488,7 +488,7 @@ export default function CustomerTrack() {
                   </Source>
                 )}
 
-                {/* Render điều kiện */}
+                {/* Hiển thị có điều kiện */}
                 {waypoints[0] && (
                   <Marker
                     longitude={waypoints[0][1]}
@@ -513,7 +513,7 @@ export default function CustomerTrack() {
                   </Marker>
                 )}
 
-                {/* Render điều kiện */}
+                {/* Hiển thị có điều kiện */}
                 {waypoints[1] && (
                   <Marker
                     longitude={waypoints[1][1]}
@@ -538,7 +538,7 @@ export default function CustomerTrack() {
                   </Marker>
                 )}
 
-                {/* Render điều kiện */}
+                {/* Hiển thị có điều kiện */}
                 {driverPos && (
                   <Marker
                     longitude={driverPos[1]}
@@ -563,7 +563,7 @@ export default function CustomerTrack() {
                   </Marker>
                 )}
 
-                {/* Render điều kiện */}
+                {/* Hiển thị có điều kiện */}
                 {popupInfo && (
                   <Popup
                     anchor="top"

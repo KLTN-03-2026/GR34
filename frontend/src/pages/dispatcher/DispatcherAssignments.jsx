@@ -164,11 +164,11 @@ export default function DispatcherAssignmentsUIPro() {
     });
   }, [unassigned, searchTerm, filterZone]);
 
-  // --- Group assignments by driver for "Đang vận hành" ---
+  // --- Nhóm phân công theo tài xế cho tab "Đang vận hành" ---
   const [expandedDriverId, setExpandedDriverId] = useState(null);
 
   const driverGroups = useMemo(() => {
-    // Only active assignments: assigned, picking, delivering
+    // Chỉ lấy các phân công đang hoạt động: assigned, picking, delivering
     const active = assignments.filter((a) =>
       ["assigned", "picking", "delivering"].includes(a.assignment_status)
     );
@@ -193,7 +193,7 @@ export default function DispatcherAssignmentsUIPro() {
       }
     }
 
-    // Sort: most active first, then by driver name
+    // Sắp xếp: tài xế có nhiều việc đang hoạt động nhất lên trước, sau đó theo tên tài xế
     return Object.values(map).sort((a, b) => {
       const aActive = a.assignments.length;
       const bActive = b.assignments.length;
@@ -221,20 +221,20 @@ export default function DispatcherAssignmentsUIPro() {
   const toggleDriver = (driverId) =>
     setExpandedDriverId((prev) => (prev === driverId ? null : driverId));
 
-  // Reset page when switching to assigned tab
+  // Đặt lại trang khi chuyển sang tab đã phân công
   const handleTabChange = (tabId) => {
     setActiveTab(tabId);
     if (tabId === "assigned") setPageAssigned(1);
   };
 
-  // --- Pagination for "Chờ phân công" tab ---
+  // --- Phân trang cho tab "Chờ phân công" ---
   const PAGE_SIZE = 15;
   const totalPagesUnassigned = Math.ceil(filteredUnassigned.length / PAGE_SIZE);
   const pagedUnassigned = filteredUnassigned.slice(
     (pageUnassigned - 1) * PAGE_SIZE, pageUnassigned * PAGE_SIZE
   );
 
-  // --- Stats for the assigned tab ---
+  // --- Thống kê cho tab đã phân công ---
   const assignedTabStats = useMemo(() => {
     const byStatus = { assigned: 0, picking: 0, delivering: 0, completed: 0, failed: 0 };
     const active = assignments.filter((a) => ["assigned","picking","delivering"].includes(a.assignment_status));
@@ -285,7 +285,7 @@ export default function DispatcherAssignmentsUIPro() {
   };
 
 
-  // Component hiển thị badge trạng thái đơn hàng với màu sắc phân biệt
+  // Component hiển thị nhãn trạng thái đơn hàng với màu sắc phân biệt
   const StatusPill = ({ status }) => {
     const styles = {
       assigned:   "bg-blue-50 text-blue-700 ring-blue-600/20",
@@ -332,7 +332,7 @@ export default function DispatcherAssignmentsUIPro() {
   return (
     <div className="min-h-screen bg-slate-50/50 p-6 sm:p-8 font-sans pb-40">
       <div className="max-w-[1400px] mx-auto space-y-8">
-        {/* Header: tiêu đề trang và tab chuyển đổi */}
+        {/* Phần đầu: tiêu đề trang và tab chuyển đổi */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
           <div>
             <h1 className="text-3xl font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
@@ -598,17 +598,26 @@ export default function DispatcherAssignmentsUIPro() {
                           </div>
                         </td>
                         <td className="px-5 py-3 text-center">
-                          <div className="inline-flex flex-col items-end">
-                            <span className="font-mono font-extrabold text-base text-slate-700 tracking-tight">
-                              {Number(s.cod_amount).toLocaleString()}
-                              <span className="text-[10px] text-slate-400 ml-0.5 font-bold">
-                                đ
+                          {s.cod_payer === "customer" ? (
+                            <div className="inline-flex flex-col items-end">
+                              <span className="font-mono font-extrabold text-base text-emerald-600 tracking-tight">
+                                0<span className="text-[10px] ml-0.5 font-bold">đ</span>
                               </span>
-                            </span>
-                            <span className="text-[9px] uppercase font-bold text-slate-400 bg-slate-100 px-1 rounded">
-                              {s.payment_method === "WALLET" ? "Ví nội bộ" : s.payment_method === "MOMO" ? "MoMo" : "Tiền mặt"}
-                            </span>
-                          </div>
+                              <span className="text-[9px] uppercase font-bold text-emerald-700 bg-emerald-100 px-1 rounded ring-1 ring-emerald-200">
+                                Khách đã trả
+                              </span>
+                            </div>
+                          ) : (
+                            <div className="inline-flex flex-col items-end">
+                              <span className="font-mono font-extrabold text-base text-slate-700 tracking-tight">
+                                {Number(s.cod_amount || 0).toLocaleString()}
+                                <span className="text-[10px] text-slate-400 ml-0.5 font-bold">đ</span>
+                              </span>
+                              <span className="text-[9px] uppercase font-bold text-slate-400 bg-slate-100 px-1 rounded">
+                                {s.payment_method === "WALLET" ? "Ví nội bộ" : s.payment_method === "MOMO" ? "MoMo" : "Tiền mặt"}
+                              </span>
+                            </div>
+                          )}
                         </td>
                       </tr>
                     );
@@ -850,7 +859,7 @@ export default function DispatcherAssignmentsUIPro() {
         <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50 w-[95%] md:w-auto animate-in slide-in-from-bottom-6 duration-300">
           <div className="bg-white rounded-2xl shadow-2xl shadow-blue-900/20 ring-1 ring-slate-200/80 p-3 backdrop-blur-xl bg-white/95">
             
-            {/* Panel gợi ý tài xế gần nhất cho đơn hỏa tốc */}
+            {/* Khung gợi ý tài xế gần nhất cho đơn hỏa tốc */}
             {hasExpressSelected && (
               <div className="mb-3 p-3 bg-gradient-to-r from-red-50 to-orange-50 rounded-xl ring-1 ring-red-200/60">
                 <div className="flex items-center gap-2 mb-3">
@@ -879,7 +888,7 @@ export default function DispatcherAssignmentsUIPro() {
                             : "bg-white/60 hover:bg-white hover:shadow-sm ring-1 ring-slate-200/60"
                         }`}
                       >
-                        {/* Badge thứ hạng tài xế gần nhất */}
+                        {/* Nhãn thứ hạng tài xế gần nhất */}
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black shrink-0 ${
                           idx === 0 ? "bg-gradient-to-br from-yellow-400 to-orange-500 text-white shadow-sm" :
                           idx === 1 ? "bg-gradient-to-br from-slate-300 to-slate-400 text-white" :
@@ -916,7 +925,7 @@ export default function DispatcherAssignmentsUIPro() {
                           </span>
                         </div>
 
-                        {/* Icon check khi tài xế được chọn */}
+                        {/* Biểu tượng dấu chọn khi tài xế được chọn */}
                         {String(selectedDriverBulk) === String(d.id) && (
                           <CheckCircle size={18} className="text-red-500 shrink-0" />
                         )}

@@ -138,7 +138,7 @@ export default function ForgotPassword() {
               </p>
             </div>
 
-            {/* Render điều kiện */}
+            {/* Hiển thị có điều kiện */}
             {message.text && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}

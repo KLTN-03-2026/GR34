@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../../services/api";
 import {
@@ -92,7 +92,8 @@ export default function DispatcherDashboard() {
     stats.shipments.find((s) => s.status === "delivering")?.count || 0;
   const completed =
     stats.shipments.find((s) => s.status === "completed")?.count || 0;
-  const failed = stats.shipments.find((s) => s.status === "failed")?.count || 0;
+  const draftCount = stats.shipments.find((s) => s.status === "draft")?.count || 0;
+  const failed = (stats.shipments.find((s) => s.status === "failed")?.count || 0) + draftCount;
   const pending =
     stats.shipments.find((s) => s.status === "pending")?.count || 0;
 

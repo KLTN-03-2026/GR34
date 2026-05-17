@@ -50,7 +50,7 @@ export const getUnassignedShipments = async (req, res) => {
   }
 };
 
-// Lấy danh sách tài xế khả dụng trong khu vực của dispatcher
+// Lấy danh sách tài xế khả dụng trong khu vực của điều phối viên
 export const getAvailableDrivers = async (req, res) => {
   try {
     const region_id = ensureDispatcherRegion(req, res);
@@ -168,14 +168,14 @@ export const assignShipment = async (req, res) => {
   }
 };
 
-// Lấy danh sách phân công với pagination
+// Lấy danh sách phân công có phân trang
 export const getAssignments = async (req, res) => {
   try {
     const region_id = ensureDispatcherRegion(req, res);
-    // Lọc mặc định chỉ lấy các assignment đang active (không load lịch sử cũ)
+    // Mặc định chỉ lấy các phân công đang hoạt động (không tải lịch sử cũ)
     const activeOnly = String(req.query.activeOnly || "true") === "true";
 
-    // Pagination params
+    // Tham số phân trang
     const page = Math.max(1, parseInt(req.query.page) || 1);
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
     const offset = (page - 1) * limit;
@@ -223,7 +223,7 @@ export const getAssignments = async (req, res) => {
       countParams.push(region_id);
     }
 
-    // Get total count
+    // Lấy tổng số bản ghi
     const [countResult] = await db.query(countSql, countParams);
     const total = countResult[0]?.total || 0;
 
@@ -347,7 +347,7 @@ export const updateAssignmentStatus = async (req, res) => {
   }
 };
 
-// Lấy dữ liệu dashboard điều phối viên
+// Lấy dữ liệu tổng quan của điều phối viên
 export const getDispatcherDashboard = async (req, res) => {
   try {
     const region_id = ensureDispatcherRegion(req, res);
@@ -492,7 +492,7 @@ export const reassignDriver = async (req, res) => {
   }
 };
 
-// Lấy chi tiết một đơn hàng kèm tài xế và xe, hỗ trợ cả admin và dispatcher
+// Lấy chi tiết một đơn hàng kèm tài xế và xe, hỗ trợ cả quản trị viên và điều phối viên
 export const getShipmentDetail = async (req, res) => {
   try {
     const { id } = req.params;
@@ -827,7 +827,7 @@ export const cancelFailedShipment = async (req, res) => {
         await sendNotificationToCustomer(
           shipment.customer_id,
           id,
-          `Đơn hàng #${shipment.tracking_code} đã bị hủy do giao thất bại ${failCount} lần. Vui lòng liên hệ hotline để hỗ trợ.`,
+          `Đơn hàng #${shipment.tracking_code} đã bị hủy do giao thất bại ${failCount} lần. Vui lòng liên hệ hotline để hỗ trợ. Tiền hàng sẽ hoàn lại vào ví của khách hàng khi đơn hàng được trả về người gửi.`,
         );
       }
     } catch (_) {}

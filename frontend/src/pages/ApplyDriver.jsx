@@ -127,7 +127,7 @@ export default function ApplyDriver() {
   return (
     <div className="font-sans bg-gray-50 text-slate-800">
       
-      {/* Mini-bar */}
+      {/* Thanh mini */}
       <div
         ref={miniBarRef}
         className="fixed top-[65px] left-0 right-0 z-30 h-16 bg-[#113e48]/97 backdrop-blur-md shadow-xl px-6 flex items-center"
@@ -179,7 +179,7 @@ export default function ApplyDriver() {
         />
       </section>
 
-      {/* Header section */}
+      {/* Phần đầu trang */}
       <section
         className="relative overflow-hidden py-20 px-6"
         style={{

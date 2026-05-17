@@ -152,18 +152,20 @@ export const createShipment = async (req, res) => {
     const [result] = await pool.query(q, [values]);
 
     try {
-      await sendNotificationToDispatcher(
-        1,
-        result.insertId,
-        `Đơn hàng mới tại ${prefix}: #${tracking_code} — chờ phân công.`,
-      );
-
-      if (customer_id) {
-        await sendNotificationToCustomer(
-          customer_id,
+      if ((status || "pending") !== "draft") {
+        await sendNotificationToDispatcher(
+          1,
           result.insertId,
-          `Đơn hàng #${tracking_code} của bạn đã được tạo thành công! Chúng tôi sẽ sớm liên hệ để lấy hàng.`,
+          `Đơn hàng mới tại ${prefix}: #${tracking_code} — chờ phân công.`,
         );
+
+        if (customer_id) {
+          await sendNotificationToCustomer(
+            customer_id,
+            result.insertId,
+            `Đơn hàng #${tracking_code} của bạn đã được tạo thành công! Chúng tôi sẽ sớm liên hệ để lấy hàng.`,
+          );
+        }
       }
     } catch (notifyErr) {
     }
@@ -458,5 +460,101 @@ export const assignShipmentsBulk = async (req, res) => {
       .json({ message: "Lỗi hệ thống khi phân công: " + err.message });
   } finally {
     connection.release();
+  }
+};
+
+// Admin duyệt hoàn tiền cho đơn hàng thất bại/hủy
+export const approveRefund = async (req, res) => {
+  let connection;
+  try {
+    const { id } = req.params;
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    const [shipments] = await connection.query(
+      "SELECT id, tracking_code, customer_id, status, payment_method FROM shipments WHERE id = ? FOR UPDATE",
+      [id]
+    );
+
+    if (!shipments.length) {
+      await connection.rollback();
+      return res.status(404).json({ message: "Không tìm thấy đơn hàng" });
+    }
+
+    const shipment = shipments[0];
+
+    if (shipment.payment_method !== "WALLET" && shipment.payment_method !== "MOMO") {
+      await connection.rollback();
+      return res.status(400).json({ message: "Đơn hàng này không thanh toán qua Ví hoặc MoMo nên không thể hoàn tiền" });
+    }
+
+    const [payments] = await connection.query(
+      "SELECT id, amount, status FROM payments WHERE shipment_id = ? AND status = 'completed' FOR UPDATE",
+      [id]
+    );
+
+    if (!payments.length) {
+      // Thử tìm payments pending cho đơn MOMO bị lỗi
+      const [pendingPayments] = await connection.query(
+        "SELECT id, amount, status FROM payments WHERE shipment_id = ? AND status = 'pending' FOR UPDATE",
+        [id]
+      );
+      
+      if (!pendingPayments.length) {
+        await connection.rollback();
+        return res.status(400).json({ message: "Không tìm thấy giao dịch thanh toán thành công để hoàn" });
+      }
+    }
+
+    const payment = payments.length ? payments[0] : null;
+    if (!payment) {
+      await connection.rollback();
+      return res.status(400).json({ message: "Không thể hoàn tiền cho giao dịch này" });
+    }
+
+    const refundAmount = payment.amount;
+
+    if (shipment.customer_id) {
+      const [wallets] = await connection.query(
+        "SELECT id, balance FROM wallets WHERE user_id = ? FOR UPDATE",
+        [shipment.customer_id]
+      );
+
+      if (wallets.length) {
+        const wallet = wallets[0];
+        await connection.query(
+          "UPDATE wallets SET balance = balance + ?, updated_at = NOW() WHERE id = ?",
+          [refundAmount, wallet.id]
+        );
+
+        await connection.query(
+          "INSERT INTO transactions (wallet_id, order_id, amount, type, description, status, created_at) VALUES (?, ?, ?, 'refund', ?, 'success', NOW())",
+          [wallet.id, `REFUND${Date.now()}`, refundAmount, `Hoàn tiền cước đơn hàng #${shipment.tracking_code}`]
+        );
+      }
+    }
+
+    await connection.query("UPDATE payments SET status = 'failed' WHERE id = ?", [payment.id]);
+    await connection.query("UPDATE shipments SET updated_at = NOW(), failure_note = CONCAT(COALESCE(failure_note,''), ' [Đã hoàn tiền]') WHERE id = ?", [id]);
+
+    await connection.commit();
+
+    try {
+      if (shipment.customer_id) {
+        await sendNotificationToCustomer(
+          shipment.customer_id,
+          id,
+          `Yêu cầu hoàn tiền đơn hàng #${shipment.tracking_code} đã được duyệt. Số tiền ${Number(refundAmount).toLocaleString("vi-VN")}đ đã được cộng vào ví của bạn.`
+        );
+      }
+    } catch (_) {}
+
+    res.json({ message: "Duyệt hoàn tiền thành công" });
+  } catch (err) {
+    console.error("approveRefund error:", err);
+    if (connection) await connection.rollback();
+    res.status(500).json({ message: "Lỗi hệ thống khi duyệt hoàn tiền: " + err.message });
+  } finally {
+    if (connection) connection.release();
   }
 };

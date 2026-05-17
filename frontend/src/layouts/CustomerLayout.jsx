@@ -20,7 +20,7 @@ import {
   FileText,
 } from "lucide-react";
 
-// Animation variants cho page transition - nhanh nhẹ
+// Các biến thể chuyển động cho hiệu ứng chuyển trang - gọn nhẹ
 const pageVariants = {
   initial: { opacity: 0 },
   enter: {
@@ -105,7 +105,7 @@ export default function CustomerLayout() {
 
   return (
     <div className="flex h-screen bg-[#F8FAFC] overflow-hidden font-sans">
-      {/* Render điều kiện */}
+      {/* Hiển thị có điều kiện */}
       {isSidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity"

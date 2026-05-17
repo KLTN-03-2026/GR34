@@ -27,6 +27,7 @@ import {
   Calendar,
   Home,
   Hand,
+  Wallet,
 } from "lucide-react";
 
 import Map, { Marker, NavigationControl, GeolocateControl } from "react-map-gl";
@@ -243,7 +244,7 @@ export default function DriverDashboard() {
       </div>
 
       {/* Phần giao diện */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -263,6 +264,13 @@ export default function DriverDashboard() {
           </div>
         </motion.div>
 
+        <StatCard
+          title="Tổng doanh thu"
+          value={stats.total_revenue ? `${Number(stats.total_revenue).toLocaleString()}đ` : "0đ"}
+          icon={Wallet}
+          colorClass="bg-emerald-100"
+          delay={0.15}
+        />
         <StatCard
           title="Đã hoàn thành"
           value={stats.completed || 0}

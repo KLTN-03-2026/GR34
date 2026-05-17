@@ -51,7 +51,7 @@ export default function About() {
 
   return (
     <div className="bg-white font-sans overflow-hidden">
-      {/* Mini-bar - luôn tồn tại trong DOM, ẩn/hiện qua CSS transform */}
+      {/* Thanh mini - luôn tồn tại trong DOM, ẩn/hiện qua biến đổi CSS */}
       <div
         ref={miniBarRef}
         className="fixed top-[65px] left-0 right-0 z-30 h-16 bg-[#113e48]/97 backdrop-blur-md shadow-xl px-6 flex items-center"
@@ -92,12 +92,12 @@ export default function About() {
         />
       </section>
 
-      {/* Header section - gradient đẹp bên dưới ảnh */}
+      {/* Phần đầu trang - dải màu chuyển sắc bên dưới ảnh */}
       <section
         className="relative overflow-hidden py-20 px-6"
         style={{ background: "linear-gradient(135deg, #0f2a1f 0%, #113e48 50%, #1a5c6e 100%)" }}
       >
-        {/* Decorative blobs */}
+        {/* Các khối nền trang trí */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-teal-500/10 rounded-full blur-2xl pointer-events-none" />
 
@@ -134,7 +134,7 @@ export default function About() {
             </div>
           </div>
 
-          {/* Phải: stats cards */}
+          {/* Phải: các thẻ thống kê */}
           <div className="grid grid-cols-2 gap-4" data-aos="fade-left">
             {[
               { num: "5M+", label: "Đơn hoàn tất", sub: "Tin tưởng từ khách hàng", color: "from-teal-400/25 to-teal-600/15" },

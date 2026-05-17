@@ -8,7 +8,7 @@ body,
   height: 100%;
 }
 
-/* ── Banner page-enter animation ── */
+/* ── Hiệu ứng banner khi trang xuất hiện ── */
 @keyframes bannerReveal {
   0% {
     opacity: 0;

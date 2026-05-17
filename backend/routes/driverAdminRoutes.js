@@ -16,8 +16,8 @@ import {
 const router = express.Router();
 
 
-// Conflicting application routes removed. 
-// They are now handled by driverApplicationRoutes.js which contains the fully working logic with user creation.
+// Các route đăng ký bị trùng đã được gỡ bỏ.
+// Chúng hiện được xử lý trong driverApplicationRoutes.js, nơi chứa đầy đủ logic tạo người dùng.
 
 
 

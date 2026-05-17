@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import DriverNotifications from "../components/DriverNotifications";
 
-// Animation variants cho page transition - nhanh nhẹ
+// Các biến thể chuyển động cho hiệu ứng chuyển trang - gọn nhẹ
 const pageVariants = {
   initial: { opacity: 0 },
   enter: {
@@ -110,7 +110,7 @@ export default function DriverLayout() {
 
   return (
     <div className="flex h-screen bg-slate-50 relative overflow-hidden">
-      {/* Render điều kiện */}
+      {/* Hiển thị có điều kiện */}
       {isMobileMenuOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"

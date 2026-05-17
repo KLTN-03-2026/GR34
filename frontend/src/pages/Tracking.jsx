@@ -372,7 +372,7 @@ export default function Tracking() {
 
   return (
     <div className="font-sans bg-slate-50 min-h-screen text-slate-700">
-      {/* Mini-bar */}
+      {/* Thanh mini */}
       <div
         ref={miniBarRef}
         className="fixed top-[65px] left-0 right-0 z-30 h-16 bg-[#113e48]/97 backdrop-blur-md shadow-xl px-6 flex items-center"
@@ -409,7 +409,7 @@ export default function Tracking() {
         />
       </section>
 
-      {/* Header section */}
+      {/* Phần đầu trang */}
       <section
         className="relative overflow-hidden py-16 px-6"
         style={{ background: "linear-gradient(135deg, #0f2027 0%, #113e48 50%, #203a43 100%)" }}
@@ -518,7 +518,7 @@ export default function Tracking() {
         </div>
       </section>
 
-      {/* Render điều kiện */}
+      {/* Hiển thị có điều kiện */}
       {shipment && statusInfo && (
         <section className="py-16 px-6 max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-3 gap-8">
@@ -606,7 +606,7 @@ export default function Tracking() {
                 >
                   <NavigationControl position="bottom-right" />
 
-                  {/* Render điều kiện */}
+                  {/* Hiển thị có điều kiện */}
                   {routeGeoJSON && (
                     <Source id="route" type="geojson" data={routeGeoJSON}>
                       <Layer
@@ -623,7 +623,7 @@ export default function Tracking() {
                     </Source>
                   )}
 
-                  {/* Render điều kiện */}
+                  {/* Hiển thị có điều kiện */}
                   {pickup && (
                     <Marker
                       longitude={pickup[1]}
@@ -651,7 +651,7 @@ export default function Tracking() {
                     </Marker>
                   )}
 
-                  {/* Render điều kiện */}
+                  {/* Hiển thị có điều kiện */}
                   {delivery && (
                     <Marker
                       longitude={delivery[1]}
@@ -679,7 +679,7 @@ export default function Tracking() {
                     </Marker>
                   )}
 
-                  {/* Render điều kiện */}
+                  {/* Hiển thị có điều kiện */}
                   {driverPos && (
                     <Marker
                       longitude={driverPos[1]}

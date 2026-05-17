@@ -95,7 +95,7 @@ export default function ExpressDelivery() {
   return (
     <div className="font-sans bg-slate-50 text-slate-700">
       {/* Khối nội dung */}
-      {/* Mini-bar - luôn tồn tại trong DOM, ẩn/hiện qua CSS transform */}
+      {/* Thanh mini - luôn tồn tại trong DOM, ẩn/hiện qua biến đổi CSS */}
       <div
         ref={miniBarRef}
         className="fixed top-[65px] left-0 right-0 z-30 h-16 bg-[#1a0a00]/95 backdrop-blur-md shadow-xl px-6 flex items-center"
@@ -140,7 +140,7 @@ export default function ExpressDelivery() {
 
       {/* Tiêu đề trang - section đẹp bên dưới ảnh */}
       <section className="relative overflow-hidden py-16 px-6" style={{background: "linear-gradient(135deg, #1a0a00 0%, #3d0e00 40%, #6b1a00 100%)"}}>
-        {/* Decorative blobs */}
+        {/* Các khối nền trang trí */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-red-500/15 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-72 h-72 bg-orange-500/10 rounded-full blur-2xl pointer-events-none" />
         <div className="absolute top-1/2 right-1/4 w-48 h-48 bg-yellow-500/10 rounded-full blur-xl pointer-events-none" />
@@ -169,7 +169,7 @@ export default function ExpressDelivery() {
             </Link>
           </div>
 
-          {/* Phải: stats tốc độ */}
+          {/* Phải: các thống kê tốc độ */}
           <div className="grid grid-cols-2 gap-4" data-aos="fade-left">
             {[
               { num: "60'", label: "Giao Trong", sub: "Nội thành tối thiểu", color: "from-red-400/25 to-red-600/15" },

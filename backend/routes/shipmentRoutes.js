@@ -9,6 +9,7 @@ import {
   getShipmentByCode,
   getShipmentByCodePublic,
   assignShipmentsBulk,
+  approveRefund,
 } from "../controllers/shipmentController.js";
 
 
@@ -26,6 +27,7 @@ router.get("/:id", verifyToken, getShipmentById);
 router.post("/", verifyToken, createShipment);
 router.put("/:id", verifyToken, updateShipment);
 router.delete("/:id", verifyToken, deleteShipment);
+router.post("/:id/refund", verifyToken, approveRefund);
 
 
 router.post("/assign", verifyToken, assignShipment);

@@ -2,6 +2,7 @@ import pool from "../config/db.js";
 import bcrypt from "bcryptjs";
 import fs from "fs";
 import path from "path";
+import { sendNotificationToCustomer } from "../server.js";
 import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -54,7 +55,7 @@ export const getCustomerProfile = async (req, res) => {
   }
 };
 
-// Upload avatar cho khách hàng
+// Tải ảnh đại diện lên cho khách hàng
 export const uploadAvatar = async (req, res) => {
   try {
     const userId = req.params.id;
@@ -63,11 +64,11 @@ export const uploadAvatar = async (req, res) => {
       return res.status(400).json({ message: "Không có file được upload" });
     }
 
-    // Build the avatar URL - return full URL for frontend
+    // Tạo URL đầy đủ cho ảnh đại diện để trả về cho frontend
     const baseUrl = process.env.BASE_URL || `http://localhost:5000`;
     const avatarUrl = `${baseUrl}/uploads/avatars/${req.file.filename}`;
 
-    // Update user's avatar in database (store relative path)
+    // Cập nhật ảnh đại diện của người dùng trong cơ sở dữ liệu (lưu đường dẫn tương đối)
     const relativePath = `/uploads/avatars/${req.file.filename}`;
     await pool.query("UPDATE users SET avatar = ? WHERE id = ?", [relativePath, userId]);
 
@@ -77,7 +78,7 @@ export const uploadAvatar = async (req, res) => {
     });
   } catch (err) {
     console.error("[uploadAvatar] Error:", err);
-    // Clean up uploaded file on error
+    // Xóa file đã tải lên nếu có lỗi
     if (req.file && req.file.path) {
       try {
         fs.unlinkSync(req.file.path);
@@ -202,7 +203,9 @@ export const getShipmentsByCustomer = async (req, res) => {
                 d.name AS driver_name,
                 d.phone AS driver_phone,
                 d.license_no AS plate_number,
-                d.avatar AS driver_avatar
+                d.avatar AS driver_avatar,
+                COALESCE((SELECT SUM(p.amount) FROM payments p WHERE p.shipment_id = s.id AND p.status IN ('completed','failed')), 0) AS paid_amount,
+                (s.failure_note LIKE '%[Đã hoàn tiền]%' OR s.status = 'canceled') AS is_refunded
          FROM shipments s
          LEFT JOIN assignments a ON s.id = a.shipment_id
          LEFT JOIN drivers d ON a.driver_id = d.id
@@ -211,7 +214,7 @@ export const getShipmentsByCustomer = async (req, res) => {
         [req.params.customer_id]
     );
 
-    // Convert driver avatar relative paths to full URLs
+    // Chuyển đường dẫn tương đối của ảnh đại diện tài xế thành URL đầy đủ
     const baseUrl = process.env.BASE_URL || "http://localhost:5000";
     rows.forEach(shipment => {
       if (shipment.driver_avatar) {
@@ -296,7 +299,7 @@ export const trackShipment = async (req, res) => {
 
     const shipment = rows[0];
 
-    // Convert driver avatar relative path to full URL
+    // Chuyển đường dẫn tương đối của ảnh đại diện tài xế thành URL đầy đủ
     if (shipment.driver_avatar) {
       const baseUrl = process.env.BASE_URL || "http://localhost:5000";
       shipment.driver_avatar = shipment.driver_avatar.startsWith("/uploads")
@@ -334,7 +337,7 @@ export const getShipmentDetail = async (req, res) => {
 
     const shipment = rows[0];
 
-    // Convert driver avatar relative path to full URL
+    // Chuyển đường dẫn tương đối của ảnh đại diện tài xế thành URL đầy đủ
     if (shipment.driver_avatar) {
       const baseUrl = process.env.BASE_URL || "http://localhost:5000";
       shipment.driver_avatar = shipment.driver_avatar.startsWith("/uploads")
@@ -397,5 +400,104 @@ export const changePassword = async (req, res) => {
     res.status(200).json({ message: "Đổi mật khẩu thành công!" });
   } catch (err) {
     res.status(500).json({ error: "Lỗi hệ thống, vui lòng thử lại sau." });
+  }
+};
+
+// Hủy đơn hàng và hoàn tiền nếu đã thanh toán qua ví hoặc MoMo
+export const cancelShipment = async (req, res) => {
+  const { id } = req.params;
+  const connection = await pool.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    // Kiểm tra đơn hàng tồn tại và trạng thái
+    const [[shipment]] = await connection.query(
+      "SELECT * FROM shipments WHERE id = ?",
+      [id]
+    );
+
+    if (!shipment) {
+      await connection.rollback();
+      return res.status(404).json({ message: "Không tìm thấy đơn hàng" });
+    }
+
+    if (shipment.status !== "pending") {
+      await connection.rollback();
+      return res.status(400).json({
+        message: "Chỉ có thể hủy đơn hàng đang ở trạng thái chờ xử lý!",
+      });
+    }
+
+    // Kiểm tra thanh toán đã hoàn tất chưa (MoMo hoặc Wallet)
+    let refundAmount = 0;
+    const [payments] = await connection.query(
+      "SELECT * FROM payments WHERE shipment_id = ? AND status = 'completed'",
+      [id]
+    );
+
+    if (payments.length > 0) {
+      refundAmount = payments.reduce((sum, p) => sum + Number(p.amount), 0);
+    }
+
+    // Hoàn tiền về ví nếu đã thanh toán
+    if (refundAmount > 0 && shipment.customer_id) {
+      const [[wallet]] = await connection.query(
+        "SELECT * FROM wallets WHERE user_id = ?",
+        [shipment.customer_id]
+      );
+
+      if (wallet) {
+        await connection.query(
+          "UPDATE wallets SET balance = balance + ? WHERE id = ?",
+          [refundAmount, wallet.id]
+        );
+
+        const refundOrderId = `REFUND${shipment.tracking_code}${Date.now().toString().slice(-4)}`;
+
+        await connection.query(
+          `INSERT INTO transactions (wallet_id, order_id, type, amount, description, status)
+           VALUES (?, ?, 'deposit', ?, ?, 'success')`,
+          [
+            wallet.id,
+            refundOrderId,
+            refundAmount,
+            `Hoàn tiền đơn hàng #${shipment.tracking_code} bị hủy`,
+          ]
+        );
+      }
+    }
+
+    // Cập nhật trạng thái đơn hàng sang canceled
+    await connection.query(
+      "UPDATE shipments SET status = 'canceled', updated_at = NOW() WHERE id = ?",
+      [id]
+    );
+
+    await connection.commit();
+
+    // Gửi thông báo hoàn tiền nếu có
+    if (refundAmount > 0 && shipment.customer_id) {
+      try {
+        await sendNotificationToCustomer(
+          shipment.customer_id,
+          id,
+          `Đơn hàng #${shipment.tracking_code} đã được hủy. Số tiền ${Number(refundAmount).toLocaleString("vi-VN")}đ đã được hoàn vào ví của bạn.`
+        );
+      } catch (_) {}
+    }
+
+    res.json({
+      message: refundAmount > 0
+        ? `Đã hủy đơn hàng và hoàn ${Number(refundAmount).toLocaleString("vi-VN")}₫ về ví của bạn.`
+        : "Đã hủy đơn hàng thành công.",
+      refundAmount,
+    });
+  } catch (err) {
+    await connection.rollback();
+    console.error("[cancelShipment] Error:", err.message);
+    res.status(500).json({ message: "Lỗi hệ thống khi hủy đơn hàng" });
+  } finally {
+    connection.release();
   }
 };

@@ -165,7 +165,7 @@ export default function FailedShipmentsPanel() {
                   </div>
 
                   <div className="p-5 space-y-4">
-                    {/* Render điều kiện */}
+                    {/* Hiển thị có điều kiện */}
                     {actionModal.shipment.failure_note && (
                       <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3 text-sm text-red-700">
                         <p className="font-bold text-xs text-red-400 mb-1">
@@ -356,7 +356,7 @@ export default function FailedShipmentsPanel() {
         </button>
       </div>
 
-      {/* Render điều kiện */}
+      {/* Hiển thị có điều kiện */}
       {!loading && (
         <div className="grid grid-cols-3 gap-3">
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 text-center">
@@ -466,7 +466,7 @@ export default function FailedShipmentsPanel() {
                     </div>
                   </div>
 
-                  {/* Render điều kiện */}
+                  {/* Hiển thị có điều kiện */}
                   {s.failure_note && (
                     <div className="bg-red-50 border border-red-100 rounded-xl px-3 py-2 mb-3">
                       <p className="text-xs font-bold text-red-400 mb-0.5">

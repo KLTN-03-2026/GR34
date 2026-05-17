@@ -52,7 +52,7 @@ const inferCategory = (question = "") => {
   return "general";
 };
 
-// Parse markdown answer into styled React nodes (no external lib needed)
+// Phân tích câu trả lời markdown thành các node React có định dạng (không cần thư viện ngoài)
 function parseAnswer(text = "") {
   const lines = text.split("\n");
   const elements = [];
@@ -62,24 +62,24 @@ function parseAnswer(text = "") {
     const line = lines[i].trim();
     if (!line) { i++; continue; }
 
-    // Heading: ## Tiêu đề or ### Tiêu đề
+    // Tiêu đề: ## Tiêu đề hoặc ### Tiêu đề
     if (/^#{1,3}\s+(.+)$/.test(line)) {
       elements.push({ type: "heading", text: line.replace(/^#{1,3}\s+/, "") });
       i++;
       continue;
     }
 
-    // Bold heading: **Tiêu đề**
+    // Tiêu đề in đậm: **Tiêu đề**
     if (/^\*\*(.+)\*\*$/.test(line)) {
       elements.push({ type: "heading", text: line.replace(/^\*\*(.+)\*\*$/, "$1") });
       i++;
       continue;
     }
 
-    // Table row: | col1 | col2 | ...
+    // Dòng bảng: | cột1 | cột2 | ...
     if (/^\|/.test(line)) {
       const cells = line.split("|").map(c => c.trim()).filter(c => c !== "");
-      // Skip separator row like |---|---|
+      // Bỏ qua dòng phân cách như |---|---|
       if (cells.length > 0 && !cells.every(c => /^-+$/.test(c))) {
         elements.push({ type: "table-row", cells });
       }
@@ -87,7 +87,7 @@ function parseAnswer(text = "") {
       continue;
     }
 
-    // Bullet list — supports -, *, •, and emoji-prefixed items
+    // Danh sách gạch đầu dòng — hỗ trợ -, *, • và các mục bắt đầu bằng emoji
     const isBullet = /^[-*•]\s/.test(line) || /^[\u{1F300}-\u{1F9FF}]\s/u.test(line);
     if (isBullet) {
       const items = [];
@@ -104,7 +104,7 @@ function parseAnswer(text = "") {
       continue;
     }
 
-    // Ordered list: 1. or 1)
+    // Danh sách có thứ tự: 1. hoặc 1)
     if (/^\d+[.)]\s/.test(line)) {
       const items = [];
       while (i < lines.length && /^\s*\d+[.)]\s/.test(lines[i].trim())) {
@@ -117,14 +117,14 @@ function parseAnswer(text = "") {
       continue;
     }
 
-    // Divider
+    // Đường phân cách
     if (/^---+$/.test(line) || /^===+$/.test(line)) {
       elements.push({ type: "divider" });
       i++;
       continue;
     }
 
-    // Regular paragraph
+    // Đoạn văn thông thường
     if (line) {
       elements.push({ type: "paragraph", text: parseInline(line) });
     }
@@ -135,7 +135,7 @@ function parseAnswer(text = "") {
 }
 
 function parseInline(text) {
-  // Split by **...** bold patterns
+  // Tách theo các mẫu in đậm **...**
   const parts = [];
   const regex = /\*\*(.+?)\*\*/g;
   let last = 0;
@@ -149,7 +149,7 @@ function parseInline(text) {
   return parts.length === 0 ? [{ bold: false, text }] : parts;
 }
 
-// Render inline text with bold support
+// Hiển thị văn bản nội tuyến có hỗ trợ in đậm
 function InlineText({ parts }) {
   return (
     <>
@@ -162,11 +162,11 @@ function InlineText({ parts }) {
   );
 }
 
-// Render answer elements
+// Hiển thị các phần tử của câu trả lời
 function AnswerView({ elements }) {
   if (!elements || elements.length === 0) return null;
 
-  // Group table rows into tables
+  // Gom các dòng bảng thành từng bảng hoàn chỉnh
   const normalized = [];
   let i = 0;
   while (i < elements.length) {
@@ -323,7 +323,7 @@ export default function CustomerSupport() {
 
   return (
     <div className="space-y-6">
-      {/* Hero */}
+      {/* Phần mở đầu nổi bật */}
       <div className="bg-gradient-to-r from-[#113e48] via-blue-700 to-cyan-600 p-8 rounded-2xl text-white shadow-lg relative overflow-hidden">
         <div className="relative z-10">
           <h1 className="text-2xl font-extrabold mb-1 flex items-center gap-2">
@@ -344,7 +344,7 @@ export default function CustomerSupport() {
       {/* Main content */}
       <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 min-h-[600px]">
         <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8">
-          {/* Sidebar */}
+          {/* Thanh bên */}
           <aside className="space-y-2">
             {FAQ_CATEGORY_ORDER.map((tab) => {
               const isActive   = tab === activeFaqTab;
@@ -368,7 +368,7 @@ export default function CustomerSupport() {
               );
             })}
 
-            {/* Need help card */}
+            {/* Thẻ hỗ trợ thêm */}
             <div className="mt-6 rounded-xl border border-red-100 bg-gradient-to-br from-red-50 to-orange-50 p-4">
               <p className="text-sm font-bold text-[#113e48] mb-1">Bạn vẫn cần trợ giúp?</p>
               <p className="text-xs text-gray-600 mb-3">
@@ -384,7 +384,7 @@ export default function CustomerSupport() {
             </div>
           </aside>
 
-          {/* FAQ list */}
+          {/* Danh sách câu hỏi thường gặp */}
           <section className="space-y-3">
             {loadingFaq && (
               <div className="text-sm text-gray-500 py-5 flex items-center gap-2">
@@ -444,7 +444,7 @@ export default function CustomerSupport() {
                           style={{ overflow: "hidden" }}
                         >
                           <div className="px-5 py-4 bg-gradient-to-b from-orange-50/40 to-white border-t border-orange-100">
-                            {/* Loading state */}
+                            {/* Trạng thái đang tải */}
                             {isLoadingThis && (
                               <div className="flex items-center gap-3 text-sm text-gray-500">
                                 <div className="relative">
@@ -467,7 +467,7 @@ export default function CustomerSupport() {
                               </div>
                             )}
 
-                            {/* Answer */}
+                            {/* Câu trả lời */}
                             {!isLoadingThis && answer && (
                               <div className="flex gap-3">
                                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#113e48] to-blue-600 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
