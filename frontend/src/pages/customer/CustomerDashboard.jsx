@@ -7,7 +7,6 @@ import {
   Package,
   Truck,
   CheckCircle,
-  DollarSign,
   PieChart as PieChartIcon,
   Hand,
 } from "lucide-react";
@@ -47,7 +46,32 @@ export default function CustomerDashboard() {
   });
   const [chartData, setChartData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeFilter, setActiveFilter] = useState("all");
   const userId = getCurrentUserId();
+
+  const filterTabs = [
+    { key: "all", label: "Tất cả" },
+    { key: "pending", label: "Chờ xử lý" },
+    { key: "assigned", label: "Đã phân công" },
+    { key: "delivering", label: "Đang giao" },
+    { key: "completed", label: "Hoàn tất" },
+    { key: "failed", label: "Thất bại/Hủy" },
+  ];
+
+  // Legend cho pie chart — luôn hiện đủ 5 trạng thái
+  const chartLegend = [
+    { name: "Chờ xử lý", color: "#F59E0B", key: "pending" },
+    { name: "Đã phân công", color: "#8B5CF6", key: "assigned" },
+    { name: "Đang giao", color: "#3B82F6", key: "delivering" },
+    { name: "Hoàn thành", color: "#10B981", key: "completed" },
+    { name: "Thất bại/Hủy", color: "#EF4444", key: "failed" },
+  ];
+
+  const filteredShipments = activeFilter === "all"
+    ? shipments
+    : activeFilter === "failed"
+    ? shipments.filter((s) => ["failed", "canceled", "draft"].includes(s.status))
+    : shipments.filter((s) => s.status === activeFilter);
 
   useEffect(() => {
     AOS.init({ duration: 600, easing: "ease-out-cubic", once: true });
@@ -82,14 +106,14 @@ export default function CustomerDashboard() {
           0,
         );
 
-        setStats({ total, delivering, completed, pending, totalCod });
+        setStats({ total, delivering, completed, pending, assigned, failed, totalCod });
 
         const rawChartData = [
           { name: "Chờ xử lý", value: pending, color: "#F59E0B" },
           { name: "Đã phân công", value: assigned, color: "#8B5CF6" },
           { name: "Đang giao", value: delivering, color: "#3B82F6" },
           { name: "Hoàn thành", value: completed, color: "#10B981" },
-          { name: "Chưa tạo thành công/Hủy", value: failed, color: "#EF4444" },
+          { name: "Thất bại/Hủy", value: failed, color: "#EF4444" },
         ];
 
         setChartData(rawChartData.filter((item) => item.value > 0));
@@ -107,7 +131,7 @@ export default function CustomerDashboard() {
     return (
       <div className="p-4 md:p-8 space-y-6 animate-pulse">
         <div className="h-8 w-48 bg-gray-200 rounded"></div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="h-28 md:h-32 bg-gray-200 rounded-2xl"></div>
           ))}
@@ -169,7 +193,9 @@ export default function CustomerDashboard() {
           title="Tiền COD"
           value={stats.totalCod.toLocaleString("vi-VN") + "₫"}
           icon={
-            <DollarSign className="text-purple-600 w-5 h-5 md:w-6 md:h-6" />
+            <svg className="text-purple-600 w-5 h-5 md:w-6 md:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
           }
           bg="bg-purple-50"
           valueSize="text-lg md:text-2xl"
@@ -184,59 +210,68 @@ export default function CustomerDashboard() {
             <PieChartIcon size={18} className="text-gray-400" /> Tỷ lệ trạng thái
           </h3>
 
-          <div className="flex-1 min-h-[250px] md:min-h-[300px] relative">
+          <div className="flex-1 min-h-[260px] md:min-h-[310px] flex flex-col">
             {chartData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={chartData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={50}
-                    outerRadius={70}
-                    paddingAngle={5}
-                    dataKey="value"
-                  >
-                    {chartData.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={entry.color}
-                        stroke="none"
+              <>
+                <div className="flex-1 relative">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={chartData}
+                        cx="50%"
+                        cy="45%"
+                        innerRadius={50}
+                        outerRadius={75}
+                        paddingAngle={4}
+                        dataKey="value"
+                      >
+                        {chartData.map((entry, index) => (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={entry.color}
+                            stroke="none"
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        contentStyle={{
+                          borderRadius: "10px",
+                          border: "none",
+                          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                          fontSize: "12px",
+                        }}
+                        itemStyle={{ fontWeight: "bold", color: "#333" }}
                       />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{
-                      borderRadius: "10px",
-                      border: "none",
-                      boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                      fontSize: "12px",
-                    }}
-                    itemStyle={{ fontWeight: "bold", color: "#333" }}
-                  />
-                  <Legend
-                    verticalAlign="bottom"
-                    height={36}
-                    iconType="circle"
-                    wrapperStyle={{ fontSize: "11px", fontWeight: "500" }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="absolute top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
+                    <p className="text-2xl md:text-3xl font-extrabold text-[#113e48]">
+                      {stats.total}
+                    </p>
+                    <p className="text-[9px] md:text-[10px] text-gray-400 uppercase font-bold tracking-wider">
+                      Đơn hàng
+                    </p>
+                  </div>
+                </div>
+                {/* Legend — luôn hiện đủ 5 trạng thái */}
+                <div className="flex flex-wrap justify-center gap-x-4 gap-y-1.5 pt-2 mt-1">
+                  {chartLegend.map((item) => (
+                    <div key={item.key} className="flex items-center gap-1.5">
+                      <div
+                        className="w-2.5 h-2.5 rounded-full shrink-0"
+                        style={{ backgroundColor: item.color }}
+                      />
+                      <span className="text-[11px] font-medium text-gray-500 whitespace-nowrap">
+                        {item.name}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </>
             ) : (
               <div className="flex flex-col items-center justify-center h-full text-gray-400">
                 <Package size={32} className="mb-2 opacity-20" />
                 <p className="text-xs md:text-sm">Chưa có dữ liệu</p>
-              </div>
-            )}
-
-            {chartData.length > 0 && (
-              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none pb-8 md:pb-10">
-                <p className="text-2xl md:text-3xl font-extrabold text-[#113e48]">
-                  {stats.total}
-                </p>
-                <p className="text-[9px] md:text-[10px] text-gray-400 uppercase font-bold tracking-wider">
-                  Đơn hàng
-                </p>
               </div>
             )}
           </div>
@@ -244,17 +279,37 @@ export default function CustomerDashboard() {
 
         {/* Recent Orders */}
         <div className="bg-white p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-sm border border-gray-100 lg:col-span-2">
-          <div className="flex justify-between items-center mb-4 md:mb-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
             <h3 className="text-base md:text-lg font-bold text-[#113e48]">
-              Đơn hàng mới nhất
+              Đơn hàng
             </h3>
-            <button className="text-xs font-bold text-blue-600 hover:underline">
-              Xem tất cả
-            </button>
+            {/* Filter tabs */}
+            <div className="flex flex-wrap gap-1.5">
+              {filterTabs.map((tab) => {
+                const count = tab.key === "all"
+                  ? stats.total
+                  : tab.key === "failed"
+                  ? stats.failed
+                  : stats[tab.key] || 0;
+                return (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveFilter(tab.key)}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
+                      activeFilter === tab.key
+                        ? "bg-[#113e48] text-white shadow-sm"
+                        : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                    }`}
+                  >
+                    {tab.label} ({count})
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           <div className="w-full">
-            {shipments.length === 0 ? (
+            {filteredShipments.length === 0 ? (
               <div className="p-8 text-center text-gray-400 italic text-sm">
                 Chưa có đơn hàng nào.
               </div>
@@ -262,7 +317,7 @@ export default function CustomerDashboard() {
               <>
                 {/* Mobile cards */}
                 <div className="md:hidden space-y-3">
-                  {shipments.slice(0, 5).map((s) => (
+                  {filteredShipments.slice(0, 5).map((s) => (
                     <div
                       key={s.id}
                       className="border border-gray-100 rounded-xl p-3 shadow-sm hover:shadow-md transition-shadow bg-gray-50/30"
@@ -311,7 +366,7 @@ export default function CustomerDashboard() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
-                      {shipments.slice(0, 5).map((s) => (
+                      {filteredShipments.slice(0, 5).map((s) => (
                         <tr
                           key={s.id}
                           className="hover:bg-gray-50/50 transition-colors"
@@ -353,7 +408,7 @@ function StatCard({ title, value, icon, bg, valueSize = "text-xl md:text-2xl" })
         <p className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wide mb-1 line-clamp-1">
           {title}
         </p>
-        <h3 className={`${valueSize} font-extrabold text-[#113e48] truncate`}>
+        <h3 className={`${valueSize} font-extrabold text-[#113e48]`}>
           {value}
         </h3>
       </div>

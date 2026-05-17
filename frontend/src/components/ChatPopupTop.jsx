@@ -64,12 +64,18 @@ const MARKDOWN_COMPONENTS = {
   hr: () => <hr className="my-3 border-gray-200" />,
 };
 
-function BotMessageContent({ text, showCursor }) {
+function BotMessageContent({ text, showCursor, isNew }) {
   return (
     <div className="prose prose-sm max-w-none prose-p:my-1 prose-headings:text-[#113e48] prose-a:text-blue-600 prose-strong:text-[#113e48] [&>*]:last:mb-0">
-      <ReactMarkdown remarkPlugins={[remarkGfm]} components={MARKDOWN_COMPONENTS}>
-        {text}
-      </ReactMarkdown>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+      >
+        <ReactMarkdown remarkPlugins={[remarkGfm]} components={MARKDOWN_COMPONENTS}>
+          {text}
+        </ReactMarkdown>
+      </motion.div>
       {showCursor && (
         <span className="inline-block w-0.5 h-3.5 bg-[#113e48] ml-0.5 animate-pulse align-middle -mt-3" />
       )}
@@ -90,23 +96,13 @@ export default function ChatPopupTop({ onClose }) {
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(true);
-  const [streamingText, setStreamingText] = useState(null);
-  const [isStreaming, setIsStreaming] = useState(false);
 
   const messagesEndRef = useRef(null);
-  const streamingTimerRef = useRef(null);
   const inputRef = useRef(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isTyping, isStreaming, showSuggestions]);
-
-  // Cleanup streaming timer on unmount
-  useEffect(() => {
-    return () => {
-      if (streamingTimerRef.current) clearTimeout(streamingTimerRef.current);
-    };
-  }, []);
+  }, [messages, isTyping, showSuggestions]);
 
   const handleSend = async (text) => {
     if (!text.trim()) return;
@@ -122,54 +118,18 @@ export default function ChatPopupTop({ onClose }) {
       const fullText = res.data.reply;
       const botId = Date.now() + 1;
 
-      setMessages((prev) => [...prev, { from: "bot", text: "", time: new Date(), id: botId }]);
+      setMessages((prev) => [...prev, { from: "bot", text: "", time: new Date(), id: botId, isNew: true }]);
       setIsTyping(false);
-      setIsStreaming(true);
-      setStreamingText("");
 
-      // Estimate streaming speed based on text length
-      const baseDelay = fullText.length < 80 ? 28 : 5;
-      const accelerationPoint = fullText.length * 0.3;
-      let charIndex = 0;
-
-      const typeChar = () => {
-        if (charIndex < fullText.length) {
-          const char = fullText[charIndex];
-          setStreamingText((prev) => prev + char);
-          charIndex++;
-
-          let delay;
-          if (charIndex <= 10) {
-            // First few chars: slow, natural typing feel
-            delay = baseDelay * 2;
-          } else if (charIndex <= accelerationPoint) {
-            // Gradually speed up
-            const progress = (charIndex - 10) / (accelerationPoint - 10);
-            delay = baseDelay * 2 - (baseDelay * 2 - baseDelay) * progress;
-          } else {
-            // Full speed after acceleration point
-            delay = baseDelay;
-          }
-
-          streamingTimerRef.current = setTimeout(typeChar, delay);
-        } else {
-          // Done — commit final text
-          setIsStreaming(false);
-          setStreamingText(null);
-          setMessages((prev) =>
-            prev.map((m) => (m.id === botId ? { ...m, text: fullText } : m))
-          );
-        }
-      };
-
-      // Start after a brief "thinking" pause (proportional to response length)
-      const thinkDelay = Math.min(800, 300 + fullText.length * 0.5);
-      streamingTimerRef.current = setTimeout(typeChar, thinkDelay);
+      // Hiệu ứng fade-in cho toàn bộ câu trả lời thay vì gõ từng chữ
+      setTimeout(() => {
+        setMessages((prev) =>
+          prev.map((m) => (m.id === botId ? { ...m, text: fullText, isNew: false } : m))
+        );
+      }, 600);
 
     } catch (error) {
       setIsTyping(false);
-      setIsStreaming(false);
-      setStreamingText(null);
       setMessages((prev) => [
         ...prev,
         {
@@ -185,7 +145,7 @@ export default function ChatPopupTop({ onClose }) {
   const handleSuggestionClick = (text) => {
     setInput(text);
     setShowSuggestions(false);
-    setTimeout(() => inputRef.current?.focus(), 50);
+    setTimeout(() => handleSend(text), 50);
   };
 
   const formatTime = (date) => {
@@ -306,8 +266,9 @@ export default function ChatPopupTop({ onClose }) {
                     >
                       {m.from === "bot" ? (
                         <BotMessageContent
-                          text={isStreaming && streamingText !== null && m.text === "" ? streamingText : m.text}
-                          showCursor={isStreaming && streamingText !== null && m.text === ""}
+                          text={m.text}
+                          showCursor={false}
+                          isNew={m.isNew}
                         />
                       ) : (
                         <p className="whitespace-pre-wrap">{m.text}</p>
@@ -439,14 +400,14 @@ export default function ChatPopupTop({ onClose }) {
               />
               <button
                 onClick={() => handleSend(input)}
-                disabled={!input.trim() || isTyping || isStreaming}
+                disabled={!input.trim() || isTyping}
                 className={`ml-2 w-10 h-10 shrink-0 flex items-center justify-center rounded-xl transition-all ${
-                  input.trim() && !isTyping && !isStreaming
+                  input.trim() && !isTyping
                     ? "bg-gradient-to-br from-[#113e48] to-blue-600 text-white hover:shadow-lg hover:scale-105"
                     : "bg-gray-200 text-gray-400 cursor-not-allowed"
                 }`}
               >
-                {isTyping || isStreaming ? (
+                {isTyping ? (
                   <motion.div
                     animate={{ rotate: 360 }}
                     transition={{ repeat: Infinity, duration: 1, ease: "linear" }}

@@ -27,6 +27,18 @@ import {
 // Token Mapbox dùng cho bản đồ
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 
+const STATUS_LABEL_MAP = {
+  draft: "Chưa tạo thành công",
+  pending: "Đã đặt hàng",
+  assigned: "Đã phân công",
+  picking: "Đang lấy hàng",
+  delivering: "Đang giao hàng",
+  delivered: "Đã giao hàng",
+  completed: "Giao thành công",
+  canceled: "Đã hủy",
+  failed: "Giao thất bại",
+};
+
 
 // Component marker tùy chỉnh trên bản đồ với hiệu ứng ping và mũi tên
 const CustomMarker = ({ icon, bgColor, ringColor, onClick }) => {
@@ -60,7 +72,8 @@ const CustomMarker = ({ icon, bgColor, ringColor, onClick }) => {
 function TrackingTimeline({ status }) {
   const steps = [
     { key: "pending", label: "Đã đặt hàng", icon: <Package size={18} /> },
-    { key: "picking", label: "Đang lấy hàng", icon: <Package size={18} /> },
+    { key: "assigned", label: "Đã phân công", icon: <Truck size={18} /> },
+    { key: "picking", label: "Đang lấy hàng", icon: <Truck size={18} /> },
     { key: "delivering", label: "Đang giao hàng", icon: <Truck size={18} /> },
     {
       key: "completed",
@@ -74,13 +87,14 @@ function TrackingTimeline({ status }) {
       case "pending":
         return 0;
       case "assigned":
-      case "picking":
         return 1;
-      case "delivering":
+      case "picking":
         return 2;
+      case "delivering":
+        return 3;
       case "delivered":
       case "completed":
-        return 3;
+        return 4;
       case "failed":
       case "canceled":
       case "draft":
@@ -732,17 +746,7 @@ export default function CustomerShipmentDetail() {
               Trạng thái hiện tại
             </p>
             <p className="text-lg font-extrabold text-[#113e48]">
-              {{
-                draft: "Chưa tạo thành công",
-                pending: "Đã đặt hàng",
-                assigned: "Đã phân công",
-                picking: "Đang lấy hàng",
-                delivering: "Đang giao hàng",
-                delivered: "Đã giao hàng",
-                completed: "Giao thành công",
-                canceled: "Đã hủy",
-                failed: "Giao thất bại",
-              }[shipment.status] || shipment.status}
+              {STATUS_LABEL_MAP[shipment.status] || shipment.status}
             </p>
           </div>
         </div>
