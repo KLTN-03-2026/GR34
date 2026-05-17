@@ -408,7 +408,7 @@ export default function AdminNews() {
                 </div>
               </div>
 
-              {/* Render điều kiện */}
+              {/* Hiển thị có điều kiện */}
               {imagePreview && (
                 <div className="w-full bg-gray-100 rounded-xl overflow-hidden border border-gray-200 shadow-sm relative group flex justify-center py-4">
                   <img src={imagePreview} alt="Preview" className="max-w-full h-auto max-h-[400px] object-contain" />

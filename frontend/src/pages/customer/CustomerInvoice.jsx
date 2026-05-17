@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import API from "../../services/api";
 import Pagination from "../../components/Pagination";
 import toast from "../../lib/toast";
@@ -26,6 +26,8 @@ import {
   ChevronDown,
   ClipboardList,
   AlertTriangle,
+  MapPin,
+  ArrowRight,
 } from "lucide-react";
 
 const STATUS_OPTIONS = [
@@ -116,8 +118,9 @@ export default function CustomerInvoice() {
     setLoading(true);
     API.get(`/customers/shipments/${customerId}`)
       .then((res) => {
-        setShipments(res.data);
-        setFiltered(res.data);
+        const nonDraft = res.data.filter(s => s.status !== 'draft');
+        setShipments(nonDraft);
+        setFiltered(nonDraft);
       })
       .catch(() => toast.error("Không thể tải danh sách đơn hàng!"))
       .finally(() => setLoading(false));
@@ -158,12 +161,18 @@ export default function CustomerInvoice() {
       completed: "Hoàn thành",
       failed: "Giao thất bại",
       canceled: "Đã hủy",
-      express: "Hỏa tốc",
-      standard: "Thường",
+      express: "Nhanh",
+      standard: "Tiết kiệm",
       fast: "Hỏa tốc",
-      normal: "Thường",
+      normal: "Tiết kiệm",
     };
     return map[status] || status;
+  };
+
+  const getServiceBadge = (type) => {
+    if (type === "fast") return <span className="text-[10px] font-bold bg-gradient-to-r from-orange-500 to-red-500 text-white px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm">Hỏa tốc</span>;
+    if (type === "express") return <span className="text-[10px] font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm">Nhanh</span>;
+    return <span className="text-[10px] font-bold bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm">Tiết kiệm</span>;
   };
 
   const getPaymentMethodLabel = (method) => {
@@ -377,9 +386,22 @@ export default function CustomerInvoice() {
         y + 26,
         { align: "center" },
       );
+      const serviceLabel = getStatusLabel(shipment.service_type || "standard");
+      const isFastService = shipment.service_type === "fast";
+      doc.setFontSize(isFastService ? 11 : 9);
+      doc.setTextColor(isFastService ? 220 : 60, isFastService ? 50 : 80, 0);
+      doc.setFont("Roboto", "bold");
+      doc.text(`Dịch vụ: ${serviceLabel.toUpperCase()}`, midCx, y + 31, { align: "center" });
+      if (isFastService) {
+        const labelW = doc.getTextWidth(`Dịch vụ: ${serviceLabel.toUpperCase()}`);
+        doc.setDrawColor(220, 50, 0);
+        doc.setLineWidth(0.4);
+        doc.line(midCx - labelW / 2, y + 32, midCx + labelW / 2, y + 32);
+      }
+      doc.setFont("Roboto", "normal");
       doc.setFontSize(7);
       doc.setTextColor(70, 88, 90);
-      doc.text("Hotline: 1900 888 999 | support@speedyship.com", midCx, y + 33.5, {
+      doc.text("Hotline: 1900 888 999 | support@speedyship.com", midCx, y + 36, {
         align: "center",
       });
 
@@ -490,7 +512,8 @@ export default function CustomerInvoice() {
 
       const codAmount = Number(shipment.cod_amount) || 0;
       const shippingFee = Number(shipment.shipping_fee) || 0;
-      const totalCollect = codAmount + shippingFee;
+      const isCustomerPaid = shipment.payment_method !== "COD";
+      const totalCollect = isCustomerPaid ? 0 : codAmount + shippingFee;
 
       const sectionBarH = 6;
       strokeFrame(doc, margin, y, innerW, sectionBarH);
@@ -552,8 +575,8 @@ export default function CustomerInvoice() {
         theme: "grid",
         head: [["Khoản mục", "Số tiền"]],
         body: [
-          ["Phí vận chuyển", `${fmt(shippingFee)} VNĐ`],
-          ["Thu hộ COD", `${fmt(codAmount)} VNĐ`],
+          ["Phí vận chuyển", isCustomerPaid ? "Người gửi đã thanh toán" : `${fmt(shippingFee)} VNĐ`],
+          ["Thu hộ COD", isCustomerPaid ? "0 VNĐ" : `${fmt(codAmount)} VNĐ`],
           ["Hình thức thanh toán", getPaymentMethodLabel(shipment.payment_method)],
         ],
         foot: [["TỔNG THU NGƯỜI NHẬN", `${fmt(totalCollect)} VNĐ`]],
@@ -739,12 +762,11 @@ export default function CustomerInvoice() {
           <table className="w-full text-sm text-left">
             <thead className="bg-gray-50 text-gray-500 font-medium border-b border-gray-100 text-xs uppercase tracking-wider">
               <tr>
-                <th className="px-6 py-4">Mã vận đơn</th>
-                <th className="px-6 py-4">Người nhận</th>
+                <th className="px-6 py-4">Đơn hàng</th>
+                <th className="px-6 py-4">Địa điểm</th>
                 <th className="px-6 py-4 text-center">Trạng thái</th>
                 <th className="px-6 py-4 text-right">Phí ship</th>
                 <th className="px-6 py-4 text-right">COD</th>
-                <th className="px-6 py-4 text-center">Ngày tạo</th>
                 <th className="px-6 py-4 text-center">Thao tác</th>
               </tr>
             </thead>
@@ -752,7 +774,7 @@ export default function CustomerInvoice() {
               {loading ? (
                 [...Array(5)].map((_, i) => (
                   <tr key={i}>
-                    <td colSpan="7" className="px-6 py-4">
+                    <td colSpan="6" className="px-6 py-4">
                       <div className="h-4 bg-gray-100 rounded animate-pulse"></div>
                     </td>
                   </tr>
@@ -760,7 +782,7 @@ export default function CustomerInvoice() {
               ) : filtered.length === 0 ? (
                 <tr>
                   <td
-                    colSpan="7"
+                    colSpan="6"
                     className="px-6 py-12 text-center text-gray-400 italic"
                   >
                     Không tìm thấy đơn hàng nào.
@@ -772,15 +794,28 @@ export default function CustomerInvoice() {
                     key={s.id}
                     className="hover:bg-gray-50/50 transition-colors group"
                   >
-                    <td className="px-6 py-4 font-bold text-[#113e48] font-mono">
-                      #{s.tracking_code}
-                    </td>
                     <td className="px-6 py-4">
-                      <div className="font-medium text-gray-900">
-                        {s.receiver_name}
+                      <div className="flex items-center gap-2">
+                        <div className="font-bold text-[#113e48] font-mono">#{s.tracking_code}</div>
+                        {getServiceBadge(s.service_type)}
                       </div>
-                      <div className="text-xs text-gray-400">
-                        {s.receiver_phone}
+                      <div className="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                        <span className="font-medium text-gray-700">{s.sender_name}</span>
+                        <ArrowRight size={10} className="text-gray-400" />
+                        <span className="font-medium text-gray-700">{s.receiver_name}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 max-w-[280px]">
+                      <div className="flex items-start gap-1.5 text-xs text-gray-600">
+                        <Package size={12} className="text-blue-500 mt-0.5 shrink-0" />
+                        <span className="truncate" title={s.pickup_address}>{s.pickup_address}</span>
+                      </div>
+                      <div className="flex items-start gap-1.5 text-xs text-gray-600 mt-1.5">
+                        <MapPin size={12} className="text-orange-500 mt-0.5 shrink-0" />
+                        <span className="truncate" title={s.delivery_address}>{s.delivery_address}</span>
+                      </div>
+                      <div className="text-[10px] text-gray-400 mt-1.5">
+                        {new Date(s.created_at).toLocaleString("vi-VN", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" })}
                       </div>
                     </td>
                     <td className="px-6 py-4 text-center">
@@ -791,9 +826,6 @@ export default function CustomerInvoice() {
                     </td>
                     <td className="px-6 py-4 text-right font-mono text-gray-600">
                       {fmt(s.cod_amount)}₫
-                    </td>
-                    <td className="px-6 py-4 text-center text-xs text-gray-400">
-                      {new Date(s.created_at).toLocaleDateString("vi-VN")}
                     </td>
                     <td className="px-6 py-4 text-center">
                       <div className="flex justify-start gap-2 w-[72px] mx-auto">
@@ -809,19 +841,25 @@ export default function CustomerInvoice() {
                         >
                           <Eye size={16} />
                         </button>
-                        {/* Nút hành động */}
-                        <button
-                          onClick={() => generatePDF(s)}
-                          disabled={downloading === s.id}
-                          className="p-2 text-orange-600 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors disabled:opacity-50 flex items-center gap-1"
-                          title="Tải PDF"
-                        >
-                          {downloading === s.id ? (
-                            <Loader2 size={16} className="animate-spin" />
-                          ) : (
-                            <Download size={16} />
-                          )}
-                        </button>
+                        {/* Chỉ pending xuất phiếu, completed/delivered xuất hóa đơn */}
+                        {(s.status === "pending" || s.status === "delivered" || s.status === "completed") && (
+                          <button
+                            onClick={() => generatePDF(s)}
+                            disabled={downloading === s.id}
+                            className={`p-2 rounded-lg transition-colors disabled:opacity-50 flex items-center gap-1 ${
+                              s.status === "pending"
+                                ? "text-orange-600 bg-orange-50 hover:bg-orange-100"
+                                : "text-emerald-600 bg-emerald-50 hover:bg-emerald-100"
+                            }`}
+                            title={s.status === "pending" ? "Xuất phiếu giao hàng" : "Xuất hóa đơn"}
+                          >
+                            {downloading === s.id ? (
+                              <Loader2 size={16} className="animate-spin" />
+                            ) : (
+                              <Download size={16} />
+                            )}
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -850,6 +888,7 @@ export default function CustomerInvoice() {
             <h3 className="font-bold flex items-center gap-2 text-sm">
               <FileText size={16} className="text-orange-400" />
               Xem trước — #{previewData.tracking_code}
+              {getServiceBadge(previewData.service_type)}
             </h3>
             <div className="flex items-center gap-2">
               <button
@@ -946,11 +985,13 @@ export default function CustomerInvoice() {
               </div>
 
               <div className="bg-[#113e48] text-white p-4 rounded-xl border border-[#113e48] flex flex-col justify-center">
-                <p className="text-[10px] text-orange-300 uppercase font-bold tracking-wider text-center mb-1">Tổng thu</p>
+                <p className="text-[10px] text-orange-300 uppercase font-bold tracking-wider text-center mb-1">Tổng thu người nhận</p>
                 <p className="text-3xl font-black text-center leading-tight">
-                  {fmt(Number(previewData.cod_amount) + Number(previewData.shipping_fee))}₫
+                  {previewData.payment_method !== "COD" ? "0" : fmt(Number(previewData.cod_amount) + Number(previewData.shipping_fee))}₫
                 </p>
-                <p className="text-center text-xs text-white/70 mt-2">Người nhận thanh toán khi giao hàng</p>
+                <p className="text-center text-xs text-white/70 mt-2">
+                  {previewData.payment_method !== "COD" ? "Người gửi đã thanh toán trước" : "Người nhận thanh toán khi giao hàng"}
+                </p>
               </div>
             </div>
           </div>

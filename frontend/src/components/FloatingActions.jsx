@@ -129,12 +129,12 @@ export default function FloatingActions({ onOpenChatBubble, onOpenChatTop }) {
           <FontAwesomeIcon icon={open ? faXmark : faCommentDots} />
         </motion.div>
 
-        {/* Render điều kiện */}
+        {/* Hiển thị có điều kiện */}
         {!open && (
           <span className="absolute inset-0 rounded-full border-2 border-white/30 animate-[ping_2s_infinite] opacity-50 pointer-events-none"></span>
         )}
 
-        {/* Render điều kiện */}
+        {/* Hiển thị có điều kiện */}
         {!open && (
           <div className="absolute top-0 -left-[100%] w-full h-full bg-white/20 skew-x-[45deg] group-hover:left-[100%] transition-all duration-700 ease-in-out"></div>
         )}

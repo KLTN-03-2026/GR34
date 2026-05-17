@@ -1,12 +1,12 @@
 // ============================================
-// Application Constants
+// Hằng số ứng dụng
 // ============================================
 
-// Pagination
+// Phân trang
 export const PAGE_SIZE_DEFAULT = 20;
 export const PAGE_SIZE_MAX = 100;
 
-// OTP
+// Mã OTP
 export const OTP_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
 export const OTP_LENGTH = 6;
 
@@ -14,12 +14,12 @@ export const OTP_LENGTH = 6;
 export const JWT_EXPIRY = "1d";
 export const JWT_RESET_EXPIRY = "15m";
 
-// Service Types
+// Loại dịch vụ
 export const SERVICE_TYPE_NORMAL = "normal";
 export const SERVICE_TYPE_EXPRESS = "express";
 export const SERVICE_TYPE_FAST = "fast";
 
-// Shipment Status
+// Trạng thái đơn hàng
 export const SHIPMENT_STATUS = {
   PENDING: "pending",
   ASSIGNED: "assigned",
@@ -31,7 +31,7 @@ export const SHIPMENT_STATUS = {
   CANCELED: "canceled",
 };
 
-// Assignment Status
+// Trạng thái phân công
 export const ASSIGNMENT_STATUS = {
   ASSIGNED: "assigned",
   PICKING: "picking",
@@ -40,7 +40,7 @@ export const ASSIGNMENT_STATUS = {
   FAILED: "failed",
 };
 
-// Payment Methods
+// Phương thức thanh toán
 export const PAYMENT_METHOD = {
   COD: "COD",
   WALLET: "WALLET",
@@ -48,7 +48,7 @@ export const PAYMENT_METHOD = {
   CARD: "CARD",
 };
 
-// Payment Status
+// Trạng thái thanh toán
 export const PAYMENT_STATUS = {
   PENDING: "pending",
   SUCCESS: "success",
@@ -56,7 +56,7 @@ export const PAYMENT_STATUS = {
   FAILED: "failed",
 };
 
-// Transaction Types
+// Loại giao dịch
 export const TRANSACTION_TYPE = {
   DEPOSIT: "deposit",
   WITHDRAW: "withdraw",
@@ -64,7 +64,7 @@ export const TRANSACTION_TYPE = {
   REFUND: "refund",
 };
 
-// User Roles
+// Vai trò người dùng
 export const USER_ROLE = {
   ADMIN: "admin",
   DISPATCHER: "dispatcher",
@@ -72,7 +72,7 @@ export const USER_ROLE = {
   CUSTOMER: "customer",
 };
 
-// Driver Status
+// Trạng thái tài xế
 export const DRIVER_STATUS = {
   AVAILABLE: "available",
   FREE: "free",
@@ -80,13 +80,13 @@ export const DRIVER_STATUS = {
   INACTIVE: "inactive",
 };
 
-// Chat Status
+// Trạng thái cuộc trò chuyện
 export const CHAT_STATUS = {
   ACTIVE: "active",
   CLOSED: "closed",
 };
 
-// Regions (for default use)
+// Khu vực (dùng mặc định)
 export const REGIONS = {
   HN: { code: "HN", name: "Hà Nội" },
   HCM: { code: "HCM", name: "TP. Hồ Chí Minh" },
@@ -95,14 +95,14 @@ export const REGIONS = {
   HP: { code: "HP", name: "Hải Phòng" },
 };
 
-// Order ID Prefixes
+// Tiền tố mã đơn hàng
 export const ORDER_PREFIX = {
   SHIPMENT: "SHIP",
   WALLET: "WALLET",
   TRANSACTION: "TRANS",
 };
 
-// Map Settings
+// Thiết lập bản đồ
 export const MAP_ZOOM_DEFAULT = 12;
 export const MAP_ZOOM_MIN = 1;
 export const MAP_ZOOM_MAX = 20;

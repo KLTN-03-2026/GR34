@@ -22,13 +22,11 @@ export const getDriverNotifications = async (req, res) => {
   }
 };
 
-// Lấy danh sách thông báo của điều phối viên theo receiver_id
+// Lấy danh sách thông báo của điều phối viên (dùng chung cho toàn bộ điều phối)
 export const getDispatcherNotifications = async (req, res) => {
   try {
-    const { id } = req.params;
     const [rows] = await db.query(
-      "SELECT * FROM notifications WHERE receiver_id=? AND target_role='dispatcher' ORDER BY created_at DESC",
-      [id],
+      "SELECT * FROM notifications WHERE target_role='dispatcher' ORDER BY created_at DESC LIMIT 100"
     );
     res.json(rows);
   } catch (err) {

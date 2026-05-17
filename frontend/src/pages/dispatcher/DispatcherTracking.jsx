@@ -50,7 +50,7 @@ export default function DispatcherTracking() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 
-  // Filter logic: always show completed/failed alongside active filter
+  // Logic lọc: luôn hiển thị đơn đã hoàn tất hoặc thất bại cùng với bộ lọc đang áp dụng
   const filtered = assignments.filter((a) => {
     const isHistorical = a.assignment_status === "completed" || a.assignment_status === "failed";
     if (isHistorical) return true;
@@ -69,7 +69,7 @@ export default function DispatcherTracking() {
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
   const paginatedAssignments = filtered.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
 
-  // Stats badges
+  // Các badge thống kê
   const stats = assignments.reduce((acc, a) => {
     acc[a.assignment_status] = (acc[a.assignment_status] || 0) + 1;
     return acc;
@@ -112,7 +112,7 @@ export default function DispatcherTracking() {
 
   return (
     <div className="p-6 bg-slate-50 min-h-screen space-y-6">
-      {/* Header + Filter bar */}
+      {/* Phần đầu và thanh bộ lọc */}
       <div className="flex flex-col xl:flex-row items-start xl:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[#113e48] flex items-center gap-2">
@@ -123,7 +123,7 @@ export default function DispatcherTracking() {
           </p>
         </div>
 
-        {/* Filter bar */}
+        {/* Thanh bộ lọc */}
         <div className="flex flex-col xl:flex-row items-stretch xl:items-center gap-2 ml-auto">
           {/* Search */}
           <div className="relative flex-1 xl:w-96">

@@ -75,7 +75,7 @@ export default function CustomerDashboard() {
         const pending = data.filter((s) => s.status === "pending").length;
         const assigned = data.filter((s) => s.status === "assigned").length;
         const failed = data.filter((s) =>
-          ["failed", "canceled"].includes(s.status),
+          ["failed", "canceled", "draft"].includes(s.status),
         ).length;
         const totalCod = data.reduce(
           (sum, s) => sum + (Number(s.cod_amount) || 0),
@@ -89,7 +89,7 @@ export default function CustomerDashboard() {
           { name: "Đã phân công", value: assigned, color: "#8B5CF6" },
           { name: "Đang giao", value: delivering, color: "#3B82F6" },
           { name: "Hoàn thành", value: completed, color: "#10B981" },
-          { name: "Thất bại/Hủy", value: failed, color: "#EF4444" },
+          { name: "Chưa tạo thành công/Hủy", value: failed, color: "#EF4444" },
         ];
 
         setChartData(rawChartData.filter((item) => item.value > 0));
@@ -401,6 +401,11 @@ function StatusBadge({ status }) {
     },
     failed: {
       label: "Giao thất bại",
+      color: "bg-red-50 text-red-700 border-red-200",
+      dot: "bg-red-500",
+    },
+    draft: {
+      label: "Chưa tạo thành công",
       color: "bg-red-50 text-red-700 border-red-200",
       dot: "bg-red-500",
     },

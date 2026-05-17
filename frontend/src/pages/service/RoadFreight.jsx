@@ -69,7 +69,7 @@ export default function RoadFreight() {
   return (
     <div className="font-sans bg-gray-50 text-slate-700">
       {/* Khối nội dung */}
-      {/* Mini-bar - luôn tồn tại trong DOM, ẩn/hiện qua CSS transform */}
+      {/* Thanh mini - luôn tồn tại trong DOM, ẩn/hiện qua biến đổi CSS */}
       <div
         ref={miniBarRef}
         className="fixed top-[65px] left-0 right-0 z-30 h-16 bg-[#0f2027]/95 backdrop-blur-md shadow-xl px-6 flex items-center"
@@ -130,7 +130,7 @@ export default function RoadFreight() {
             "linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%)",
         }}
       >
-        {/* Decorative blobs */}
+        {/* Các khối nền trang trí */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[200px] bg-white/5 rounded-full blur-3xl pointer-events-none" />
@@ -167,7 +167,7 @@ export default function RoadFreight() {
             </div>
           </div>
 
-          {/* Phải: stats nổi bật */}
+          {/* Phải: các thống kê nổi bật */}
           <div className="grid grid-cols-2 gap-4" data-aos="fade-left">
             {[
               {

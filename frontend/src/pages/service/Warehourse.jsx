@@ -56,7 +56,7 @@ export default function Warehouse() {
   return (
     <div className="font-sans bg-slate-50 text-slate-700">
       {/* Khối nội dung */}
-      {/* Mini-bar - luôn tồn tại trong DOM, ẩn/hiện qua CSS transform */}
+      {/* Thanh mini - luôn tồn tại trong DOM, ẩn/hiện qua biến đổi CSS */}
       <div
         ref={miniBarRef}
         className="fixed top-[65px] left-0 right-0 z-30 h-16 bg-[#0f3460]/95 backdrop-blur-md shadow-xl px-6 flex items-center"
@@ -117,7 +117,7 @@ export default function Warehouse() {
             "linear-gradient(135deg, #0f3460 0%, #16213e 40%, #0d1b2a 100%)",
         }}
       >
-        {/* Decorative blobs */}
+        {/* Các khối nền trang trí */}
         <div className="absolute top-0 right-0 w-80 h-80 bg-cyan-400/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-10 w-60 h-60 bg-teal-400/10 rounded-full blur-2xl pointer-events-none" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-32 bg-white/5 rounded-full blur-3xl pointer-events-none" />
@@ -150,7 +150,7 @@ export default function Warehouse() {
             </Link>
           </div>
 
-          {/* Phải: stats cards */}
+          {/* Phải: các thẻ thống kê */}
           <div className="grid grid-cols-2 gap-4" data-aos="fade-left">
             {[
               {

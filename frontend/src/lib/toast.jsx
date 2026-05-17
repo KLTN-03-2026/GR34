@@ -1,10 +1,10 @@
 /**
- * Custom toast wrapper — icon SVG hiện đại thay thế icon mặc định của react-hot-toast.
+ * Bộ bọc toast tùy chỉnh — icon SVG hiện đại thay thế icon mặc định của react-hot-toast.
  * Dùng: import toast from "@/lib/toast" thay vì "react-hot-toast"
  */
 import { toast as _toast } from "react-hot-toast";
 
-// ── Icon SVG components ──────────────────────────────────────────────────────
+// ── Các thành phần icon SVG ──────────────────────────────────────────────────
 
 const SuccessIcon = () => (
   <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -80,7 +80,7 @@ const LoadingIcon = () => (
   </svg>
 );
 
-// ── Style presets ────────────────────────────────────────────────────────────
+// ── Các mẫu kiểu dáng sẵn có ─────────────────────────────────────────────────
 
 const baseStyle = {
   borderRadius: "14px",
@@ -103,7 +103,7 @@ const styles = {
   blank:   { ...baseStyle, background: "#ffffff", color: "#1e293b", borderColor: "#e2e8f0" },
 };
 
-// ── Wrapper functions ────────────────────────────────────────────────────────
+// ── Các hàm bao tiện ích ─────────────────────────────────────────────────────
 
 const toast = Object.assign(
   (msg, opts) => _toast(msg, { icon: <InfoIcon />, style: styles.blank, ...opts }),

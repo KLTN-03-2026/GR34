@@ -430,7 +430,7 @@ export default function CustomerProfile() {
                         Địa chỉ giao hàng mặc định
                       </label>
 
-                      {/* Render điều kiện */}
+                      {/* Hiển thị có điều kiện */}
                       {isEditing && (
                         <button
                           type="button"
@@ -480,7 +480,7 @@ export default function CustomerProfile() {
         </div>
       </div>
 
-      {/* Render điều kiện */}
+      {/* Hiển thị có điều kiện */}
       {showPassModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
@@ -575,7 +575,7 @@ export default function CustomerProfile() {
         </div>
       )}
 
-      {/* Render điều kiện */}
+      {/* Hiển thị có điều kiện */}
       {showAddressModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[80vh]">

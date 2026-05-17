@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import pool from "../config/db.js";
 import { sendMail } from "../utils/sendMail.js";
 
-// Quên mật khẩu - gửi email reset
+// Quên mật khẩu - gửi email đặt lại mật khẩu
 export const forgotPassword = async (req, res) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ message: "Thiếu email" });
@@ -76,10 +76,10 @@ export const verifyForgotOtp = async (req, res) => {
       return res.status(400).json({ message: "OTP hết hạn" });
     }
 
-    // Delete OTP after successful verification to prevent reuse
+    // Xóa OTP sau khi xác thực thành công để tránh dùng lại
     await pool.query("DELETE FROM otp_codes WHERE id = ?", [record.id]);
 
-    // Get reset secret from env, use placeholder only in development
+    // Lấy reset secret từ biến môi trường, chỉ dùng giá trị mặc định trong môi trường phát triển
     const resetSecret = process.env.JWT_RESET_SECRET || process.env.JWT_SECRET || "dev-secret-change-in-production";
 
     const resetToken = jwt.sign({ email }, resetSecret, {
@@ -97,7 +97,7 @@ export const resetPassword = async (req, res) => {
   const { email, newPassword, token } = req.body;
 
   try {
-    // Get reset secret from env, use placeholder only in development
+    // Lấy reset secret từ biến môi trường, chỉ dùng giá trị mặc định trong môi trường phát triển
     const resetSecret = process.env.JWT_RESET_SECRET || process.env.JWT_SECRET || "dev-secret-change-in-production";
 
     const payload = jwt.verify(token, resetSecret);

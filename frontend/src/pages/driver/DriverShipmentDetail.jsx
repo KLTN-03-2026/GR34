@@ -509,17 +509,33 @@ export default function DriverShipmentDetail() {
 
               <div className="flex justify-between items-center py-3 border-b border-gray-50">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center text-green-600">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${shipment.cod_payer === "customer" ? "bg-emerald-50 text-emerald-600" : "bg-green-50 text-green-600"}`}>
                     <CreditCard size={16} />
                   </div>
-                  <span className="text-sm text-gray-600 font-medium">
-                    Thu hộ (COD)
-                  </span>
+                  <div>
+                    <span className="text-sm text-gray-600 font-medium">
+                      Thu hộ (COD)
+                    </span>
+                    <p className={`text-xs font-bold mt-0.5 ${shipment.cod_payer === "customer" ? "text-emerald-600" : "text-orange-600"}`}>
+                      {shipment.cod_payer === "customer" ? "Khách hàng đã thanh toán" : "Người nhận thanh toán"}
+                    </p>
+                  </div>
                 </div>
-                <span className="text-lg font-bold text-green-600">
-                  {Number(shipment.cod_amount || 0).toLocaleString()} đ
+                <span className={`text-lg font-bold ${shipment.cod_payer === "customer" ? "text-emerald-600" : "text-green-600"}`}>
+                  {shipment.cod_payer === "customer"
+                    ? "0 đ"
+                    : `${Number(shipment.cod_amount || 0).toLocaleString()} đ`
+                  }
                 </span>
               </div>
+              {shipment.cod_payer === "customer" && (
+                <div className="bg-blue-50 px-3 py-2 rounded-xl border border-blue-100 flex items-start gap-2 -mt-1">
+                  <AlertCircle size={14} className="text-blue-500 shrink-0 mt-0.5" />
+                  <p className="text-xs text-blue-700 font-medium">
+                    Không thu tiền người nhận. Khách hàng đã thanh toán toàn bộ {Number(shipment.cod_amount || 0).toLocaleString()}đ + phí ship.
+                  </p>
+                </div>
+              )}
 
               <div className="flex justify-between items-center py-3 border-b border-gray-50">
                 <div className="flex items-center gap-3">

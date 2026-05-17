@@ -90,6 +90,13 @@ const SHIPMENT_STATUS_OPTIONS = [
     itemClass: "text-gray-700",
     iconClass: "bg-gray-100 text-gray-600",
   },
+  {
+    value: "draft",
+    label: "Thất bại",
+    icon: CircleX,
+    itemClass: "text-red-700",
+    iconClass: "bg-red-50 text-red-600",
+  },
 ];
 
 // Quản lý tất cả đơn hàng
@@ -224,6 +231,19 @@ export default function AdminShipments() {
     }
   };
 
+// Xử lý hoàn tiền
+  const handleRefund = async (id) => {
+    if (confirm("Xác nhận duyệt hoàn tiền cho đơn hàng này? Tiền sẽ được cộng vào ví khách hàng.")) {
+      try {
+        const res = await API.post(`/shipments/${id}/refund`);
+        toast.success(res.data.message || "Duyệt hoàn tiền thành công");
+        fetchShipments();
+      } catch (err) {
+        toast.error(err.response?.data?.message || "Lỗi xử lý hoàn tiền");
+      }
+    }
+  };
+
   const paginatedData = filtered.slice((page - 1) * perPage, page * perPage);
 
   useEffect(() => {
@@ -252,13 +272,14 @@ export default function AdminShipments() {
       delivered:  { bg: "bg-emerald-50",text: "text-emerald-700",border: "border-emerald-200",icon: CircleCheck, bgIcon: "bg-emerald-100",txIcon: "text-emerald-600" },
       completed:  { bg: "bg-green-50",  text: "text-green-700",  border: "border-green-200",  icon: CircleCheck, bgIcon: "bg-green-100",  txIcon: "text-green-600" },
       failed:     { bg: "bg-red-50",    text: "text-red-700",    border: "border-red-200",    icon: CircleX,   bgIcon: "bg-red-100",    txIcon: "text-red-600" },
+      draft:      { bg: "bg-red-50",    text: "text-red-700",    border: "border-red-200",    icon: CircleX,   bgIcon: "bg-red-100",    txIcon: "text-red-600" },
       canceled:   { bg: "bg-gray-50",   text: "text-gray-600",   border: "border-gray-200",   icon: Ban,       bgIcon: "bg-gray-100",   txIcon: "text-gray-500" },
     };
 
     const labels = {
       pending: "Chờ xử lý", assigned: "Đã điều phối", picking: "Đang lấy hàng",
       picked: "Đã lấy hàng", delivering: "Đang giao hàng", delivered: "Giao thành công",
-      completed: "Hoàn tất", failed: "Giao thất bại", canceled: "Đã hủy",
+      completed: "Hoàn tất", failed: "Giao thất bại", canceled: "Đã hủy", draft: "Thất bại",
     };
 
     const c = config[status] || config.canceled;
@@ -526,6 +547,15 @@ export default function AdminShipments() {
                         >
                           <Trash2 size={16} />
                         </button>
+                        {(s.status === "failed" || s.status === "canceled") && !s.failure_note?.includes("[Đã hoàn tiền]") && (
+                          <button
+                            onClick={() => handleRefund(s.id)}
+                            className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors border border-transparent hover:border-green-100"
+                            title="Duyệt hoàn tiền"
+                          >
+                            <CircleCheck size={16} />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -556,7 +586,7 @@ export default function AdminShipments() {
         />
       </div>
 
-      {/* Render điều kiện */}
+      {/* Hiển thị có điều kiện */}
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-[#113e48]/50 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[95vh]">

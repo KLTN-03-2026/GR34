@@ -1,6 +1,7 @@
-﻿import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Bell, Package } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { getNotificationStyle } from "../utils/notificationHelper";
 import API from "../services/api";
 import { io } from "socket.io-client";
 
@@ -8,24 +9,30 @@ import { io } from "socket.io-client";
 const socket = io("http://localhost:5000", { transports: ["websocket"] });
 
 // Custom Toast với progress bar countdown
-const ToastNotification = ({ message, duration = 30000, onClose }) => {
+const ToastNotification = ({ message, duration = 6000, onClose }) => {
   const [progress, setProgress] = useState(100);
   const [isPaused, setIsPaused] = useState(false);
-  
+  const remainingTimeRef = useRef(duration);
+
   useEffect(() => {
-    const startTime = Date.now();
+    let lastTime = Date.now();
+    
     const interval = setInterval(() => {
+      const now = Date.now();
       if (!isPaused) {
-        const elapsed = Date.now() - startTime;
-        const remaining = Math.max(0, 100 - (elapsed / duration) * 100);
-        setProgress(remaining);
+        const elapsed = now - lastTime;
+        remainingTimeRef.current -= elapsed;
         
-        if (remaining <= 0) {
+        const currentProgress = Math.max(0, (remainingTimeRef.current / duration) * 100);
+        setProgress(currentProgress);
+        
+        if (remainingTimeRef.current <= 0) {
           clearInterval(interval);
           onClose();
         }
       }
-    }, 100);
+      lastTime = now;
+    }, 16);
     
     return () => clearInterval(interval);
   }, [duration, isPaused, onClose]);
@@ -49,17 +56,16 @@ const ToastNotification = ({ message, duration = 30000, onClose }) => {
     >
       {/* Progress bar ở dưới */}
       <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-100">
-        <motion.div
-          className={`h-full ${getProgressColor()}`}
+        <div
+          className={`h-full transition-colors duration-300 ${getProgressColor()}`}
           style={{ width: `${progress}%` }}
-          transition={{ duration: 0.1, ease: "linear" }}
         />
       </div>
       
       {/* Nội dung toast */}
       <div className="p-4 flex items-start gap-3">
-        <div className="p-2 bg-blue-100 rounded-full shrink-0">
-          <Package size={18} className="text-blue-600" />
+        <div className={`p-2 rounded-full shrink-0 flex items-center justify-center ${getNotificationStyle(message, false).toastIconBg}`}>
+          {getNotificationStyle(message, false).icon}
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-gray-800 text-sm">Thông báo mới!</p>
@@ -112,8 +118,8 @@ export default function DispatcherNotifications({ dispatcherId }) {
 
 
   useEffect(() => {
-    if (show && dispatcherId) fetchNotifications();
-  }, [show, dispatcherId]);
+    if (dispatcherId) fetchNotifications();
+  }, [dispatcherId]);
 
 
   useEffect(() => {
@@ -168,7 +174,7 @@ export default function DispatcherNotifications({ dispatcherId }) {
             <div key={t.id} className="pointer-events-auto">
               <ToastNotification
                 message={t.message}
-                duration={30000}
+                duration={6000}
                 onClose={() => removeToast(t.id)}
               />
             </div>
@@ -230,43 +236,30 @@ export default function DispatcherNotifications({ dispatcherId }) {
 
             <div className="max-h-[400px] overflow-y-auto no-scrollbar bg-white rounded-b-2xl">
               {notifications.length > 0 ? (
-                notifications.map((n) => (
-                  <div
-                    key={n.id}
-                    onClick={() => markAsRead(n.id)}
-                    className={`p-4 border-b border-gray-50 cursor-pointer transition-all flex gap-3 hover:bg-orange-100 ${
-                      n.is_read
-                        ? "bg-white text-gray-600"
-                        : "bg-orange-50 text-[#113e48]"
-                    }`}
-                  >
-                    <div className="shrink-0 mt-1">
-                      <div
-                        className={`p-2 rounded-full ${
-                          n.is_read
-                            ? "bg-gray-100 text-gray-400"
-                            : "bg-orange-100 text-orange-500"
-                        }`}
-                      >
-                        <Package size={16} />
+                notifications.map((n) => {
+                  const style = getNotificationStyle(n.message, n.is_read);
+                  return (
+                    <div
+                      key={n.id}
+                      onClick={() => markAsRead(n.id)}
+                      className={`p-4 border-b border-gray-50 cursor-pointer transition-all flex gap-3 ${style.hoverClass} ${style.bgClass}`}
+                    >
+                      <div className="shrink-0 mt-1">
+                        <div className={`p-2 rounded-full flex items-center justify-center ${style.iconContainerClass}`}>
+                          {style.icon}
+                        </div>
+                      </div>
+                      <div>
+                        <p className={`text-sm leading-snug ${style.textClass}`}>
+                          {n.message}
+                        </p>
+                        <span className="text-[11px] text-gray-400 mt-1 block">
+                          {new Date(n.created_at).toLocaleString("vi-VN")}
+                        </span>
                       </div>
                     </div>
-                    <div>
-                      <p
-                        className={`text-sm leading-snug ${
-                          n.is_read
-                            ? "text-gray-600"
-                            : "text-[#113e48] font-semibold tracking-tight"
-                        }`}
-                      >
-                        {n.message}
-                      </p>
-                      <span className="text-[11px] text-gray-400 mt-1 block">
-                        {new Date(n.created_at).toLocaleString("vi-VN")}
-                      </span>
-                    </div>
-                  </div>
-                ))
+                  );
+                })
               ) : (
                 <div className="p-8 text-gray-400 text-sm text-center flex flex-col items-center gap-2">
                   <Bell size={24} className="text-gray-300" />

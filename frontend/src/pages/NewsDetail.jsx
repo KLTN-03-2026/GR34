@@ -64,7 +64,7 @@ export default function NewsDetail() {
 
         {/* Phần giao diện */}
         <article className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
-          {/* Render điều kiện */}
+          {/* Hiển thị có điều kiện */}
           {article.image && (
             <div className="w-full bg-gray-100 flex justify-center border-b border-gray-100">
               <img

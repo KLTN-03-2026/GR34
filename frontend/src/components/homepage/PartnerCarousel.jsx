@@ -30,7 +30,7 @@ export default function PartnerCarousel({
     valid: !failedLogos[p.name],
   }));
 
-  // Always render 3x to fill the infinite scroll
+  // Luôn render 3 lần để lấp đầy hiệu ứng cuộn vô hạn
   const items = [...partners, ...partners, ...partners];
 
   return (

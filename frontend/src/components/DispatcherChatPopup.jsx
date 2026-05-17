@@ -14,7 +14,7 @@ export default function DispatcherChatPopup() {
   const [showDot, setShowDot] = useState(false);
   const [prevUnread, setPrevUnread] = useState(0);
 
-  // Init singleton socket listener once
+  // Khởi tạo bộ lắng nghe socket dùng chung một lần
   useEffect(() => {
     initDispatcherSocket();
   }, []);
@@ -33,11 +33,11 @@ export default function DispatcherChatPopup() {
   }, []);
 
   const handleOpen = () => {
-    // Clear alert
+    // Xóa cảnh báo
     clearAlert();
     setShowDot(false);
     sessionStorage.setItem(FLOATING_KEY, "1");
-    // Navigate to chat tab
+    // Chuyển đến tab chat
     navigate("/dispatcher/chat");
   };
 
@@ -51,7 +51,7 @@ export default function DispatcherChatPopup() {
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
       className="fixed bottom-6 right-6 z-[9999] flex flex-col items-end gap-2"
     >
-      {/* Badge chờ */}
+      {/* Nhãn chờ */}
       <AnimatePresence>
         <motion.div
           initial={{ opacity: 0, x: 10 }}

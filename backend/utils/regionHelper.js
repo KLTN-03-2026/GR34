@@ -1,11 +1,11 @@
 import pool from "../config/db.js";
 
-// Cache regions để tránh query nhiều lần
+// Lưu đệm danh sách khu vực để tránh truy vấn nhiều lần
 let regionsCache = null;
 let cacheTimestamp = 0;
 const CACHE_DURATION = 5 * 60 * 1000; // 5 phút
 
-// Lấy danh sách regions (có cache)
+// Lấy danh sách khu vực (có bộ nhớ đệm)
 export const getRegions = async () => {
   const now = Date.now();
   if (regionsCache && (now - cacheTimestamp) < CACHE_DURATION) {
@@ -23,7 +23,7 @@ export const getRegions = async () => {
   }
 };
 
-// Lấy region theo code
+// Lấy khu vực theo mã
 export const getRegionByCode = async (code) => {
   if (!code) return null;
   try {
@@ -35,7 +35,7 @@ export const getRegionByCode = async (code) => {
   }
 };
 
-// Lấy region theo ID
+// Lấy khu vực theo ID
 export const getRegionById = async (id) => {
   if (!id) return null;
   try {
@@ -117,7 +117,7 @@ export const getNameFromRegionId = async (regionId) => {
   return region?.name || "Vùng khác";
 };
 
-// Format region data cho response
+// Định dạng dữ liệu khu vực để trả về phản hồi
 export const formatRegionResponse = (region) => {
   if (!region) return null;
   return {
@@ -128,7 +128,7 @@ export const formatRegionResponse = (region) => {
   };
 };
 
-// Xóa cache (gọi khi có thay đổi về region)
+// Xóa bộ nhớ đệm (gọi khi có thay đổi về khu vực)
 export const clearRegionsCache = () => {
   regionsCache = null;
   cacheTimestamp = 0;

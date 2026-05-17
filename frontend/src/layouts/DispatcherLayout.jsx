@@ -18,7 +18,7 @@ import DispatcherChatPopup from "../components/DispatcherChatPopup";
 import { socket } from "../lib/socket";
 import { useDispatcherChatState } from "../hooks/useDispatcherChat";
 
-// Animation variants cho page transition
+// Các biến thể chuyển động cho hiệu ứng chuyển trang
 const pageVariants = {
   initial: { opacity: 0 },
   enter: {
@@ -39,7 +39,7 @@ export default function DispatcherLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { state, clearAlert } = useDispatcherChatState();
 
-  // Khi vào tab chat → clear alert
+  // Khi vào tab chat → xóa cảnh báo
   useEffect(() => {
     if (location.pathname === "/dispatcher/chat") {
       clearAlert();
@@ -84,7 +84,7 @@ export default function DispatcherLayout() {
 
   return (
     <div className="flex h-screen bg-[#F8FAFC] overflow-hidden font-sans">
-      {/* Overlay mobile */}
+      {/* Lớp phủ trên mobile */}
       {isSidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-30 lg:hidden"
@@ -92,14 +92,14 @@ export default function DispatcherLayout() {
         />
       )}
 
-      {/* Sidebar */}
+      {/* Thanh bên */}
       <aside
         className={`
         fixed lg:static inset-y-0 left-0 z-40 w-72 bg-[#113e48] text-white flex flex-col shadow-2xl transition-transform duration-300
         ${isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
       `}
       >
-        {/* Logo */}
+        {/* Biểu trưng */}
         <div className="h-20 flex items-center px-8 border-b border-white/10 bg-[#0d2f36]">
           <div
             className="flex items-center gap-2 cursor-pointer"
@@ -118,7 +118,7 @@ export default function DispatcherLayout() {
           </div>
         </div>
 
-        {/* Nav */}
+        {/* Thanh điều hướng */}
         <div className="flex-1 overflow-y-auto py-8 px-4 space-y-1 custom-scrollbar">
           <p className="px-4 mb-4 text-xs font-bold text-blue-200/60 uppercase tracking-widest">
             Điều hành
@@ -178,7 +178,7 @@ export default function DispatcherLayout() {
           </nav>
         </div>
 
-        {/* User info */}
+        {/* Thông tin người dùng */}
         <div className="p-4 bg-[#0d2f36] border-t border-white/5">
           <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
             <div className="flex items-center gap-3 overflow-hidden">
@@ -203,9 +203,9 @@ export default function DispatcherLayout() {
         </div>
       </aside>
 
-      {/* Main content */}
+      {/* Nội dung chính */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Header */}
+        {/* Phần đầu trang */}
         <header className="h-20 bg-white shadow-sm border-b border-gray-100 flex items-center justify-between px-6 lg:px-10 z-40 relative">
           <div className="flex items-center gap-4">
             <button
@@ -239,7 +239,7 @@ export default function DispatcherLayout() {
           </div>
         </header>
 
-        {/* Page content */}
+        {/* Nội dung trang */}
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-[#F8FAFC] p-6 lg:p-10 scroll-smooth">
           <div className="max-w-7xl mx-auto min-h-full">
             <AnimatePresence mode="wait" initial={false}>
@@ -257,7 +257,7 @@ export default function DispatcherLayout() {
         </main>
       </div>
 
-      {/* Nút nổi — CHỈ hiện khi KHÔNG ở tab chat */}
+      {/* Nút nổi — chỉ hiện khi không ở tab chat */}
       {location.pathname !== "/dispatcher/chat" && <DispatcherChatPopup />}
     </div>
   );

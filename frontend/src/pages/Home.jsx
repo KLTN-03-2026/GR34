@@ -25,7 +25,7 @@ import NewsSection from "../components/homepage/News";
 export default function Home() {
   const navigate = useNavigate();
 
-  // Scroll to top on every mount
+  // Cuộn lên đầu trang mỗi khi component được gắn
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);

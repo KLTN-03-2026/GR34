@@ -33,7 +33,7 @@ export default function DispatcherChat() {
     }
   }, [selectedChat]);
 
-  // --- Fetch active chats from DB (merge instead of replace to preserve socket state) ---
+  // --- Tải các chat đang hoạt động từ DB (gộp thay vì thay thế để giữ trạng thái socket) ---
   const fetchChats = async () => {
     try {
       const res = await API.get("/chats");
@@ -49,7 +49,7 @@ export default function DispatcherChat() {
             merged.push(dbChat);
           }
         });
-        // Sort: active first, then by last_message_at
+        // Sắp xếp: chat đang hoạt động trước, sau đó theo last_message_at
         return merged.sort(
           (a, b) =>
             (a.status === "active" ? 0 : 1) - (b.status === "active" ? 0 : 1) ||
@@ -63,7 +63,7 @@ export default function DispatcherChat() {
     }
   };
 
-  // --- Fetch messages for a chat from DB ---
+  // --- Tải tin nhắn của một chat từ DB ---
   const fetchMessages = async (chatId) => {
     if (fetchingIds.current.has(chatId)) return;
     fetchingIds.current.add(chatId);
@@ -97,7 +97,7 @@ export default function DispatcherChat() {
     }
   };
 
-  // --- Auto-select last chat from localStorage ---
+  // --- Tự động chọn chat cuối cùng từ localStorage ---
   const autoSelectLastChat = (chats) => {
     const lastId = localStorage.getItem(LAST_CHAT_KEY);
     if (lastId) {
@@ -115,17 +115,17 @@ export default function DispatcherChat() {
 
   useEffect(() => {
     fetchChats().then(() => {
-      // auto-select sẽ được gọi sau khi chats load xong
+      // tự động chọn sẽ được gọi sau khi chats tải xong
     });
   }, []);
 
-  // Sau khi chats load → auto-select last chat
+  // Sau khi chats tải xong → tự động chọn chat cuối cùng
   useEffect(() => {
     if (!initialized.current && !loadingChats && chats.length > 0) {
       initialized.current = true;
       const selected = autoSelectLastChat(chats);
       if (!selected && chats.length > 0) {
-        // Nếu không tìm được last chat → chọn chat mới nhất
+        // Nếu không tìm được chat cuối cùng → chọn chat mới nhất
         const sorted = [...chats].sort(
           (a, b) => new Date(b.last_message_at || b.started_at) - new Date(a.last_message_at || a.started_at)
         );
@@ -139,7 +139,7 @@ export default function DispatcherChat() {
     }
   }, [loadingChats, chats]);
 
-  // --- Socket real-time events ---
+  // --- Các sự kiện socket thời gian thực ---
   useEffect(() => {
     // KHÔNG gọi socket.connect/disconnect — đã có singleton ở lib/socket.js
 
@@ -159,7 +159,7 @@ export default function DispatcherChat() {
         return [newChat, ...prev];
       });
 
-      // Auto-select & load messages if nothing is selected
+      // Tự động chọn và tải tin nhắn nếu chưa có chat nào được chọn
       if (!selectedChatRef.current) {
         selectedChatRef.current = newChat;
         setSelectedChat(newChat);
@@ -186,7 +186,7 @@ export default function DispatcherChat() {
         ];
       });
 
-      // Append message (fetch merge đã loại trùng bằng id)
+      // Thêm tin nhắn vào cuối danh sách (fetch merge đã loại trùng theo id)
       setMessages((prev) => {
         if (selectedChatRef.current?.id !== chatId) return prev;
         const exists = prev.some((m) => m.id === msg.id || (m.content === msg.content && m.created_at === msg.created_at));
@@ -199,7 +199,7 @@ export default function DispatcherChat() {
       const chatId = msg.chatId;
       const isOwnMessage = msg.role === "dispatcher";
 
-      // Insert/update chat in list
+      // Thêm mới hoặc cập nhật chat trong danh sách
       setChats((prev) => {
         const chatExists = prev.some((c) => c.id === chatId);
         const updated = prev.map((c) =>
@@ -216,7 +216,7 @@ export default function DispatcherChat() {
         return updated.sort((a, b) => new Date(b.last_message_at || b.started_at) - new Date(a.last_message_at || a.started_at));
       });
 
-      // Nếu chưa chọn chat nào → auto-select chat này
+      // Nếu chưa chọn chat nào → tự động chọn chat này
       if (!selectedChatRef.current) {
         const newChat = { id: chatId, customer_id: msg.senderId, status: "active", customer_name: null };
         selectedChatRef.current = newChat;
@@ -227,7 +227,7 @@ export default function DispatcherChat() {
         return;
       }
 
-      // Nếu đang xem đúng chat → append message (fetch merge đã loại trùng)
+      // Nếu đang xem đúng chat → thêm tin nhắn vào cuối (fetch merge đã loại trùng)
       if (selectedChatRef.current?.id === chatId) {
         setMessages((prev) => {
           const exists = prev.some((m) => m.id === msg.id || (m.content === msg.content && m.created_at === msg.created_at));
@@ -244,13 +244,13 @@ export default function DispatcherChat() {
     };
 
     const onChatEnded = ({ chatId }) => {
-      // UPDATE status thay vì xoá — để tab "Tất cả" vẫn thấy lịch sử
+      // Cập nhật status thay vì xóa — để tab "Tất cả" vẫn thấy lịch sử
       setChats((prev) =>
         prev.map((c) =>
           c.id === chatId ? { ...c, status: "closed", last_message_at: new Date().toISOString() } : c
         )
       );
-      // Nếu đang xem chat này → update selectedChat để disable input
+      // Nếu đang xem chat này → cập nhật selectedChat để vô hiệu hóa ô nhập
       if (selectedChatRef.current?.id === chatId) {
         const updated = { ...selectedChatRef.current, status: "closed" };
         selectedChatRef.current = updated;
@@ -274,24 +274,24 @@ export default function DispatcherChat() {
     };
   }, []);
 
-  // --- Auto-scroll when new messages arrive ---
+  // --- Tự động cuộn khi có tin nhắn mới ---
   useLayoutEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
 
-  // --- Select a chat ---
+  // --- Chọn một chat ---
   const selectChat = (chat) => {
     if (selectedChatRef.current?.id === chat.id) return; // đã đang xem
     selectedChatRef.current = chat;
     setSelectedChat(chat);
-    // Không clear messages — fetchMerge sẽ handle merge nếu cần
+    // Không xóa messages — fetchMerge sẽ xử lý việc gộp nếu cần
     fetchMessages(chat.id);
     socket.emit("joinChat", chat.id);
   };
 
-  // --- Send message ---
+  // --- Gửi tin nhắn ---
   const sendMessage = () => {
     if (!selectedChat || !input.trim()) return;
     if (selectedChat.status === "closed") return;
@@ -306,14 +306,14 @@ export default function DispatcherChat() {
     setInput("");
   };
 
-  // --- Toast helper ---
+  // --- Hàm hỗ trợ hiển thị toast ---
   const showToast = (text) => {
     if (toastTimer.current) clearTimeout(toastTimer.current);
     setToastMsg(text);
     toastTimer.current = setTimeout(() => setToastMsg(null), 3500);
   };
 
-  // --- Format time ---
+  // --- Định dạng thời gian ---
   const formatTime = (dateStr) => {
     if (!dateStr) return "";
     const d = new Date(dateStr);
@@ -329,7 +329,7 @@ export default function DispatcherChat() {
     return d.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit" }) + " " + formatTime(dateStr);
   };
 
-  // --- Group messages by date ---
+  // --- Nhóm tin nhắn theo ngày ---
   const groupMessagesByDate = (msgs) => {
     const groups = {};
     msgs.forEach((m) => {
@@ -340,7 +340,7 @@ export default function DispatcherChat() {
     return groups;
   };
 
-  // --- Filter chats by search and tab ---
+  // --- Lọc chat theo từ khóa tìm kiếm và tab ---
   const filteredChats = chats.filter((c) => {
     if (tabFilter === "active" && c.status !== "active") return false;
     if (!search.trim()) return true;
@@ -490,7 +490,7 @@ export default function DispatcherChat() {
       <div className="flex-1 flex flex-col bg-white">
         {selectedChat ? (
           <>
-            {/* Header */}
+            {/* Phần đầu */}
             <div className="h-16 border-b flex items-center px-6 justify-between bg-white shadow-sm z-10 shrink-0">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm">
@@ -514,7 +514,7 @@ export default function DispatcherChat() {
               )}
             </div>
 
-            {/* Messages */}
+            {/* Danh sách tin nhắn */}
             <div className="flex-1 p-6 overflow-y-auto bg-gray-50">
               {selectedChat.status === "closed" && (
                 <div className="mb-4 flex items-center gap-2 bg-gray-200 text-gray-500 px-4 py-2 rounded-lg text-sm font-medium">
@@ -578,7 +578,7 @@ export default function DispatcherChat() {
               )}
             </div>
 
-            {/* Input */}
+            {/* Ô nhập */}
             <div className="p-4 bg-white border-t shrink-0">
               <div className="flex gap-2">
                 <input
@@ -612,7 +612,7 @@ export default function DispatcherChat() {
         )}
       </div>
 
-      {/* Toast notification */}
+      {/* Thông báo toast */}
       {toastMsg && (
         <div className="absolute top-4 right-4 bg-gray-800/90 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 z-50 max-w-xs backdrop-blur-sm">
           <Bell className="w-5 h-5 text-yellow-400 shrink-0" />

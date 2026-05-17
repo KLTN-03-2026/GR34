@@ -19,7 +19,7 @@ import {
   FileText,
 } from "lucide-react";
 
-// Animation variants cho page transition - nhanh nhẹ
+// Các biến thể chuyển động cho hiệu ứng chuyển trang - gọn nhẹ
 const pageVariants = {
   initial: { opacity: 0 },
   enter: {
@@ -39,7 +39,7 @@ export default function AdminLayout() {
   const username = localStorage.getItem("username") || "Administrator";
 
 
-  // Danh sách menu điều hướng sidebar admin
+  // Danh sách menu điều hướng của thanh bên quản trị
   const MENU_ITEMS = [
     {
       path: "/admin",
@@ -99,7 +99,7 @@ export default function AdminLayout() {
   };
 
 
-  // Hàm trả về class CSS cho NavLink, active thì nổi bật màu cam
+  // Hàm trả về class CSS cho NavLink, nếu đang hoạt động thì làm nổi bật màu cam
   const navLinkClasses = ({ isActive }) => `
     relative flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-300 group
     ${
@@ -110,7 +110,7 @@ export default function AdminLayout() {
   `;
 
 
-  // Lấy tiêu đề trang dựa theo đường dẫn hiện tại
+  // Lấy tiêu đề trang dựa trên đường dẫn hiện tại
   const getPageTitle = () => {
     if (location.pathname.startsWith("/admin/shipments/")) {
       return "Chi tiết vận đơn";
@@ -121,7 +121,7 @@ export default function AdminLayout() {
     return currentItem ? currentItem.label : "Admin Control Panel";
   };
 
-  // Lấy icon trang cho header, hiển thị icon vận đơn khi xem chi tiết shipment
+  // Lấy biểu tượng trang cho phần đầu, hiển thị biểu tượng vận đơn khi xem chi tiết đơn hàng
   const getPageIcon = () => {
     if (location.pathname.startsWith("/admin/shipments/")) {
       return <FileText size={22} className="text-orange-500" />;
@@ -131,7 +131,7 @@ export default function AdminLayout() {
 
   return (
     <div className="flex h-screen bg-[#F8FAFC] overflow-hidden font-sans">
-      {/* Overlay mờ khi sidebar mở trên mobile */}
+      {/* Lớp phủ mờ khi thanh bên mở trên mobile */}
       {isSidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-30 lg:hidden"
@@ -139,7 +139,7 @@ export default function AdminLayout() {
         />
       )}
 
-      {/* Sidebar điều hướng chính */}
+      {/* Thanh bên điều hướng chính */}
       <aside
         className={`
         fixed lg:static inset-y-0 left-0 z-40 w-72 bg-[#113e48] text-white flex flex-col shadow-2xl transition-transform duration-300
@@ -148,7 +148,7 @@ export default function AdminLayout() {
         }
       `}
       >
-        {/* Logo và tên thương hiệu */}
+        {/* Biểu trưng và tên thương hiệu */}
         <div className="h-20 flex items-center px-6 border-b border-white/10 bg-[#0d2f36]">
           <div
             className="flex items-center gap-3 cursor-pointer"
@@ -224,7 +224,7 @@ export default function AdminLayout() {
 
       {/* Vùng nội dung chính bên phải sidebar */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Header thanh trên cùng: tiêu đề trang + nút thông báo + về trang chủ */}
+        {/* Phần đầu thanh trên cùng: tiêu đề trang + nút thông báo + về trang chủ */}
         <header className="h-20 bg-white shadow-sm border-b border-gray-100 flex items-center justify-between px-6 lg:px-8 z-10">
           <div className="flex items-center gap-4">
             <button

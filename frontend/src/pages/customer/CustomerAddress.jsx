@@ -102,7 +102,7 @@ export default function CustomerAddress() {
       setStreet("");
       setGeo({ lat: null, lng: null });
       setFormData({ name: "", phone: "", type: "home", is_default: false });
-      // Pre-fill customer name
+      // Điền sẵn tên khách hàng
       const name = await fetchCustomerName();
       if (name) {
         setFormData((prev) => ({ ...prev, name }));
@@ -199,7 +199,7 @@ export default function CustomerAddress() {
             key={addr.id}
             className={`group bg-white p-6 rounded-2xl shadow-sm border transition-all relative ${addr.is_default ? "border-orange-300 ring-1 ring-orange-100" : "border-gray-100 hover:shadow-md hover:border-orange-200"}`}
           >
-            {addr.is_default && (
+            {!!addr.is_default && (
               <span className="absolute top-4 right-4 bg-orange-100 text-orange-700 text-[10px] font-bold px-2 py-1 rounded-full border border-orange-200 flex items-center gap-1">
                 <Check size={10} /> Mặc định
               </span>
@@ -248,7 +248,7 @@ export default function CustomerAddress() {
         </div>
       </div>
 
-      {/* Render điều kiện */}
+      {/* Hiển thị có điều kiện */}
       {showModal && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
           <div className="bg-white w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
@@ -337,7 +337,7 @@ export default function CustomerAddress() {
                   />
                 </div>
 
-                {/* Render điều kiện */}
+                {/* Hiển thị có điều kiện */}
                 {geo.lat && (
                   <div className="flex items-center gap-1 text-[11px] text-green-600 font-bold px-1">
                     <Check size={14} /> Đã xác định tọa độ ({geo.lat.toFixed(4)}

@@ -47,29 +47,42 @@ const FORBIDDEN_WORDS = [
 export default function CustomerCreateShipment() {
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({
-    sender_name: "",
-    sender_phone: "",
-    receiver_name: "",
-    receiver_phone: "",
-    pickup_address: "",
-    pickup_lat: null,
-    pickup_lng: null,
-    delivery_address: "",
-    delivery_lat: null,
-    delivery_lng: null,
-    item_name: "",
-    quantity: 1,
-    weight_kg: "",
-    cod_amount: "",
-    shipping_fee: 0,
+  const [form, setForm] = useState(() => {
+    const saved = sessionStorage.getItem("createShipmentData");
+    if (saved) return JSON.parse(saved).form;
+    return {
+      sender_name: "",
+      sender_phone: "",
+      receiver_name: "",
+      receiver_phone: "",
+      pickup_address: "",
+      pickup_lat: null,
+      pickup_lng: null,
+      delivery_address: "",
+      delivery_lat: null,
+      delivery_lng: null,
+      item_name: "",
+      quantity: 1,
+      weight_kg: "",
+      cod_amount: "",
+      shipping_fee: 0,
+      cod_payer: "customer",
+    };
   });
 
-  const [pickupOption, setPickupOption] = useState("sender");
+  const [pickupOption, setPickupOption] = useState(() => {
+    const saved = sessionStorage.getItem("createShipmentData");
+    return saved ? JSON.parse(saved).pickupOption : "sender";
+  });
+  
+  const [serviceType, setServiceType] = useState(() => {
+    const saved = sessionStorage.getItem("createShipmentData");
+    return saved ? JSON.parse(saved).serviceType : "express";
+  });
+
   const [creating, setCreating] = useState(false);
   const [estimatedFee, setEstimatedFee] = useState(0);
   const [distanceKm, setDistanceKm] = useState(0);
-  const [serviceType, setServiceType] = useState("express");
 
   const [shippingData, setShippingData] = useState(null);
   const [showReview, setShowReview] = useState(false);
@@ -96,6 +109,12 @@ export default function CustomerCreateShipment() {
   }, []);
 
   useEffect(() => {
+    sessionStorage.setItem("createShipmentData", JSON.stringify({
+      form, pickupOption, serviceType
+    }));
+  }, [form, pickupOption, serviceType]);
+
+  useEffect(() => {
     if (!form.pickup_address || !form.delivery_address) {
       setShippingData(null);
       return;
@@ -112,6 +131,7 @@ export default function CustomerCreateShipment() {
           delivery_lat: form.delivery_lat,
           delivery_lng: form.delivery_lng,
           weight_kg: parseFloat(form.weight_kg) || 0.5,
+          quantity: parseInt(form.quantity) || 1,
           service_type: serviceType,
           cod_amount: parseFloat(form.cod_amount) || 0,
         });
@@ -144,6 +164,7 @@ export default function CustomerCreateShipment() {
     form.pickup_address,
     form.delivery_address,
     form.weight_kg,
+    form.quantity,
     form.cod_amount,
     serviceType,
   ]);
@@ -351,31 +372,31 @@ export default function CustomerCreateShipment() {
         ...form,
         customer_id: Number(customerId),
         payment_method: "COD",
+        cod_payer: form.cod_payer,
         pickup_option: pickupOption,
         shipping_fee: estimatedFee,
         service_type: serviceType,
-        status: "pending",
+        status: "draft",
         quantity: Number(form.quantity),
       };
-      const res = await API.post("/shipments", payload);
-      const newShipmentId =
-        res.data.id || res.data.shipmentId || res.data.insertId;
 
-      if (!newShipmentId) {
-        toast.success("Tạo đơn thành công");
-        return navigate("/customer/history");
-      }
       toast.success("Đang chuyển sang thanh toán...");
+      const isCustomerPay = form.cod_payer === "customer";
+      const payAmount = isCustomerPay
+        ? estimatedFee + Number(form.cod_amount || 0)
+        : estimatedFee;
+      
       navigate("/customer/payment", {
         state: {
-          shipment_id: newShipmentId,
-          amount: estimatedFee + Number(form.cod_amount || 0),
+          payload,
+          amount: payAmount,
           shipping_fee: estimatedFee,
           cod: form.cod_amount || 0,
+          cod_payer: form.cod_payer,
         },
       });
     } catch (err) {
-      toast.error("Không thể tạo đơn hàng.");
+      toast.error("Không thể tiếp tục thanh toán.");
     } finally {
       setCreating(false);
     }
@@ -392,7 +413,7 @@ export default function CustomerCreateShipment() {
           opacity: 0;
           animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
-        /* Custom input glow effect */
+        /* Hiệu ứng phát sáng tùy chỉnh cho ô nhập liệu */
         .input-glow:focus {
           box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
         }
@@ -822,7 +843,7 @@ export default function CustomerCreateShipment() {
         addresses={savedAddresses}
         onSelect={handleSelectAddress}
       />
-      {/* Review Modal */}
+      {/* Hộp thoại xem lại */}
       {showReview && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
@@ -880,7 +901,40 @@ export default function CustomerCreateShipment() {
                 <div className="flex items-center gap-2 text-sm font-bold text-gray-700 uppercase tracking-wider">
                   <Wallet size={16} className="text-emerald-500" /> Cước phí & Thu hộ
                 </div>
-                <div className="bg-emerald-50/50 p-4 rounded-xl border border-emerald-100 text-sm space-y-2">
+                <div className="bg-emerald-50/50 p-4 rounded-xl border border-emerald-100 text-sm space-y-3">
+                  {/* Bộ chọn người thanh toán COD */}
+                  <div>
+                    <p className="text-xs font-bold text-gray-500 mb-2">Người thanh toán cước phí</p>
+                    <div className="flex gap-3">
+                      <label className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border-2 cursor-pointer transition-all duration-200 ${form.cod_payer === "customer" ? "border-orange-500 bg-orange-50 font-bold text-orange-700 shadow-sm" : "border-gray-200 hover:border-gray-300"}`}>
+                        <input
+                          type="radio"
+                          name="cod_payer_review"
+                          value="customer"
+                          checked={form.cod_payer === "customer"}
+                          onChange={() => setForm(p => ({ ...p, cod_payer: "customer" }))}
+                          className="hidden"
+                        />
+                        <Wallet size={16} />
+                        Người gửi thanh toán (Bạn)
+                      </label>
+                      <label className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border-2 cursor-pointer transition-all duration-200 ${form.cod_payer === "receiver" ? "border-orange-500 bg-orange-50 font-bold text-orange-700 shadow-sm" : "border-gray-200 hover:border-gray-300"}`}>
+                        <input
+                          type="radio"
+                          name="cod_payer_review"
+                          value="receiver"
+                          checked={form.cod_payer === "receiver"}
+                          onChange={() => setForm(p => ({ ...p, cod_payer: "receiver" }))}
+                          className="hidden"
+                        />
+                        <User size={16} />
+                        Người nhận thanh toán
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className="h-px bg-emerald-200/50"></div>
+
                   <div className="flex justify-between">
                     <span className="text-gray-600">Phí vận chuyển:</span>
                     <span className="font-semibold text-gray-800">{(estimatedFee || 0).toLocaleString('vi-VN')}₫</span>
@@ -891,9 +945,20 @@ export default function CustomerCreateShipment() {
                   </div>
                   <div className="h-px bg-emerald-200/50 my-1"></div>
                   <div className="flex justify-between items-center">
-                    <span className="font-bold text-emerald-800">Tổng thanh toán:</span>
-                    <span className="text-lg font-black text-emerald-600">{(estimatedFee + Number(form.cod_amount || 0)).toLocaleString('vi-VN')}₫</span>
+                    <span className="font-bold text-emerald-800">Số tiền người nhận phải trả:</span>
+                    <span className={`text-lg font-black ${form.cod_payer === "customer" ? "text-emerald-600" : "text-orange-600"}`}>
+                      {form.cod_payer === "customer"
+                        ? "0₫"
+                        : `${(estimatedFee + Number(form.cod_amount || 0)).toLocaleString('vi-VN')}₫`
+                      }
+                    </span>
                   </div>
+                  {form.cod_payer === "customer" && (
+                    <div className="bg-blue-50 p-2.5 rounded-lg text-xs text-blue-700 flex items-center gap-2 border border-blue-100">
+                      <AlertCircle size={14} className="shrink-0" />
+                      Bạn (người gửi) sẽ thanh toán toàn bộ phí. Shipper không thu tiền người nhận.
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

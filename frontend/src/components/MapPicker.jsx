@@ -5,7 +5,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 
-// Lọc bỏ postal code, "Việt Nam" / "Vietnam" khỏi địa chỉ reverse geocode
+// Lọc bỏ mã bưu chính, "Việt Nam" / "Vietnam" khỏi địa chỉ trả về từ reverse geocode
 const stripAddress = (raw) => {
   const parts = raw.split(",").map((p) => p.trim()).filter(Boolean);
   const filtered = parts.filter((p) => {
@@ -29,7 +29,7 @@ export default function MapPicker({ defaultPos, onConfirm, onCancel }) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const debounceRef = useRef(null);
 
-  // Stable — không bị recreate mỗi render
+  // Ổn định — không bị tạo lại ở mỗi lần render
   const reverseGeocode = useCallback(async (lat, lng) => {
     setLoadingAddr(true);
     try {
@@ -82,7 +82,7 @@ export default function MapPicker({ defaultPos, onConfirm, onCancel }) {
     }
   }, [defaultPos]);
 
-  // Reverse geocode khi marker thay đổi
+  // Reverse geocode khi điểm đánh dấu thay đổi
   useEffect(() => {
     if (!marker) return;
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -180,7 +180,7 @@ export default function MapPicker({ defaultPos, onConfirm, onCancel }) {
         </Marker>
       </Map>
 
-      {/* Zoom controls — top left */}
+      {/* Nút điều khiển phóng to/thu nhỏ — góc trên bên trái */}
       <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5">
         <button onClick={handleZoomIn} className="bg-white p-2 rounded-lg shadow-lg hover:bg-gray-50 transition-colors border border-gray-200" title="Phóng to">
           <ZoomIn size={18} className="text-gray-700" />
@@ -193,15 +193,15 @@ export default function MapPicker({ defaultPos, onConfirm, onCancel }) {
         </button>
       </div>
 
-      {/* Zoom level — top right */}
+      {/* Mức thu phóng — góc trên bên phải */}
       <div className="absolute top-3 right-3 z-10 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-lg shadow-lg border border-gray-200">
         <span className="text-xs font-medium text-gray-600">Zoom: {currentZoom.toFixed(1)}</span>
       </div>
 
-      {/* Panel thông tin địa chỉ */}
+      {/* Khung thông tin địa chỉ */}
       <div className="bg-gradient-to-r from-slate-50 to-white px-5 py-4 border-t border-slate-200 z-10">
         <div className="flex items-center justify-between gap-4">
-          {/* Địa chỉ / loading */}
+          {/* Địa chỉ / trạng thái đang tải */}
           <div className="min-w-0 flex-1">
             {loadingAddr ? (
               <span className="text-xs text-slate-400 flex items-center gap-1.5">

@@ -54,7 +54,7 @@ export default function PriceList() {
 
   return (
     <div className="font-sans bg-slate-50 text-slate-700">
-      {/* Mini-bar - luôn tồn tại trong DOM, ẩn/hiện qua CSS transform */}
+      {/* Thanh mini - luôn tồn tại trong DOM, ẩn/hiện qua biến đổi CSS */}
       <div
         ref={miniBarRef}
         className="fixed top-[65px] left-0 right-0 z-30 h-16 bg-[#113e48]/97 backdrop-blur-md shadow-xl px-6 flex items-center"
@@ -95,7 +95,7 @@ export default function PriceList() {
         />
       </section>
 
-      {/* Header section - gradient bên dưới ảnh */}
+      {/* Phần đầu trang - dải màu chuyển sắc bên dưới ảnh */}
       <section
         className="relative overflow-hidden py-20 px-6"
         style={{ background: "linear-gradient(135deg, #0f2027 0%, #113e48 50%, #203a43 100%)" }}
@@ -127,7 +127,7 @@ export default function PriceList() {
             </Link>
           </div>
 
-          {/* Phải: stats cards */}
+          {/* Phải: các thẻ thống kê */}
           <div className="grid grid-cols-2 gap-4" data-aos="fade-left">
             {[
               { num: "0đ", label: "COD < 2tr", sub: "Miễn phí thu hộ", color: "from-green-400/25 to-green-600/15" },

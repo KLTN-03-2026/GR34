@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import API from "../services/api";
@@ -65,7 +65,7 @@ export default function Login() {
       else if (user.role === "driver") navigate(`/driver/${user.id}`);
       else navigate("/customer");
 
-      // Restore avatar from database if available
+      // Khôi phục ảnh đại diện từ cơ sở dữ liệu nếu có
       if (user.avatar) {
         localStorage.setItem("userAvatar", user.avatar);
       }
@@ -139,7 +139,7 @@ export default function Login() {
                 </label>
                 <Link
                   to="/forgot-password"
-                  class="text-[10px] font-bold text-orange-500 hover:underline"
+                  className="text-[10px] font-bold text-orange-500 hover:underline"
                 >
                   Quên mật khẩu?
                 </Link>

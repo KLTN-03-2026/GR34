@@ -40,7 +40,7 @@ export default function ComingSoon({ title = "Dịch vụ mới", icon, bannerSr
 
   return (
     <div className="font-sans bg-[#0f1e24]">
-      {/* Mini-bar */}
+      {/* Thanh mini */}
       <div
         ref={miniBarRef}
         className="fixed top-[65px] left-0 right-0 z-30 h-16 bg-[#113e48]/97 backdrop-blur-md shadow-xl px-6 flex items-center"
@@ -77,12 +77,12 @@ export default function ComingSoon({ title = "Dịch vụ mới", icon, bannerSr
         />
       </section>
 
-      {/* Coming Soon Content */}
+      {/* Nội dung sắp ra mắt */}
       <section
         className="relative min-h-screen flex flex-col items-center justify-center text-white px-6 overflow-hidden"
         style={{ background: "linear-gradient(135deg, #0f2027 0%, #113e48 50%, #203a43 100%)" }}
       >
-        {/* Animated blobs */}
+        {/* Các khối nền động */}
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-20 pointer-events-none">
           <div className="absolute top-10 left-10 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob"></div>
           <div className="absolute top-10 right-10 w-72 h-72 bg-orange-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000"></div>
@@ -90,7 +90,7 @@ export default function ComingSoon({ title = "Dịch vụ mới", icon, bannerSr
         </div>
 
         <div className="relative z-10 text-center max-w-2xl mx-auto">
-          {/* Icon */}
+          {/* Biểu tượng */}
           <div
             className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mb-8 shadow-2xl"
             data-aos="zoom-in"
@@ -98,14 +98,14 @@ export default function ComingSoon({ title = "Dịch vụ mới", icon, bannerSr
             {icon || <FaRocket className="text-4xl text-orange-500" />}
           </div>
 
-          {/* Badge */}
+          {/* Nhãn */}
           <div data-aos="fade-up" data-aos-delay="100">
             <span className="px-4 py-1.5 rounded-full border border-orange-500/50 text-orange-400 text-sm font-bold uppercase tracking-widest bg-orange-500/10">
               Coming Soon
             </span>
           </div>
 
-          {/* Title */}
+          {/* Tiêu đề */}
           <h1
             className="text-4xl md:text-6xl font-extrabold mt-6 mb-4 leading-tight"
             data-aos="fade-up"
@@ -117,7 +117,7 @@ export default function ComingSoon({ title = "Dịch vụ mới", icon, bannerSr
             </span>
           </h1>
 
-          {/* Description */}
+          {/* Mô tả */}
           <p
             className="text-gray-300 text-lg mb-10 leading-relaxed"
             data-aos="fade-up"
@@ -127,7 +127,7 @@ export default function ComingSoon({ title = "Dịch vụ mới", icon, bannerSr
             vận chuyển tốt nhất cho bạn. Hãy quay lại sau nhé!
           </p>
 
-          {/* Buttons */}
+          {/* Các nút bấm */}
           <div
             className="flex flex-col sm:flex-row gap-4 justify-center"
             data-aos="fade-up"

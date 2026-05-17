@@ -83,7 +83,7 @@ export default function DispatcherTrackingDetail() {
   const [currentZoom, setCurrentZoom] = useState(12);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  // Zoom controls
+  // Nút điều khiển phóng to và thu nhỏ
   const handleZoomIn = () => {
     if (mapRef.current) {
       const newZoom = Math.min(currentZoom + 1, 20);
@@ -115,7 +115,7 @@ export default function DispatcherTrackingDetail() {
     }
   };
 
-  // Fit bounds to show all markers
+  // Canh khung nhìn để hiển thị toàn bộ điểm đánh dấu
   const fitBoundsToMarkers = () => {
     if (!mapRef.current || !pickup || !delivery) return;
 
@@ -379,7 +379,7 @@ export default function DispatcherTrackingDetail() {
               : "h-[500px] lg:h-[600px]"
           }`}
         >
-          {/* Zoom controls */}
+          {/* Nút điều khiển phóng to và thu nhỏ */}
           <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
             <button
               onClick={handleZoomIn}
@@ -434,7 +434,7 @@ export default function DispatcherTrackingDetail() {
             <NavigationControl position="bottom-right" showCompass={false} />
             <ScaleControl position="bottom-left" />
 
-            {/* Render điều kiện */}
+            {/* Hiển thị có điều kiện */}
             {routeGeoJSON && (
               <Source id="route" type="geojson" data={routeGeoJSON}>
                 <Layer
@@ -450,7 +450,7 @@ export default function DispatcherTrackingDetail() {
               </Source>
             )}
 
-            {/* Render điều kiện */}
+            {/* Hiển thị có điều kiện */}
             {pickup && (
               <Marker
                 longitude={pickup[1]}
@@ -475,7 +475,7 @@ export default function DispatcherTrackingDetail() {
               </Marker>
             )}
 
-            {/* Render điều kiện */}
+            {/* Hiển thị có điều kiện */}
             {delivery && (
               <Marker
                 longitude={delivery[1]}
@@ -500,7 +500,7 @@ export default function DispatcherTrackingDetail() {
               </Marker>
             )}
 
-            {/* Render điều kiện */}
+            {/* Hiển thị có điều kiện */}
             {driverPos && (
               <Marker
                 longitude={driverPos[1]}
@@ -525,7 +525,7 @@ export default function DispatcherTrackingDetail() {
               </Marker>
             )}
 
-            {/* Render điều kiện */}
+            {/* Hiển thị có điều kiện */}
             {popupInfo && (
               <Popup
                 anchor="top"

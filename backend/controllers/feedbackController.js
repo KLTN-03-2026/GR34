@@ -21,7 +21,7 @@ export const createFeedback = async (req, res) => {
   }
 };
 
-// Lấy danh sách tất cả đánh giá kèm tên khách hàng và mã vận đơn (admin)
+// Lấy danh sách tất cả đánh giá kèm tên khách hàng và mã vận đơn (quản trị viên)
 export const getAllFeedbacks = async (req, res) => {
   try {
     const [rows] = await db.query(`

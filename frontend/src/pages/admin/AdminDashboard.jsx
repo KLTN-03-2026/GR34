@@ -72,7 +72,8 @@ export default function AdminDashboard() {
     delivered: { label: "Đã giao", color: "#10B981", order: 5 },
     completed: { label: "Hoàn thành", color: "#059669", order: 6 },
     failed: { label: "Thất bại", color: "#EF4444", order: 7 },
-    canceled: { label: "Đã hủy", color: "#6B7280", order: 8 }
+    canceled: { label: "Đã hủy", color: "#6B7280", order: 8 },
+    draft: { label: "Thất bại", color: "#EF4444", order: 9 }
   };
 
   const shipmentData = [...stats.shipmentStats]

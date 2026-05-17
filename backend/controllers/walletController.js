@@ -44,7 +44,7 @@ export const getTransactions = async (req, res) => {
 };
 
 
-// Nạp tiền thủ công vào ví và ghi nhận giao dịch (admin / test)
+// Nạp tiền thủ công vào ví và ghi nhận giao dịch (quản trị viên / kiểm thử)
 export const depositMoney = async (req, res) => {
   try {
     const { wallet_id, amount, description } = req.body;

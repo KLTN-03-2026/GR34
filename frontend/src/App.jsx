@@ -77,7 +77,7 @@ import PriceList from "./pages/service/PriceList.jsx";
 import { ChatProvider } from "./context/ChatContext";
 import ChatLayout from "./components/ChatLayout.jsx";
 
-// Animation variants cho page transition - nhanh nhẹ
+// Các biến thể chuyển động cho hiệu ứng chuyển trang - gọn nhẹ
 const pageVariants = {
   initial: { opacity: 0 },
   enter: {
@@ -252,7 +252,7 @@ export default function App() {
         </Routes>
       </div>
 
-      {/* Render điều kiện */}
+      {/* Hiển thị có điều kiện */}
       {shouldShowChat && <ChatLayout />}
     </ChatProvider>
   );

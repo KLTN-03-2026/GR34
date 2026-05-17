@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import fs from "fs";
 import { sendNotificationToCustomer } from "../server.js";
 
-// Lấy dữ liệu dashboard tài xế
+// Lấy dữ liệu tổng quan của tài xế
 export const getDriverDashboard = async (req, res) => {
   try {
     const { id } = req.params;
@@ -24,7 +24,12 @@ export const getDriverDashboard = async (req, res) => {
         COUNT(CASE WHEN s.status = 'completed' THEN 1 END) AS completed,
         COUNT(CASE WHEN s.status = 'delivering' THEN 1 END) AS delivering,
         COUNT(CASE WHEN s.status = 'picking' THEN 1 END) AS picking,
-        COUNT(CASE WHEN s.status = 'assigned' THEN 1 END) AS assigned
+        COUNT(CASE WHEN s.status = 'assigned' THEN 1 END) AS assigned,
+        SUM(CASE 
+            WHEN s.status = 'completed' 
+            THEN COALESCE(s.shipping_fee, 0)
+            ELSE 0 
+        END) AS total_revenue
       FROM shipments s
       JOIN assignments a ON s.id = a.shipment_id
       WHERE a.driver_id IN (${placeholders})
@@ -66,6 +71,7 @@ export const getDriverDashboard = async (req, res) => {
       delivering: stats.delivering,
       picking: stats.picking,
       assigned: stats.assigned,
+      total_revenue: stats.total_revenue || 0,
       recentShipments: recent,
       latitude: driverInfo?.latitude || null,
       longitude: driverInfo?.longitude || null,
@@ -146,7 +152,10 @@ export const getDriverHistory = async (req, res) => {
         s.service_type,
         s.status,
         s.failure_note,
-        s.updated_at AS completed_at
+        s.updated_at AS completed_at,
+        s.cod_amount,
+        s.shipping_fee,
+        s.cod_payer
       FROM assignments a
       JOIN shipments s ON s.id = a.shipment_id
       WHERE a.driver_id IN (${placeholders})
@@ -179,6 +188,13 @@ export const updateDriverShipmentStatus = async (req, res) => {
       );
     }
 
+    if (status === "completed") {
+      await db.query(
+        "UPDATE payments SET status = 'completed' WHERE shipment_id = ? AND status = 'pending'",
+        [shipment_id]
+      );
+    }
+
     await db.query("UPDATE assignments SET status = ? WHERE shipment_id = ?", [
       status,
       shipment_id,
@@ -200,7 +216,7 @@ export const updateDriverShipmentStatus = async (req, res) => {
         else if (status === "completed")
           msg = `Đơn hàng #${tracking_code} đã được giao thành công!`;
         else if (status === "failed")
-          msg = `Đơn hàng #${tracking_code} giao thất bại${note ? `: ${note}` : ". Điều phối viên sẽ liên hệ để xử lý"}.`;
+          msg = `Đơn hàng #${tracking_code} giao thất bại${note ? `: ${note}` : ". Điều phối viên sẽ liên hệ để xử lý"}. Tiền hàng sẽ hoàn lại vào ví của khách hàng khi đơn hàng được trả về người gửi.`;
 
         await sendNotificationToCustomer(customer_id, shipment_id, msg);
       }
@@ -270,7 +286,7 @@ export const getDriverProfile = async (req, res) => {
 
     const driver = rows[0];
 
-    // Convert avatar relative path to full URL
+    // Chuyển đường dẫn tương đối của ảnh đại diện thành URL đầy đủ
     if (driver.avatar) {
       const baseUrl = process.env.BASE_URL || "http://localhost:5000";
       driver.avatar = driver.avatar.startsWith("/uploads")
@@ -337,7 +353,7 @@ export const toggleDriverStatus = async (req, res) => {
       return res.status(400).json({ message: "Trạng thái không hợp lệ" });
     }
 
-    // Tìm driver qua user_id
+    // Tìm tài xế qua user_id
     const [[driver]] = await db.query(
       "SELECT id, status FROM drivers WHERE user_id = ?",
       [id],
@@ -490,7 +506,7 @@ export const getDriverRatingStats = async (req, res) => {
   }
 };
 
-// Gán xe cho tài xế theo driver_id (admin hoặc nội bộ)
+// Gán xe cho tài xế theo driver_id (quản trị viên hoặc nội bộ)
 export const updateDriverVehicle = async (req, res) => {
   try {
     const { id } = req.params;
@@ -543,7 +559,7 @@ export const getDriverProfileByUser = async (req, res) => {
 
     const driver = rows[0];
 
-    // Convert avatar relative path to full URL
+    // Chuyển đường dẫn tương đối của ảnh đại diện thành URL đầy đủ
     if (driver.avatar) {
       const baseUrl = process.env.BASE_URL || "http://localhost:5000";
       driver.avatar = driver.avatar.startsWith("/uploads")
@@ -593,7 +609,7 @@ export const uploadDriverAvatar = async (req, res) => {
     try {
       await db.query("ALTER TABLE drivers ADD COLUMN avatar VARCHAR(500)");
     } catch {
-      // Column already exists, ignore
+      // Cột đã tồn tại, bỏ qua
     }
     await db.query("UPDATE drivers SET avatar = ? WHERE user_id = ?", [relativePath, driverId]);
 

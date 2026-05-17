@@ -134,7 +134,7 @@ export default function FAQSection() {
 
   return (
     <section className="py-24 bg-gradient-to-br from-slate-50 to-blue-50/30 relative overflow-hidden">
-      {/* Decorative blobs */}
+      {/* Các khối nền trang trí */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-orange-400/5 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-72 h-72 bg-blue-400/5 rounded-full blur-3xl pointer-events-none" />
 
@@ -196,7 +196,7 @@ export default function FAQSection() {
           {/* Cột phải: Chat window */}
           <div data-aos="fade-left">
             <div className="bg-white rounded-3xl shadow-2xl shadow-[#113e48]/10 border border-gray-100 overflow-hidden flex flex-col" style={{ height: "520px" }}>
-              {/* Header */}
+              {/* Phần đầu */}
               <div className="bg-gradient-to-r from-[#113e48] to-[#1a5c6e] px-5 py-4 flex items-center gap-3 shrink-0">
                 <div className="relative">
                   <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white text-lg">
@@ -210,7 +210,7 @@ export default function FAQSection() {
                 </div>
               </div>
 
-              {/* Messages */}
+              {/* Danh sách tin nhắn */}
               <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/50 scrollbar-thin scrollbar-thumb-gray-200">
                 <div className="text-center mb-2">
                   <span className="text-[10px] text-gray-400 bg-gray-100 px-3 py-1 rounded-full">
@@ -254,7 +254,7 @@ export default function FAQSection() {
                   ))}
                 </AnimatePresence>
 
-                {/* Typing indicator */}
+                {/* Chỉ báo đang nhập */}
                 {typing && (
                   <motion.div
                     initial={{ opacity: 0, y: 8 }}
@@ -283,7 +283,7 @@ export default function FAQSection() {
 
               </div>
 
-              {/* Input box */}
+              {/* Ô nhập liệu */}
               <div className="p-3 bg-white border-t border-gray-100 shrink-0">
                 <div className="flex items-center gap-2 bg-gray-50 rounded-full px-4 py-2 border border-gray-200 focus-within:border-orange-400 focus-within:ring-2 focus-within:ring-orange-400/20 transition-all">
                   <input

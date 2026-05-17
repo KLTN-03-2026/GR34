@@ -197,7 +197,7 @@ export default function ChatBubble({ onClose }) {
         height: collapsed ? "auto" : isMobile ? "100dvh" : "620px",
       }}
     >
-      {/* Toast */}
+      {/* Thông báo toast */}
       <AnimatePresence>
         {showToast && (
           <motion.div
@@ -212,7 +212,7 @@ export default function ChatBubble({ onClose }) {
         )}
       </AnimatePresence>
 
-      {/* Header */}
+      {/* Phần đầu */}
       <motion.div
         layout="position"
         className={`bg-gradient-to-r from-emerald-600 to-teal-500 text-white px-4 py-3 flex justify-between items-center cursor-pointer select-none shrink-0 z-10 ${
@@ -279,7 +279,7 @@ export default function ChatBubble({ onClose }) {
         </div>
       </motion.div>
 
-      {/* Content */}
+      {/* Nội dung */}
       <AnimatePresence>
         {!collapsed && (
           <motion.div
@@ -289,7 +289,7 @@ export default function ChatBubble({ onClose }) {
             transition={{ duration: 0.2 }}
             className="flex-1 flex flex-col overflow-hidden"
           >
-            {/* Info Bar */}
+            {/* Thanh thông tin */}
             <div className="bg-gradient-to-r from-emerald-50 to-teal-50 px-4 py-2 border-b border-emerald-100">
               <div className="flex items-center justify-between text-xs">
                 <div className="flex items-center gap-3">
@@ -306,7 +306,7 @@ export default function ChatBubble({ onClose }) {
               </div>
             </div>
 
-            {/* Messages */}
+            {/* Danh sách tin nhắn */}
             <div className="flex-1 p-4 overflow-y-auto bg-gradient-to-b from-slate-50 to-white scrollbar-thin scrollbar-thumb-emerald-200 scrollbar-track-transparent">
               <div className="text-center mb-4">
                 <div className="inline-flex items-center gap-2 text-[10px] text-gray-400 uppercase tracking-wider font-medium bg-white px-4 py-2 rounded-full shadow-sm border border-gray-100">
@@ -368,7 +368,7 @@ export default function ChatBubble({ onClose }) {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Input */}
+            {/* Ô nhập */}
             <div className="p-4 bg-white border-t border-gray-100 relative z-20 shrink-0 pb-safe">
               <div
                 className={`relative flex items-center bg-gray-50 rounded-2xl px-4 py-3 border-2 border-transparent transition-all duration-300 ${

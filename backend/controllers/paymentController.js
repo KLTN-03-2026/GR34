@@ -1,6 +1,10 @@
 import db from "../config/db.js";
 import crypto from "crypto";
 import axios from "axios";
+import {
+  sendNotificationToDispatcher,
+  sendNotificationToCustomer,
+} from "../server.js";
 
 // Lấy danh sách tất cả giao dịch thanh toán kèm thông tin đơn hàng và khách hàng
 export const getAllPayments = async (req, res) => {
@@ -31,13 +35,33 @@ export const createPayment = async (req, res) => {
       "INSERT INTO payments (shipment_id, customer_id, amount, method, status) VALUES (?, ?, ?, ?, 'pending')",
       [shipment_id, customer_id, amount, method],
     );
+
+    // Send notifications
+    const [shipmentRows] = await db.query(
+      `SELECT s.tracking_code, r.prefix 
+       FROM shipments s 
+       LEFT JOIN regions r ON s.region_id = r.id 
+       WHERE s.id = ?`,
+      [shipment_id]
+    );
+
+    if (shipmentRows.length > 0) {
+      const { tracking_code, prefix } = shipmentRows[0];
+      try {
+        await sendNotificationToDispatcher(1, shipment_id, `Đơn hàng mới tại ${prefix || 'Hệ thống'}: #${tracking_code} — chờ phân công.`);
+        if (customer_id) {
+          await sendNotificationToCustomer(customer_id, shipment_id, `Đơn hàng #${tracking_code} của bạn đã được tạo thành công! Chúng tôi sẽ sớm liên hệ để lấy hàng.`);
+        }
+      } catch (notifyErr) {}
+    }
+
     res.json({ message: " Tạo thanh toán thành công" });
   } catch (err) {
     res.status(500).json({ message: "Lỗi server khi tạo thanh toán" });
   }
 };
 
-// Tạo yêu cầu thanh toán MoMo cho đơn hàng, sinh link redirect và lưu vào database
+// Tạo yêu cầu thanh toán MoMo cho đơn hàng, sinh liên kết chuyển hướng và lưu vào cơ sở dữ liệu
 export const createMomoPayment = async (req, res) => {
   try {
     const { shipment_id, customer_id, amount } = req.body;
@@ -106,7 +130,7 @@ export const createMomoPayment = async (req, res) => {
   }
 };
 
-// Tạo yêu cầu nạp tiền ví qua MoMo, tạo giao dịch pending trong transactions
+// Tạo yêu cầu nạp tiền ví qua MoMo, tạo giao dịch pending trong bảng transactions
 export const createWalletDepositMomo = async (req, res) => {
   try {
     const { wallet_id, amount } = req.body;
@@ -127,7 +151,7 @@ export const createWalletDepositMomo = async (req, res) => {
     const requestId = orderId;
     const orderInfo = `Nap tien vao vi #${wallet_id}`;
 
-    const redirectUrl = `http://localhost:5173/customer/wallet?orderId=${orderId}&resultCode=0&type=wallet`;
+    const redirectUrl = `http://localhost:5173/customer/payment-success?orderId=${orderId}&resultCode=0&type=wallet`;
     const ipnUrl = "http://localhost:5000/api/payments/momo/callback";
     const requestType = "captureWallet";
 
@@ -168,13 +192,13 @@ export const createWalletDepositMomo = async (req, res) => {
   }
 };
 
-// Nhận IPN callback từ MoMo, cập nhật trạng thái thanh toán và số dư ví
+// Nhận callback IPN từ MoMo, cập nhật trạng thái thanh toán và số dư ví
 export const momoIPN = async (req, res) => {
   try {
     const { orderId, resultCode, signature } = req.body;
     if (!orderId) return res.status(400).json({ message: "Thiếu orderId" });
 
-    // Verify signature to prevent fake IPN
+    // Xác minh chữ ký để ngăn IPN giả mạo
     const secretKey = process.env.MOMO_SECRET_KEY;
     if (secretKey && signature) {
       const rawSignature = `orderId=${orderId}&resultCode=${resultCode}&message=${req.body.message || ""}`;
@@ -202,21 +226,40 @@ export const momoIPN = async (req, res) => {
           "UPDATE shipments SET status = 'pending' WHERE id = (SELECT shipment_id FROM payments WHERE order_id = ? LIMIT 1)",
           [orderId]
         );
+
+        // Fetch shipment info to send notification
+        const [shipmentRows] = await db.query(
+          `SELECT s.id, s.tracking_code, s.customer_id, r.prefix 
+           FROM shipments s 
+           LEFT JOIN regions r ON s.region_id = r.id 
+           WHERE s.id = (SELECT shipment_id FROM payments WHERE order_id = ? LIMIT 1)`,
+          [orderId]
+        );
+
+        if (shipmentRows.length > 0) {
+          const { id: shipmentId, tracking_code, customer_id, prefix } = shipmentRows[0];
+          try {
+            await sendNotificationToDispatcher(1, shipmentId, `Đơn hàng mới tại ${prefix || 'Hệ thống'}: #${tracking_code} — chờ phân công.`);
+            if (customer_id) {
+              await sendNotificationToCustomer(customer_id, shipmentId, `Đơn hàng #${tracking_code} của bạn đã được tạo thành công! Chúng tôi sẽ sớm liên hệ để lấy hàng.`);
+            }
+          } catch (notifyErr) {}
+        }
       }
     } else if (orderId.startsWith("WALLET")) {
-      // Use transaction for wallet deposit to prevent race conditions
+      // Dùng transaction khi nạp ví để tránh xung đột dữ liệu
       const connection = await db.getConnection();
       try {
         await connection.beginTransaction();
         
-        // Update transaction status with row lock
+        // Cập nhật trạng thái giao dịch với khóa bản ghi
         await connection.query(
           "UPDATE transactions SET status=? WHERE order_id=? AND status='pending'",
           [status, orderId]
         );
         
         if (status === "success") {
-          // Get transaction details with lock
+          // Lấy chi tiết giao dịch với khóa bản ghi
           const [trans] = await connection.query(
             "SELECT wallet_id, amount FROM transactions WHERE order_id = ? FOR UPDATE",
             [orderId],
@@ -225,7 +268,7 @@ export const momoIPN = async (req, res) => {
           if (trans.length > 0) {
             const { wallet_id, amount } = trans[0];
             
-            // Update wallet balance atomically
+            // Cập nhật số dư ví theo cách nguyên tử
             await connection.query(
               "UPDATE wallets SET balance = balance + ?, updated_at = NOW() WHERE id = ?",
               [amount, wallet_id],
@@ -246,9 +289,9 @@ export const momoIPN = async (req, res) => {
     if (process.env.NODE_ENV !== "production") {
       let redirectUrl = "";
       if (orderId.startsWith("WALLET")) {
-        redirectUrl = `http://localhost:5173/customer/wallet?orderId=${orderId}&resultCode=${resultCode}`;
+        redirectUrl = `http://localhost:5173/customer/payment-success?orderId=${orderId}&resultCode=${resultCode}&type=wallet`;
       } else {
-        redirectUrl = `http://localhost:5173/customer/payment-success?orderId=${orderId}&resultCode=${resultCode}`;
+        redirectUrl = `http://localhost:5173/customer/payment-success?orderId=${orderId}&resultCode=${resultCode}&type=shipment`;
       }
 
       setTimeout(() => {
@@ -263,7 +306,7 @@ export const momoIPN = async (req, res) => {
   }
 };
 
-// Cập nhật trạng thái giao dịch thanh toán (admin)
+// Cập nhật trạng thái giao dịch thanh toán (quản trị viên)
 export const updatePaymentStatus = async (req, res) => {
   try {
     const { id } = req.params;
@@ -275,7 +318,7 @@ export const updatePaymentStatus = async (req, res) => {
   }
 };
 
-// Xóa bản ghi thanh toán theo ID (admin)
+// Xóa bản ghi thanh toán theo ID (quản trị viên)
 export const deletePayment = async (req, res) => {
   try {
     const { id } = req.params;
@@ -286,7 +329,7 @@ export const deletePayment = async (req, res) => {
   }
 };
 
-// Thanh toán đơn hàng bằng số dư ví, kiểm tra đủ tiền và trừ số dư (dùng transaction)
+// Thanh toán đơn hàng bằng số dư ví, kiểm tra đủ tiền và trừ số dư (dùng giao dịch transaction)
 export const payShipmentByWallet = async (req, res) => {
   const { shipment_id, user_id, amount } = req.body;
   let connection;
@@ -335,6 +378,24 @@ export const payShipmentByWallet = async (req, res) => {
     );
 
     await connection.commit();
+
+    const [shipmentRows] = await db.query(
+      `SELECT s.tracking_code, r.prefix 
+       FROM shipments s 
+       LEFT JOIN regions r ON s.region_id = r.id 
+       WHERE s.id = ?`,
+      [shipment_id]
+    );
+
+    if (shipmentRows.length > 0) {
+      const { tracking_code, prefix } = shipmentRows[0];
+      try {
+        await sendNotificationToDispatcher(1, shipment_id, `Đơn hàng mới tại ${prefix || 'Hệ thống'}: #${tracking_code} — chờ phân công.`);
+        if (user_id) {
+          await sendNotificationToCustomer(user_id, shipment_id, `Đơn hàng #${tracking_code} của bạn đã được tạo thành công! Chúng tôi sẽ sớm liên hệ để lấy hàng.`);
+        }
+      } catch (notifyErr) {}
+    }
 
     res.json({ message: "Thanh toán thành công", transactionId });
   } catch (err) {

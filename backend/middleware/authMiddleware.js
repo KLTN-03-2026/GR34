@@ -10,10 +10,10 @@ export const verifyToken = (req, res, next) => {
     });
   }
 
-  // Get JWT secret from env, use placeholder only in development
+  // Lấy JWT secret từ biến môi trường, chỉ dùng giá trị mặc định trong môi trường phát triển
   const jwtSecret = process.env.JWT_SECRET || "dev-secret-change-in-production";
 
-  // Warn if using default secret in production
+  // Cảnh báo nếu đang dùng secret mặc định trong môi trường production
   if (
     process.env.NODE_ENV === "production" &&
     jwtSecret === "dev-secret-change-in-production"

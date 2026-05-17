@@ -1,6 +1,6 @@
 import pool from "../config/db.js";
 
-// Lấy danh sách tất cả vai trò trong hệ thống (admin, customer, driver, dispatcher)
+// Lấy danh sách tất cả vai trò trong hệ thống (quản trị viên, khách hàng, tài xế, điều phối viên)
 export const getAllRoles = async (req, res) => {
   try {
     const [rows] = await pool.query(

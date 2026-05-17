@@ -12,11 +12,12 @@ import {
   trackShipment,
   getShipmentDetail,
   changePassword,
+  cancelShipment,
 } from "../controllers/customerController.js";
 
 const router = express.Router();
 
-// Configure multer for avatar upload
+// Cấu hình multer để tải ảnh đại diện lên
 const avatarStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadDir = "uploads/avatars";
@@ -58,6 +59,7 @@ router.get("/track/:code", trackShipment);
 router.get("/:customer_id/shipments", getShipmentsByCustomer);
 
 router.post("/feedback", createFeedback);
+router.post("/shipments/:id/cancel", cancelShipment);
 
 router.put("/change-password/:id", changePassword);
 

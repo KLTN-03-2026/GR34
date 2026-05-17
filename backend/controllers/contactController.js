@@ -50,7 +50,7 @@ export const createContact = async (req, res) => {
       `,
     });
 
-    // Email thông báo nội bộ cho admin
+    // Email thông báo nội bộ cho quản trị viên
     await transporter.sendMail({
       from: `"SpeedyShip BOT" <${process.env.EMAIL_USER}>`,
       to: "support@speedyship.com",

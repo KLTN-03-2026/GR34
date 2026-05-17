@@ -4,7 +4,7 @@ import { createContext, useState, useContext } from "react";
 export const ChatContext = createContext(null);
 
 
-// Hook quản lý chat
+// Tiện ích quản lý chat
 export const useChat = () => useContext(ChatContext);
 
 export function ChatProvider({ children }) {

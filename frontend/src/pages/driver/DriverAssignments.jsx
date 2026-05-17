@@ -254,12 +254,12 @@ export default function DriverAssignments() {
 
   const filteredAssignments = useMemo(() => {
     return assignments.filter((a) => {
-      // Ẩn đơn hỏa tốc đã hoàn tất hoặc thất bại
-      if (a.service_type === "fast" && (a.status === "completed" || a.status === "failed")) {
+      // Tab "Tất cả": ẩn đơn đã hoàn thành và thất bại để tập trung đơn đang xử lý
+      if (filter === "all" && (a.status === "completed" || a.status === "failed")) {
         return false;
       }
 
-      const matchStatus = filter === "all" || a.status === filter;
+      const matchStatus = filter === "all" || a.status === filter || (filter === "assigned" && a.status === "pending");
       const matchSearch =
         a.tracking_code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         a.delivery_address?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -465,7 +465,7 @@ export default function DriverAssignments() {
                       : 'bg-white border border-gray-100'
                   }`}
                 >
-                  {/* Render điều kiện */}
+                  {/* Hiển thị có điều kiện */}
                   {a.service_type === 'fast' && (
                     <div className="absolute -top-2.5 right-4 z-10">
                       <span className="inline-flex items-center justify-center gap-1 min-w-[130px] px-3 py-1.5 rounded-full text-[10px] font-black bg-red-500 text-white shadow-lg shadow-red-500/30 animate-pulse uppercase tracking-wider">
@@ -593,7 +593,7 @@ export default function DriverAssignments() {
         )}
       </div>
 
-      {/* Render điều kiện */}
+      {/* Hiển thị có điều kiện */}
       {!loading && filteredAssignments.length > PAGE_SIZE && (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
           <Pagination

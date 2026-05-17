@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "react-router-dom";
 
-// Animation variants cho page transitions - fade don gian
+// Các biến thể chuyển động cho hiệu ứng chuyển trang - mờ dần đơn giản
 const pageVariants = {
   initial: { opacity: 0 },
   enter: {
@@ -14,7 +14,7 @@ const pageVariants = {
   },
 };
 
-// Page transition wrapper
+// Bộ bao cho hiệu ứng chuyển trang
 export function PageTransition({ children }) {
   const location = useLocation();
 

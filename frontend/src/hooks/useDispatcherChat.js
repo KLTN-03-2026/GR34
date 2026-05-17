@@ -17,7 +17,7 @@ function saveState(state) {
   } catch {}
 }
 
-// Module-level dispatcher chat state (survives component remounts)
+// Trạng thái chat của điều phối viên ở cấp module (vẫn giữ khi component được mount lại)
 let _dispatcherState = loadState();
 const _listeners = new Set();
 
@@ -55,7 +55,7 @@ export function useDispatcherChatState() {
   return { state, setAlert, setUnread, clearAlert };
 }
 
-// Singleton socket listener — attach once at app start
+// Bộ lắng nghe socket dùng chung — chỉ gắn một lần khi ứng dụng khởi động
 let _socketReady = false;
 
 export function initDispatcherSocket() {

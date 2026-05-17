@@ -15,7 +15,7 @@ import {
   Rocket,
 } from "lucide-react";
 
-// Sidebar tóm tắt đơn hàng
+// Thanh bên tóm tắt đơn hàng
 export default function OrderSummarySidebar({
   serviceType,
   setServiceType,
@@ -123,7 +123,7 @@ export default function OrderSummarySidebar({
       <div className="bg-white rounded-3xl shadow-[0_20px_50px_rgb(0,0,0,0.12)] border border-gray-100 sticky top-6 overflow-hidden transition-all duration-500 hover:shadow-[0_20px_50px_rgb(0,0,0,0.2)]">
         {/* Phần giao diện */}
         <div className="bg-gradient-to-br from-[#0f2c33] via-[#113e48] to-[#1a5c6a] px-7 py-6 relative overflow-hidden group">
-          {/* Decorative glowing blobs */}
+          {/* Các khối nền phát sáng trang trí */}
           <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/20 rounded-full blur-3xl group-hover:bg-teal-400/30 transition-all duration-700"></div>
           <div className="absolute bottom-0 left-0 w-24 h-24 bg-orange-500/20 rounded-full blur-2xl group-hover:bg-orange-400/30 transition-all duration-700"></div>
 
@@ -299,7 +299,7 @@ export default function OrderSummarySidebar({
                   </span>
                 </div>
 
-                {/* Render điều kiện */}
+                {/* Hiển thị có điều kiện */}
                 {shippingData?.is_inter_provincial && (
                   <div className="bg-blue-50/80 p-3 rounded-xl text-[11px] text-blue-700 flex gap-2 border border-blue-100 mt-1">
                     <AlertCircle
@@ -339,7 +339,7 @@ export default function OrderSummarySidebar({
 
           {/* Phần giao diện */}
           <div className="bg-gradient-to-br from-[#0f2c33] via-[#164a56] to-[#0d2f37] rounded-3xl p-6 text-white shadow-[0_15px_40px_-10px_rgba(17,62,72,0.6)] relative overflow-hidden group">
-            {/* Animated glowing elements */}
+            {/* Các phần tử phát sáng động */}
             <div className="absolute -top-10 -right-10 w-40 h-40 bg-teal-400/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-1000" />
             <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-orange-500/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-1000" />
 
@@ -401,7 +401,7 @@ export default function OrderSummarySidebar({
             disabled={creating || !shippingData || loading}
             className="group relative w-full bg-gradient-to-r from-orange-500 via-red-500 to-orange-500 bg-[length:200%_auto] hover:bg-[position:right_center] text-white py-4 px-6 rounded-2xl font-black text-lg shadow-[0_10px_30px_-10px_rgba(249,115,22,0.8)] hover:shadow-[0_15px_40px_-15px_rgba(239,68,68,1)] transition-all duration-500 hover:-translate-y-1 active:scale-95 disabled:opacity-50 disabled:saturate-0 disabled:cursor-not-allowed overflow-hidden flex items-center justify-center gap-3"
           >
-            {/* Sweep effect */}
+            {/* Hiệu ứng quét */}
             <div className="absolute inset-0 w-[200%] -translate-x-[150%] bg-gradient-to-r from-transparent via-white/30 to-transparent group-hover:animate-[shimmer_2s_infinite]" />
 
             {creating && (

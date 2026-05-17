@@ -124,7 +124,7 @@ export default function ChatPopupTop({ onClose }) {
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
       className="bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-gray-100 font-sans"
     >
-      {/* Header */}
+      {/* Phần đầu */}
       <div
         className="bg-gradient-to-r from-[#113e48] via-blue-600 to-cyan-500 text-white px-4 py-3 flex justify-between items-center cursor-pointer select-none"
         onClick={() => setCollapsed(!collapsed)}
@@ -172,10 +172,10 @@ export default function ChatPopupTop({ onClose }) {
         </div>
       </div>
 
-      {/* Content */}
+      {/* Nội dung */}
       {!collapsed && (
         <>
-          {/* Quick Info Bar */}
+          {/* Thanh thông tin nhanh */}
           <div className="bg-gradient-to-r from-blue-50 to-cyan-50 px-4 py-2 border-b border-blue-100">
             <div className="flex items-center justify-between text-xs">
               <div className="flex items-center gap-4">
@@ -192,7 +192,7 @@ export default function ChatPopupTop({ onClose }) {
             </div>
           </div>
 
-          {/* Messages */}
+          {/* Danh sách tin nhắn */}
           <div className="flex-1 p-4 overflow-y-auto bg-gradient-to-b from-slate-50 to-white scrollbar-thin scrollbar-thumb-blue-200 scrollbar-track-transparent">
             <AnimatePresence mode="wait">
               {messages.map((m, i) => (
@@ -325,7 +325,7 @@ export default function ChatPopupTop({ onClose }) {
                     })}
                   </div>
 
-                  {/* SpeedyShip Info Card */}
+                  {/* Thẻ thông tin SpeedyShip */}
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -355,7 +355,7 @@ export default function ChatPopupTop({ onClose }) {
               )}
             </AnimatePresence>
 
-            {/* Typing indicator */}
+            {/* Chỉ báo đang nhập */}
             {isTyping && (
               <motion.div
                 initial={{ opacity: 0 }}
@@ -385,7 +385,7 @@ export default function ChatPopupTop({ onClose }) {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Input */}
+          {/* Ô nhập */}
           <div className="p-4 bg-white border-t border-gray-100">
             <div className="relative flex items-center bg-gray-50 rounded-2xl px-4 py-3 border-2 border-transparent focus-within:border-blue-400 focus-within:bg-white transition-all shadow-sm">
               <input
