@@ -12,8 +12,6 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import bbox from "@turf/bbox";
 import toast from "../../lib/toast";
-import AOS from "aos";
-import "aos/dist/aos.css";
 import {
   ArrowLeft,
   Package,
@@ -28,6 +26,18 @@ import {
 
 // Token Mapbox dùng cho bản đồ
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
+
+const STATUS_LABEL_MAP = {
+  draft: "Chưa tạo thành công",
+  pending: "Đã đặt hàng",
+  assigned: "Đã phân công",
+  picking: "Đang lấy hàng",
+  delivering: "Đang giao hàng",
+  delivered: "Đã giao hàng",
+  completed: "Giao thành công",
+  canceled: "Đã hủy",
+  failed: "Giao thất bại",
+};
 
 
 // Component marker tùy chỉnh trên bản đồ với hiệu ứng ping và mũi tên
@@ -62,7 +72,8 @@ const CustomMarker = ({ icon, bgColor, ringColor, onClick }) => {
 function TrackingTimeline({ status }) {
   const steps = [
     { key: "pending", label: "Đã đặt hàng", icon: <Package size={18} /> },
-    { key: "picking", label: "Đang lấy hàng", icon: <Package size={18} /> },
+    { key: "assigned", label: "Đã phân công", icon: <Truck size={18} /> },
+    { key: "picking", label: "Đang lấy hàng", icon: <Truck size={18} /> },
     { key: "delivering", label: "Đang giao hàng", icon: <Truck size={18} /> },
     {
       key: "completed",
@@ -76,13 +87,14 @@ function TrackingTimeline({ status }) {
       case "pending":
         return 0;
       case "assigned":
-      case "picking":
         return 1;
-      case "delivering":
+      case "picking":
         return 2;
+      case "delivering":
+        return 3;
       case "delivered":
       case "completed":
-        return 3;
+        return 4;
       case "failed":
       case "canceled":
       case "draft":
@@ -200,9 +212,8 @@ export default function CustomerShipmentDetail() {
     return null;
   };
 
-  // Khởi tạo AOS và tải chi tiết đơn hàng, tuyến đường khi đang giao
+  // Tải chi tiết đơn hàng, tuyến đường khi đang giao
   useEffect(() => {
-    AOS.init({ duration: 600, easing: "ease-out-cubic", once: true });
 
     const fetchDetail = async () => {
       try {
@@ -362,12 +373,11 @@ export default function CustomerShipmentDetail() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-5 gap-5">
         {/* Cột trái: timeline, địa chỉ, thanh toán, thông tin tài xế */}
-        <div className="lg:col-span-1 space-y-6">
+        <div className="lg:col-span-2 space-y-6">
           <div
             className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100"
-            data-aos="fade-up"
           >
             <h3 className="font-bold text-[#113e48] mb-4 text-sm uppercase tracking-wide">
               Tiến trình vận chuyển
@@ -376,22 +386,20 @@ export default function CustomerShipmentDetail() {
           </div>
 
           <div
-            className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100"
-            data-aos="fade-up"
-            data-aos-delay="150"
+            className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100"
           >
             <h3 className="font-bold text-[#113e48] mb-4 flex items-center gap-2 text-sm uppercase tracking-wide">
               <Package size={16} /> Thông tin hàng hóa
             </h3>
-            <div className="space-y-3 text-sm">
+            <div className="space-y-4 text-sm">
               <div className="flex justify-between items-center text-gray-500">
                 <span>Dịch vụ</span>
                 {shipment.service_type === "fast" ? (
-                  <span className="text-xs font-bold bg-gradient-to-r from-orange-500 to-red-500 text-white px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">🔥 Hỏa tốc</span>
+                  <span className="text-xs font-bold bg-gradient-to-r from-orange-500 to-red-500 text-white px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">Hỏa tốc</span>
                 ) : shipment.service_type === "express" ? (
-                  <span className="text-xs font-bold bg-blue-100 text-blue-700 px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">⚡ Giao nhanh</span>
+                  <span className="text-xs font-bold bg-blue-100 text-blue-700 px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">Giao nhanh</span>
                 ) : (
-                  <span className="text-xs font-bold bg-green-100 text-green-700 px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">🍃 Tiết kiệm</span>
+                  <span className="text-xs font-bold bg-green-100 text-green-700 px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">Tiết kiệm</span>
                 )}
               </div>
               <div className="flex justify-between text-gray-500">
@@ -400,19 +408,94 @@ export default function CustomerShipmentDetail() {
               </div>
               <div className="flex justify-between text-gray-500">
                 <span>Số lượng</span>
-                <span className="font-medium text-gray-900">{shipment.quantity} kiện</span>
+                <span className="font-semibold text-gray-900">{shipment.quantity} kiện</span>
               </div>
               <div className="flex justify-between text-gray-500">
                 <span>Trọng lượng</span>
-                <span className="font-medium text-gray-900">{shipment.weight_kg} kg</span>
+                <span className="font-semibold text-gray-900">{shipment.weight_kg} kg</span>
               </div>
             </div>
           </div>
 
+          {/* Card Thanh toán riêng */}
           <div
-            className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-6"
-            data-aos="fade-up"
-            data-aos-delay="100"
+            className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100"
+          >
+            <h3 className="font-bold text-[#113e48] mb-4 flex items-center gap-2 text-sm uppercase tracking-wide">
+              <CreditCard size={16} /> Thanh toán
+            </h3>
+            <div className="space-y-3 text-sm">
+              {/* Hình thức thanh toán */}
+              <div className="flex justify-between items-center text-gray-500">
+                <span>Hình thức</span>
+                {shipment.payment_method === "COD" ? (
+                  <span className="text-xs font-bold bg-orange-100 text-orange-700 px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
+                    COD
+                  </span>
+                ) : shipment.payment_method === "WALLET" ? (
+                  <span className="text-xs font-bold bg-violet-100 text-violet-700 px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
+                    Ví điện tử
+                  </span>
+                ) : shipment.payment_method === "MOMO" ? (
+                  <span className="text-xs font-bold bg-pink-100 text-pink-700 px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
+                    MoMo
+                  </span>
+                ) : (
+                  <span className="text-xs font-bold bg-gray-100 text-gray-700 px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
+                    Thanh toán online
+                  </span>
+                )}
+              </div>
+
+              {/* Người thanh toán */}
+              <div className="flex justify-between items-center text-gray-500">
+                <span>Người thanh toán</span>
+                <span className={`font-bold ${shipment.payment_method === "COD" ? "text-orange-600" : "text-emerald-600"}`}>
+                  {shipment.payment_method === "COD" ? "Người nhận" : "Khách hàng"}
+                </span>
+              </div>
+
+              {/* Thu hộ COD */}
+              {shipment.payment_method === "COD" && (
+                <div className="flex justify-between text-gray-500">
+                  <span>Thu hộ (COD)</span>
+                  <span className="font-semibold text-gray-900">
+                    {Number(shipment.cod_amount).toLocaleString()}₫
+                  </span>
+                </div>
+              )}
+
+              {/* Phí vận chuyển */}
+              <div className="flex justify-between text-gray-500">
+                <span>Phí vận chuyển</span>
+                <span className="font-semibold text-gray-900">
+                  {Number(shipment.shipping_fee).toLocaleString()}₫
+                </span>
+              </div>
+
+              <div className="h-px bg-gray-100 my-2"></div>
+
+              {/* Tổng thu */}
+              <div className="flex justify-between items-center">
+                <span className="font-bold text-[#113e48]">Tổng thu người nhận</span>
+                <span className="text-lg font-extrabold text-orange-600">
+                  {shipment.payment_method !== "COD"
+                    ? "0₫"
+                    : `${(Number(shipment.cod_amount) + Number(shipment.shipping_fee)).toLocaleString()}₫`}
+                </span>
+              </div>
+
+              {/* Note */}
+              {shipment.payment_method !== "COD" && (
+                <p className="text-xs text-blue-600 bg-blue-50 p-2.5 rounded-lg border border-blue-100 leading-relaxed">
+                  Đơn hàng đã được người gửi thanh toán trước. Shipper không thu thêm tiền.
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div
+            className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-6"
           >
             {/* Thông tin điểm lấy hàng và giao hàng */}
             <div className="flex gap-4 relative">
@@ -518,59 +601,12 @@ export default function CustomerShipmentDetail() {
             </div>
           )}
 
-          <div
-            className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100"
-            data-aos="fade-up"
-            data-aos-delay="200"
-          >
-            <h3 className="font-bold text-[#113e48] mb-4 flex items-center gap-2 text-sm uppercase tracking-wide">
-              <CreditCard size={16} /> Thanh toán
-            </h3>
-            <div className="space-y-3 text-sm">
-              <div className="flex justify-between text-gray-500">
-                <span>Hình thức</span>
-                <span className="font-bold text-[#113e48] uppercase">
-                  {shipment.payment_method === 'wallet' ? 'Ví SpeedyShip' : shipment.payment_method === 'bank' ? 'Chuyển khoản' : shipment.payment_method || "COD"}
-                </span>
-              </div>
-              <div className="flex justify-between text-gray-500">
-                <span>Người thanh toán</span>
-                <span className={`font-bold ${shipment.payment_method === "COD" ? "text-green-600" : "text-orange-600"}`}>
-                  {shipment.payment_method === "COD" ? "Người nhận" : "Khách hàng"}
-                </span>
-              </div>
-              <div className="flex justify-between text-gray-500">
-                <span>Thu hộ (COD)</span>
-                <span className="font-medium text-gray-900">
-                  {Number(shipment.cod_amount).toLocaleString()}₫
-                </span>
-              </div>
-              <div className="h-px bg-gray-100 my-2"></div>
-              <div className="flex justify-between items-center">
-                <span className="font-bold text-[#113e48]">
-                  Tổng thu người nhận
-                </span>
-                <span className={`text-xl font-extrabold ${shipment.payment_method !== "COD" ? "text-emerald-600" : "text-orange-600"}`}>
-                  {shipment.payment_method !== "COD"
-                    ? "0₫"
-                    : `${(Number(shipment.cod_amount) + Number(shipment.shipping_fee)).toLocaleString()}₫`
-                  }
-                </span>
-              </div>
-              {shipment.payment_method !== "COD" && (
-                <p className="text-xs text-blue-600 bg-blue-50 p-2 rounded-lg border border-blue-100">
-                  Khách hàng đã thanh toán toàn bộ. Shipper không thu tiền người nhận.
-                </p>
-              )}
-            </div>
-          </div>
         </div>
 
         {/* Cột phải: bản đồ Mapbox hiển thị tuyến đường giao hàng */}
         <div
           ref={mapContainerRef}
-          className="lg:col-span-2 h-[60vh] lg:h-[calc(100vh-120px)] bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden relative z-0 lg:sticky lg:top-6"
-          data-aos="fade-left"
+          className="lg:col-span-3 h-[55vh] lg:h-[calc(100vh-160px)] bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden relative z-0 lg:sticky lg:top-6"
         >
           <Map
             ref={mapRef}
@@ -710,17 +746,7 @@ export default function CustomerShipmentDetail() {
               Trạng thái hiện tại
             </p>
             <p className="text-lg font-extrabold text-[#113e48]">
-              {{
-                draft: "Chưa tạo thành công",
-                pending: "Đã đặt hàng",
-                assigned: "Đã phân công",
-                picking: "Đang lấy hàng",
-                delivering: "Đang giao hàng",
-                delivered: "Đã giao hàng",
-                completed: "Giao thành công",
-                canceled: "Đã hủy",
-                failed: "Giao thất bại",
-              }[shipment.status] || shipment.status}
+              {STATUS_LABEL_MAP[shipment.status] || shipment.status}
             </p>
           </div>
         </div>

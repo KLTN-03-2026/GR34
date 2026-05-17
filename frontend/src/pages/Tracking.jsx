@@ -3,14 +3,11 @@ import { useSearchParams, Link } from "react-router-dom";
 import API from "../services/api";
 import Map, {
   Marker,
-  Popup,
   Source,
   Layer,
   NavigationControl,
 } from "react-map-gl";
-import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import bbox from "@turf/bbox";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import {
@@ -24,7 +21,7 @@ import {
   FaTimesCircle,
   FaClock,
 } from "react-icons/fa";
-import { AlertTriangle, Home, Package, Truck } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
@@ -54,9 +51,8 @@ const CustomMarker = ({ icon, bgColor, ringColor, onClick }) => {
 // Tra cứu đơn hàng công khai
 export default function Tracking() {
   const [searchParams] = useSearchParams();
-  const initialCode = searchParams.get("code") || "";
 
-  const [code, setCode] = useState(initialCode);
+  const [code, setCode] = useState("");
   const [last4, setLast4] = useState("");
   const [shipment, setShipment] = useState(null);
 
@@ -104,9 +100,16 @@ export default function Tracking() {
     };
   }, []);
 
+  // Auto-submit khi có code + last4 từ URL
   useEffect(() => {
-    if (initialCode) handleSearch();
-  }, [initialCode]);
+    const codeParam = searchParams.get("code") || "";
+    const last4Param = searchParams.get("last4") || "";
+    if (codeParam && last4Param) {
+      setCode(codeParam);
+      setLast4(last4Param);
+      setTimeout(() => handleSearch(codeParam, last4Param), 50);
+    }
+  }, []);
 
 
   const getStatusInfo = (status) => {
@@ -125,6 +128,13 @@ export default function Tracking() {
         bg: "bg-blue-50",
         icon: <FaClock />,
       };
+    if (s === "assigned")
+      return {
+        text: "Đã phân công",
+        color: "text-cyan-600",
+        bg: "bg-cyan-50",
+        icon: <FaTruck />,
+      };
     if (s === "picking" || s.includes("picked") || s.includes("taking") || s === "đã lấy hàng")
       return {
         text: "Đang lấy hàng",
@@ -135,8 +145,8 @@ export default function Tracking() {
     if (s === "delivering" || s.includes("transit") || s.includes("shipping") || s === "đang vận chuyển")
       return {
         text: "Đang giao hàng",
-        color: "text-orange-500",
-        bg: "bg-orange-50",
+        color: "text-sky-600",
+        bg: "bg-sky-50",
         icon: <FaTruck />,
       };
     if (s === "delivered" || s === "completed" || s === "success" || s.includes("giao thành công"))
@@ -149,7 +159,7 @@ export default function Tracking() {
     if (s === "failed" || s.includes("thất bại"))
       return {
         text: "Giao thất bại",
-        color: "text-red-500",
+        color: "text-red-600",
         bg: "bg-red-50",
         icon: <FaTimesCircle />,
       };
@@ -164,17 +174,17 @@ export default function Tracking() {
       return {
         text: "Đã hoàn hàng",
         color: "text-purple-700",
-        bg: "bg-purple-50",
+        bg: "bg-purple-100",
         icon: <FaCheckCircle />,
       };
     if (s.includes("cancel") || s === "đã hủy")
       return {
         text: "Đã hủy",
-        color: "text-red-600",
-        bg: "bg-red-50",
+        color: "text-red-700",
+        bg: "bg-red-100",
         icon: <FaTimesCircle />,
       };
-    // Fallback — vẫn cố dịch một số từ thường gặp
+    // Fallback
     return {
       text: status,
       color: "text-[#113e48]",
@@ -182,6 +192,26 @@ export default function Tracking() {
       icon: <FaBoxOpen />,
     };
   };
+
+  // Helper functions cho timeline
+  const stepStatuses = {
+    pickup: ["assigned", "picking", "delivering", "delivered", "completed", "success"],
+    delivery: ["picking", "delivering", "delivered", "completed", "success"],
+    completed: ["delivered", "completed", "success"],
+  };
+
+  const isStepActive = (step) => stepStatuses[step]?.includes(shipment?.status) || false;
+
+  const getProgressWidth = () => {
+    const status = shipment?.status;
+    if (status === "pending" || status === "created") return 0;
+    if (status === "assigned") return 33;
+    if (status === "picking") return 66;
+    if (["delivering", "delivered", "completed", "success"].includes(status)) return 100;
+    return 0;
+  };
+
+  const getProgressColor = () => "#16a34a";
 
 
   const fetchRouteOSRM = async (start, end) => {
@@ -214,7 +244,12 @@ export default function Tracking() {
 
 
 // Xử lý tìm kiếm
-  const handleSearch = async () => {
+  const handleSearch = async (overrideCode, overrideLast4) => {
+    const urlCode = searchParams.get("code") || "";
+    const urlLast4 = searchParams.get("last4") || "";
+    const searchCode = overrideCode !== undefined ? overrideCode : (urlCode || code);
+    const searchLast4 = overrideLast4 !== undefined ? overrideLast4 : (urlLast4 || last4);
+
     setError("");
     setSuccess("");
     setShipment(null);
@@ -222,7 +257,7 @@ export default function Tracking() {
     setDriverPos(null);
     if (animationRef.current) clearInterval(animationRef.current);
 
-    if (!code.trim()) {
+    if (!searchCode.trim()) {
       setError("Vui lòng nhập mã vận đơn!");
       return;
     }
@@ -231,16 +266,16 @@ export default function Tracking() {
     setLoading(true);
 
     try {
-      let url = `/customers/track/${code.trim()}`;
+      let url = `/customers/track/${searchCode.trim()}`;
       if (customerId) {
         url += `?customer_id=${customerId}`;
       } else {
-        if (!last4 || last4.length !== 4) {
+        if (!searchLast4 || searchLast4.length !== 4) {
           setError("Vui lòng nhập 4 số cuối SĐT người nhận!");
           setLoading(false);
           return;
         }
-        url += `?last4=${last4.trim()}`;
+        url += `?last4=${searchLast4.trim()}`;
       }
 
       const res = await API.get(url);
@@ -316,56 +351,23 @@ export default function Tracking() {
   useEffect(() => {
     if (!mapRef.current) return;
 
-    const features = [];
+    const points = [];
+    if (pickup) points.push([pickup[1], pickup[0]]);
+    if (delivery) points.push([delivery[1], delivery[0]]);
+    if (driverPos) points.push([driverPos[1], driverPos[0]]);
+    if (points.length === 0) return;
 
-
-    if (pickup)
-      features.push({
-        type: "Feature",
-        geometry: { type: "Point", coordinates: [pickup[1], pickup[0]] },
-      });
-    if (delivery)
-      features.push({
-        type: "Feature",
-        geometry: { type: "Point", coordinates: [delivery[1], delivery[0]] },
-      });
-    if (routeGeoJSON) features.push(routeGeoJSON);
-
-    if (features.length === 0) return;
-
-
-    const featureCollection = { type: "FeatureCollection", features: features };
-
-    try {
-      const [minLng, minLat, maxLng, maxLat] = bbox(featureCollection);
-
-
-      const isSamePoint = minLng === maxLng && minLat === maxLat;
-
-      if (isSamePoint) {
-
-        mapRef.current.flyTo({
-          center: [minLng, minLat],
-          zoom: 14,
-          duration: 1000,
-        });
-      } else {
-
-        mapRef.current.fitBounds(
-          [
-            [minLng, minLat],
-            [maxLng, maxLat],
-          ],
-          {
-            padding: 80,
-            duration: 1500,
-            maxZoom: 14,
-          }
-        );
-      }
-    } catch (error) {
+    if (points.length === 1) {
+      mapRef.current.flyTo({ center: points[0], zoom: 14, duration: 1200 });
+    } else {
+      const lngs = points.map(p => p[0]);
+      const lats = points.map(p => p[1]);
+      mapRef.current.fitBounds(
+        [[Math.min(...lngs), Math.min(...lats)], [Math.max(...lngs), Math.max(...lats)]],
+        { padding: 40, duration: 1500, maxZoom: 15 }
+      );
     }
-  }, [routeGeoJSON, pickup, delivery, shipment?.status]);
+  }, [routeGeoJSON, pickup, delivery, driverPos, shipment?.status]);
 
 
   const statusInfo = shipment ? getStatusInfo(shipment.status) : null;
@@ -458,6 +460,9 @@ export default function Tracking() {
               <input
                 value={code}
                 onChange={(e) => setCode(e.target.value.toUpperCase())}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSearch();
+                }}
                 placeholder="Mã vận đơn (VD: SP123)"
                 className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 font-bold text-gray-700"
               />
@@ -471,6 +476,9 @@ export default function Tracking() {
                 <input
                   value={last4}
                   onChange={(e) => setLast4(e.target.value.replace(/\D/g, ""))}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleSearch();
+                  }}
                   maxLength={4}
                   placeholder="4 số cuối SĐT nhận"
                   className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 font-bold text-gray-700"
@@ -486,7 +494,7 @@ export default function Tracking() {
               }`}
             >
               <button
-                onClick={handleSearch}
+                onClick={() => handleSearch()}
                 disabled={loading}
                 className={`w-full h-full py-3 rounded-xl font-bold text-white shadow-lg transition-all flex items-center justify-center gap-2 ${
                   loading
@@ -520,230 +528,328 @@ export default function Tracking() {
 
       {/* Hiển thị có điều kiện */}
       {shipment && statusInfo && (
-        <section className="py-16 px-6 max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-3 gap-8">
-            {/* Phần giao diện */}
-            <div className="lg:col-span-1 space-y-6" data-aos="fade-right">
-              {/* Phần giao diện */}
+        <section className="py-8 px-4 md:px-6 max-w-7xl mx-auto">
+          {/* Layout: Cột trái + Bản đồ bằng nhau */}
+          <div className="flex flex-col lg:flex-row gap-5 items-stretch">
+
+            {/* ─── CỘT TRÁI: Thông tin ─── */}
+            <div className="lg:w-[320px] xl:w-[360px] shrink-0 space-y-4" data-aos="slide-right">
+
+              {/* Trạng thái */}
               <div
-                className={`p-6 rounded-3xl shadow-lg border-l-8 ${
-                  statusInfo.bg
-                } border-l-[${statusInfo.color.split("-")[1]}-500]`}
+                className="p-4 rounded-xl border-l-4 bg-white shadow-sm"
+                style={{
+                  borderLeftColor: statusInfo.bg.includes("blue") ? "#2563eb" :
+                    statusInfo.bg.includes("cyan") ? "#0891b2" :
+                    statusInfo.bg.includes("indigo") ? "#4f46e5" :
+                    statusInfo.bg.includes("sky") ? "#0284c7" :
+                    statusInfo.bg.includes("green") ? "#16a34a" :
+                    statusInfo.bg.includes("red") ? "#dc2626" :
+                    statusInfo.bg.includes("purple") ? "#7c3aed" : "#6b7280"
+                }}
               >
-                <h3 className="text-gray-500 text-sm font-bold uppercase mb-2">
-                  Trạng thái hiện tại
-                </h3>
-                <div
-                  className={`flex items-center gap-3 text-2xl font-black ${statusInfo.color}`}
-                >
-                  {statusInfo.icon} <span>{statusInfo.text}</span>
+                <div className="flex items-center gap-2">
+                  <span className={`flex items-center gap-2 text-xl font-black ${statusInfo.color}`}>
+                    {statusInfo.icon} {statusInfo.text}
+                  </span>
                 </div>
-                <p className="text-sm text-gray-500 mt-3 flex items-center gap-1">
-                  <FaCalendarAlt /> Cập nhật:{" "}
-                  {new Date(shipment.created_at).toLocaleString("vi-VN")}
+                <p className="text-[11px] text-gray-400 mt-2 flex items-center gap-1">
+                  <FaCalendarAlt size={10} /> {new Date(shipment.created_at).toLocaleString("vi-VN")}
                 </p>
               </div>
 
-              {/* Phần giao diện */}
-              <div className="bg-white p-6 rounded-3xl shadow-lg border border-gray-100">
-                <h3 className="text-lg font-bold text-[#113e48] mb-4 flex items-center gap-2">
-                  <FaBoxOpen className="text-orange-500" /> Thông tin kiện hàng
+              {/* Timeline */}
+              <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                <h3 className="text-sm font-bold text-[#113e48] mb-4 flex items-center gap-2">
+                  <FaClock className="text-orange-500" /> Tiến trình vận chuyển
                 </h3>
-                <div className="space-y-4">
-                  <div className="flex justify-between border-b border-gray-100 pb-2">
-                    <span className="text-gray-500 text-sm">Mã đơn</span>
-                    <span className="font-bold text-[#113e48]">
-                      {shipment.tracking_code}
-                    </span>
-                  </div>
-                  <div className="flex justify-between border-b border-gray-100 pb-2">
-                    <span className="text-gray-500 text-sm">Người gửi</span>
-                    <span className="font-bold text-[#113e48]">
-                      {shipment.sender_name}
-                    </span>
-                  </div>
-                  <div className="flex justify-between border-b border-gray-100 pb-2">
-                    <span className="text-gray-500 text-sm">Người nhận</span>
-                    <span className="font-bold text-[#113e48]">
-                      {shipment.receiver_name}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center border-b border-gray-100 pb-2">
-                    <span className="text-gray-500 text-sm">Thu hộ (COD)</span>
-                    <span className="font-bold text-green-600 bg-green-50 px-2 py-1 rounded-md">
-                      {parseInt(shipment.cod_amount || 0).toLocaleString(
-                        "vi-VN"
-                      )}{" "}
-                      VNĐ
-                    </span>
-                  </div>
-                </div>
-                <div className="mt-6 pt-4 border-t border-gray-100">
-                  <h4 className="font-bold text-gray-700 mb-2 flex items-center gap-2 text-sm">
-                    <FaMapMarkerAlt className="text-red-500" /> Địa chỉ nhận
-                    hàng
-                  </h4>
-                  <p className="text-gray-600 text-sm leading-relaxed bg-gray-50 p-3 rounded-xl">
-                    {shipment.delivery_address}
-                  </p>
+                <div className="flex items-start justify-between w-full relative px-2">
+                  <div className="absolute top-5 left-0 w-full h-1 bg-gray-100 -z-10 rounded-full"></div>
+                  <div
+                    className="absolute top-5 left-0 h-1.5 bg-green-500 transition-all duration-700 ease-out -z-10 rounded-full"
+                    style={{ width: `${getProgressWidth()}%` }}
+                  ></div>
+                  {[
+                    { label: "Đặt hàng", icon: <FaBoxOpen size={16} /> },
+                    { label: "Lấy hàng", icon: <FaBoxOpen size={16} /> },
+                    { label: "Đang giao", icon: <FaTruck size={16} /> },
+                    { label: "Hoàn thành", icon: <FaCheckCircle size={16} /> },
+                  ].map((step, index) => {
+                    const isActive = index === 0
+                      ? true
+                      : index === 1 ? isStepActive("pickup")
+                      : index === 2 ? isStepActive("delivery")
+                      : isStepActive("completed");
+                    return (
+                      <div key={index} className="flex flex-col items-center flex-1">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-300 z-10 bg-white ${
+                          isActive ? "border-green-500 text-green-600 shadow-md bg-green-50" : "border-gray-200 text-gray-300"
+                        }`}>
+                          {step.icon}
+                        </div>
+                        <p className={`mt-2 text-[11px] font-bold text-center leading-tight ${isActive ? "text-[#113e48]" : "text-gray-400"}`}>
+                          {step.label}
+                        </p>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
+
+              {/* Thông tin kiện hàng */}
+              <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                <h3 className="text-sm font-bold text-[#113e48] mb-4 flex items-center gap-2">
+                  <FaBoxOpen className="text-orange-500" /> Thông tin vận đơn
+                </h3>
+                <div className="space-y-2.5">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400 text-xs">Mã đơn</span>
+                    <span className="font-extrabold text-[#113e48] text-base tracking-wide">{shipment.tracking_code}</span>
+                  </div>
+                  {shipment.service_type && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400 text-xs">Dịch vụ</span>
+                      <span className={`font-bold px-2.5 py-1 rounded-full text-xs ${
+                        shipment.service_type === "fast" ? "bg-gradient-to-r from-orange-500 to-red-500 text-white"
+                        : shipment.service_type === "express" ? "bg-blue-100 text-blue-700"
+                        : "bg-green-100 text-green-700"
+                      }`}>
+                        {shipment.service_type === "fast" ? "Hỏa tốc" : shipment.service_type === "express" ? "Giao nhanh" : "Tiết kiệm"}
+                      </span>
+                    </div>
+                  )}
+                  {shipment.item_name && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400 text-xs">Tên hàng</span>
+                      <span className="font-bold text-[#113e48] text-xs text-right max-w-[55%]">{shipment.item_name}</span>
+                    </div>
+                  )}
+                  {(shipment.quantity || shipment.weight_kg) && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400 text-xs">Số lượng</span>
+                      <span className="font-bold text-[#113e48] text-xs">
+                        {shipment.quantity ? `${shipment.quantity} kiện` : ""}
+                        {shipment.quantity && shipment.weight_kg ? " · " : ""}
+                        {shipment.weight_kg ? `${shipment.weight_kg} kg` : ""}
+                      </span>
+                    </div>
+                  )}
+                  <div className="h-px bg-gray-100 my-1"></div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400 text-xs">Người gửi</span>
+                    <span className="font-bold text-[#113e48] text-xs">{shipment.sender_name}</span>
+                  </div>
+                  {shipment.sender_phone && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400 text-xs">SĐT gửi</span>
+                      <span className="font-bold text-[#113e48] text-xs">{shipment.sender_phone}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400 text-xs">Người nhận</span>
+                    <span className="font-bold text-[#113e48] text-xs">{shipment.receiver_name}</span>
+                  </div>
+                  {shipment.receiver_phone && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400 text-xs">SĐT nhận</span>
+                      <span className="font-bold text-[#113e48] text-xs">{shipment.receiver_phone}</span>
+                    </div>
+                  )}
+                  <div className="h-px bg-gray-100 my-1"></div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400 text-xs">Thu hộ (COD)</span>
+                    <span className="font-bold text-green-600 text-sm">
+                      {parseInt(shipment.cod_amount || 0).toLocaleString("vi-VN")}đ
+                    </span>
+                  </div>
+                  {shipment.shipping_fee && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400 text-xs">Phí vận chuyển</span>
+                      <span className="font-bold text-orange-600 text-sm">
+                        {parseInt(shipment.shipping_fee || 0).toLocaleString("vi-VN")}đ
+                      </span>
+                    </div>
+                  )}
+                  {shipment.payment_method && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400 text-xs">Thanh toán</span>
+                      <span className="font-bold text-[#113e48] uppercase text-xs">
+                        {shipment.payment_method === "COD" ? "COD" : shipment.payment_method === "wallet" ? "Ví điện tử" : "Thanh toán online"}
+                      </span>
+                    </div>
+                  )}
+                  <div className="h-px bg-gray-100 my-1"></div>
+                  <div className="flex gap-2 items-start">
+                    <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shrink-0 mt-0.5">
+                      <FaBoxOpen size={12} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] text-gray-400 font-bold uppercase mb-0.5">Từ</p>
+                      <p className="text-xs font-bold text-[#113e48] leading-snug">{shipment.sender_name}</p>
+                      <p className="text-[10px] text-gray-500 leading-relaxed mt-0.5">{shipment.pickup_address}</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 items-start">
+                    <div className="w-7 h-7 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 shrink-0 mt-0.5">
+                      <FaMapMarkerAlt size={12} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] text-gray-400 font-bold uppercase mb-0.5">Đến</p>
+                      <p className="text-xs font-bold text-[#113e48] leading-snug">{shipment.receiver_name}</p>
+                      <p className="text-[10px] text-gray-500 leading-relaxed mt-0.5">{shipment.delivery_address}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Tài xế */}
+              {shipment.driver_name && (
+                <div className="bg-[#113e48] p-4 rounded-xl text-white flex items-center gap-3 shadow-sm">
+                  <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-lg font-bold shrink-0">
+                    {shipment.driver_name?.charAt(0)?.toUpperCase() || "T"}
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-blue-200 uppercase font-bold">Tài xế</p>
+                    <p className="font-bold text-base leading-tight">{shipment.driver_name}</p>
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Phần giao diện */}
-            <div className="lg:col-span-2" data-aos="fade-left">
-              <div className="bg-white p-2 rounded-3xl shadow-xl border border-gray-200 h-[600px] relative z-0 overflow-hidden">
+            {/* ─── CỘT PHẢI: Bản đồ ─── */}
+            <div className="flex-1 min-h-[480px] lg:min-h-0 relative" data-aos="slide-left">
+              {/* Container bản đồ */}
+              <div className="absolute inset-0 bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-lg">
                 <Map
                   ref={mapRef}
                   initialViewState={{
-                    longitude: pickup ? pickup[1] : 106.7009,
-                    latitude: pickup ? pickup[0] : 10.7769,
-                    zoom: 6,
+                    longitude: 106.7,
+                    latitude: 10.8,
+                    zoom: 7,
                   }}
                   style={{ width: "100%", height: "100%" }}
                   mapStyle="mapbox://styles/mapbox/streets-v12"
                   mapboxAccessToken={MAPBOX_TOKEN}
+                  onLoad={() => {
+                    if (!mapRef.current) return;
+                    const points = [];
+                    if (pickup) points.push([pickup[1], pickup[0]]);
+                    if (delivery) points.push([delivery[1], delivery[0]]);
+                    if (driverPos) points.push([driverPos[1], driverPos[0]]);
+                    if (points.length === 0) return;
+                    if (points.length === 1) {
+                      mapRef.current.flyTo({ center: points[0], zoom: 14, duration: 1200 });
+                    } else {
+                      const lngs = points.map(p => p[0]);
+                      const lats = points.map(p => p[1]);
+                      mapRef.current.fitBounds(
+                        [[Math.min(...lngs), Math.min(...lats)], [Math.max(...lngs), Math.max(...lats)]],
+                        { padding: 40, duration: 1500, maxZoom: 15 }
+                      );
+                    }
+                  }}
                 >
                   <NavigationControl position="bottom-right" />
 
-                  {/* Hiển thị có điều kiện */}
+                  {/* Tuyến đường */}
                   {routeGeoJSON && (
                     <Source id="route" type="geojson" data={routeGeoJSON}>
                       <Layer
                         id="route-line"
                         type="line"
                         paint={{
-                          "line-color": "#f97316",
+                          "line-color": ["completed", "delivered"].includes(shipment?.status) ? "#16a34a" : "#3b82f6",
                           "line-width": 5,
-                          "line-opacity": 0.8,
-                          "line-dasharray": [2, 1],
+                          "line-opacity": 0.85,
+                          ...(["picking", "assigned"].includes(shipment?.status) ? { "line-dasharray": [4, 2] } : {}),
                         }}
                         layout={{ "line-join": "round", "line-cap": "round" }}
                       />
                     </Source>
                   )}
 
-                  {/* Hiển thị có điều kiện */}
+                  {/* Marker điểm lấy hàng */}
                   {pickup && (
-                    <Marker
-                      longitude={pickup[1]}
-                      latitude={pickup[0]}
-                      anchor="bottom"
-                    >
+                    <Marker longitude={pickup[1]} latitude={pickup[0]} anchor="bottom">
                       <CustomMarker
-                        icon={<FaBoxOpen size={20} />}
+                        icon={<FaMapMarkerAlt size={22} />}
                         bgColor="bg-blue-600"
                         ringColor="bg-blue-400"
                       />
-                      <Popup
-                        longitude={pickup[1]}
-                        latitude={pickup[0]}
-                        offset={25}
-                        closeButton={false}
-                        closeOnClick={false}
-                        anchor="top"
-                      >
-                        <div className="font-bold text-xs p-1">
-                          <Package size={12} className="inline-block mr-1 text-blue-600" />
-                          Điểm lấy hàng
-                        </div>
-                      </Popup>
                     </Marker>
                   )}
 
-                  {/* Hiển thị có điều kiện */}
+                  {/* Marker điểm giao hàng */}
                   {delivery && (
-                    <Marker
-                      longitude={delivery[1]}
-                      latitude={delivery[0]}
-                      anchor="bottom"
-                    >
+                    <Marker longitude={delivery[1]} latitude={delivery[0]} anchor="bottom">
                       <CustomMarker
-                        icon={<FaMapMarkerAlt size={20} />}
-                        bgColor="bg-orange-600"
+                        icon={<FaMapMarkerAlt size={22} />}
+                        bgColor="bg-orange-500"
                         ringColor="bg-orange-400"
                       />
-                      <Popup
-                        longitude={delivery[1]}
-                        latitude={delivery[0]}
-                        offset={25}
-                        closeButton={false}
-                        closeOnClick={false}
-                        anchor="top"
-                      >
-                        <div className="font-bold text-xs p-1">
-                          <Home size={12} className="inline-block mr-1 text-orange-600" />
-                          Điểm giao hàng
-                        </div>
-                      </Popup>
                     </Marker>
                   )}
 
-                  {/* Hiển thị có điều kiện */}
+                  {/* Marker tài xế */}
                   {driverPos && (
-                    <Marker
-                      longitude={driverPos[1]}
-                      latitude={driverPos[0]}
-                      anchor="bottom"
-                    >
+                    <Marker longitude={driverPos[1]} latitude={driverPos[0]} anchor="bottom">
                       <CustomMarker
-                        icon={<FaTruck size={20} />}
+                        icon={<FaTruck size={22} />}
                         bgColor="bg-[#113e48]"
                         ringColor="bg-[#113e48]"
                       />
-                      <Popup
-                        longitude={driverPos[1]}
-                        latitude={driverPos[0]}
-                        offset={25}
-                        closeButton={false}
-                        closeOnClick={false}
-                        anchor="top"
-                      >
-                        <div className="text-center font-bold text-xs p-1">
-                          {shipment.status === "completed" ||
-                          shipment.status === "delivered" ? (
-                            <span className="text-green-600">
-                              Đã giao hàng
-                            </span>
-                          ) : (
-                            <>
-                              <Truck size={14} className="inline-block mr-1 text-teal-600" /> Đang vận chuyển <br />
-                              <span className="text-[10px] text-gray-500 font-normal">
-                                Tốc độ: 50km/h
-                              </span>
-                            </>
-                          )}
-                        </div>
-                      </Popup>
                     </Marker>
                   )}
                 </Map>
 
-                {/* Phần giao diện */}
-                <div className="absolute bottom-6 left-6 z-[1000] bg-white/90 backdrop-blur-sm p-4 rounded-2xl shadow-lg max-w-xs">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      shipment?.status === "completed" || shipment?.status === "delivered"
+                {/* Overlay trạng thái xe */}
+                <div className="absolute top-3 left-3 z-[1000] bg-white/95 backdrop-blur-sm p-3 rounded-xl shadow-xl max-w-[220px] border border-gray-100">
+                  <div className="flex items-center gap-2.5">
+                    <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${
+                      ["completed", "delivered"].includes(shipment?.status)
                         ? "bg-green-100 text-green-600"
                         : shipment?.status === "failed" || shipment?.status?.includes("cancel")
                         ? "bg-red-100 text-red-600"
                         : "bg-blue-100 text-blue-600"
                     }`}>
-                      <Truck />
+                      <FaTruck size={16} />
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500 font-bold uppercase">
-                        Trạng thái xe
+                      <p className="text-[10px] text-gray-400 font-bold uppercase leading-none">Trạng thái</p>
+                      <p className="font-extrabold text-[#113e48] text-sm leading-none mt-0.5">
+                        {["picking", "delivering"].includes(shipment?.status)
+                          ? "Đang vận chuyển"
+                          : ["completed", "delivered"].includes(shipment?.status)
+                          ? "Đã giao hàng"
+                          : shipment?.status === "failed"
+                          ? "Giao thất bại"
+                          : "Chờ xử lý"}
                       </p>
-                      <p className="font-bold text-[#113e48]">
-                        {shipment.status === "picking" ||
-                        shipment.status === "delivering"
-                          ? "Đang di chuyển"
-                          : shipment.status === "completed" ||
-                            shipment.status === "delivered"
-                          ? "Đã đến nơi"
-                          : "Chưa xuất phát"}
+                    </div>
+                  </div>
+                  {routeGeoJSON && (
+                    <div className="mt-2 pt-2 border-t border-gray-100">
+                      <p className="text-[10px] text-gray-400 leading-tight">
+                        {["picking", "assigned"].includes(shipment?.status) ? "● Đang lấy hàng" : "● Đang giao hàng"}
                       </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Legend đường đi */}
+                <div className="absolute bottom-3 left-3 z-[1000] bg-white/95 backdrop-blur-sm p-2.5 rounded-xl shadow-lg border border-gray-100">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-5 h-0.5 bg-blue-500 rounded-full"></div>
+                      <span className="text-[10px] text-gray-500 font-medium">Đang vận chuyển</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-5 h-0.5 bg-blue-500 rounded-full" style={{ backgroundImage: "repeating-linear-gradient(90deg, transparent, transparent 2px, #3b82f6 2px, #3b82f6 4px)" }}></div>
+                      <span className="text-[10px] text-gray-500 font-medium">Chờ lấy hàng</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-5 h-0.5 bg-green-500 rounded-full"></div>
+                      <span className="text-[10px] text-gray-500 font-medium">Hoàn thành</span>
                     </div>
                   </div>
                 </div>

@@ -73,7 +73,7 @@ export default function AdminDashboard() {
     completed: { label: "Hoàn thành", color: "#059669", order: 6 },
     failed: { label: "Thất bại", color: "#EF4444", order: 7 },
     canceled: { label: "Đã hủy", color: "#6B7280", order: 8 },
-    draft: { label: "Thất bại", color: "#EF4444", order: 9 }
+    draft: { label: "Lỗi tạo", color: "#EF4444", order: 9 }
   };
 
   const shipmentData = [...stats.shipmentStats]
@@ -103,7 +103,7 @@ export default function AdminDashboard() {
           value={stats.totalShipments}
           icon={<Package size={24} className="text-white" />}
           color="bg-blue-500"
-          trend="+12%"
+          trend={`${stats.trends?.shipments >= 0 ? '+' : ''}${stats.trends?.shipments ?? 0}%`}
           to="/admin/shipments"
         />
         <StatCard
@@ -111,7 +111,7 @@ export default function AdminDashboard() {
           value={stats.totalDrivers}
           icon={<Truck size={24} className="text-white" />}
           color="bg-orange-500"
-          trend="+5%"
+          trend={`${stats.trends?.drivers >= 0 ? '+' : ''}${stats.trends?.drivers ?? 0}%`}
           to="/admin/drivers"
         />
         <StatCard
@@ -119,7 +119,7 @@ export default function AdminDashboard() {
           value={stats.totalCustomers}
           icon={<Users size={24} className="text-white" />}
           color="bg-purple-500"
-          trend="+8%"
+          trend={`${stats.trends?.customers >= 0 ? '+' : ''}${stats.trends?.customers ?? 0}%`}
           to="/admin/customers"
         />
         <StatCard
@@ -127,7 +127,7 @@ export default function AdminDashboard() {
           value={formatCurrency(stats.totalRevenue)}
           icon={<DollarSign size={24} className="text-white" />}
           color="bg-green-500"
-          trend="+20%"
+          trend={`${stats.trends?.revenue >= 0 ? '+' : ''}${stats.trends?.revenue ?? 0}%`}
           to="/admin/payments"
         />
       </div>
@@ -155,8 +155,9 @@ export default function AdminDashboard() {
                 <YAxis
                   dataKey="name"
                   type="category"
-                  width={100}
+                  width={120}
                   tick={{ fontSize: 12, fill: "#6B7280" }}
+                  tickLine={false}
                 />
                 <Tooltip
                   cursor={{ fill: "#F3F4F6" }}
@@ -339,6 +340,10 @@ export default function AdminDashboard() {
 
 
 function StatCard({ title, value, icon, color, trend, to }) {
+  const isPositive = !trend || trend.startsWith("+") || (!trend.startsWith("-") && !trend.startsWith("0"));
+  const trendColor = isPositive ? "text-green-500 bg-green-50" : "text-red-500 bg-red-50";
+  const TrendIcon = isPositive ? TrendingUp : Activity;
+
   const content = (
     <>
       <div className="min-w-0 flex-1 pr-2">
@@ -350,8 +355,8 @@ function StatCard({ title, value, icon, color, trend, to }) {
             value
           )}
         </h3>
-        <div className="flex items-center gap-1 mt-2 text-xs font-bold text-green-500 bg-green-50 px-2 py-0.5 rounded-md w-fit whitespace-nowrap">
-          <TrendingUp size={12} /> {trend}{" "}
+        <div className={`flex items-center gap-1 mt-2 text-xs font-bold px-2 py-0.5 rounded-md w-fit whitespace-nowrap ${trendColor}`}>
+          <TrendIcon size={12} /> {trend}{" "}
           <span className="text-gray-400 font-normal ml-1">
             so với tháng trước
           </span>

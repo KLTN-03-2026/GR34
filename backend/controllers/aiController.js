@@ -145,8 +145,8 @@ export const askBot = async (req, res) => {
 
 Để tra cứu đơn hàng, bạn cần cung cấp **mã vận đơn**.
 
-📝 **Ví dụ:** 
-- *Tra cứu đơn DN-897658*
+📝 **Ví dụ:**
+- *Tra cứu đơn DN-123456*
 - *Tra cứu SP123456*
 
 💡 **Mẹo:** Mã vận đơn được gửi qua SMS/Email sau khi tạo đơn thành công.
@@ -234,7 +234,13 @@ Bạn có muốn tôi tra cứu thông tin đơn hàng này?
 ---
 
 ### 🗺️ Theo Dõi GPS
-[Xem hành trình trực tiếp](http://localhost:5173/tracking?code=${trackingCode})
+${(() => {
+  const receiverLast4 = data.receiver_phone?.slice(-4) || null;
+  const gpsLink = receiverLast4
+    ? `[Xem hành trình trực tiếp](http://localhost:5173/tracking?code=${trackingCode}&last4=${receiverLast4})`
+    : `[Xem hành trình trực tiếp](http://localhost:5173/tracking?code=${trackingCode})`;
+  return gpsLink;
+})()}
 
 ---
 
@@ -260,435 +266,216 @@ Mã vận đơn **\`${trackingCode}\`** không tồn tại hoặc đã bị xóa
     // Website
     if (/website|web|trang web|link web|trang chủ/.test(msg)) {
       return res.json({
-        reply: `## 🌐 Website SpeedyShip
+        reply: `🌐 **Website SpeedyShip:** https://speedyship.vn
 
-Truy cập ngay: **https://speedyship.vn**
+Tại đây bạn có thể tạo đơn, theo dõi vận đơn, quản lý ví & COD, và xem thống kê chi tiết.
 
-### 🚀 Tính Năng Website:
-- 📦 Tạo & theo dõi đơn hàng
-- 💳 Quản lý ví & COD
-- 📊 Thống kê chi tiết
-- 📱 Tải ứng dụng di động
-
----
-
-👉 [Truy cập ngay](https://speedyship.vn)`,
+📱 Tải ứng dụng di động trên App Store / Google Play để tiện sử dụng mọi lúc!`,
       });
     }
 
     // Hotline
     if (/hotline|sdt|số điện thoại|gọi điện|tư vấn|liên hệ/.test(msg)) {
       return res.json({
-        reply: `## 📞 Hotline SpeedyShip
+        reply: `☎️ **Hotline SpeedyShip: 1900 888 999**
 
-### ☎️ **1900 888 999**
+• Thứ 2 - Thứ 6: 7:00 - 22:00
+• Thứ 7 - CN: 8:00 - 20:00
 
----
-
-### ⏰ Giờ Hỗ Trợ:
-| Ngày | Giờ |
-|---|---|
-| Thứ 2 - Thứ 6 | 7:00 - 22:00 |
-| Thứ 7 - CN | 8:00 - 20:00 |
-
----
-
-### 💬 Các Kênh Khác:
-- 📧 Email: **support@speedyship.vn**
-- 💬 Zalo: **SpeedyShip**
-- 📘 Fanpage: **facebook.com/speedyship.vn**
-
----
-
-*Gọi ngay để được hỗ trợ nhanh nhất!*`,
+📧 Email: support@speedyship.vn
+📘 Fanpage: facebook.com/speedyship.vn`,
       });
     }
 
     // Email
     if (/email|mail|gửi mail|hỗ trợ mail|support/.test(msg)) {
       return res.json({
-        reply: `## 📧 Email Hỗ Trợ SpeedyShip
+        reply: `✉️ **Email hỗ trợ: support@speedyship.vn**
 
-### ✉️ **support@speedyship.vn**
+Chúng tôi phản hồi trong vòng **24 giờ làm việc**.
 
----
-
-### 📋 Các Trường Hợp Gửi Email:
-
-| Loại | Mô tả |
-|---|---|
-| 💼 Hợp tác kinh doanh | Đăng ký đại lý, API |
-| 🔧 Hỗ trợ kỹ thuật | Lỗi hệ thống, tích hợp |
-| 📝 Khiếu nại | Phản ánh dịch vụ |
-| 💰 Tài chính | Xác nhận thanh toán |
-
----
-
-*Phản hồi trong vòng 24 giờ làm việc*`,
+Phù hợp cho: hợp tác kinh doanh, hỗ trợ kỹ thuật, khiếu nại và các vấn đề tài chính.`,
       });
     }
 
     // Mạng xã hội
     if (/facebook|fanpage|page|fb|zalo/.test(msg)) {
       return res.json({
-        reply: `## 📱 Kết Nối Với SpeedyShip
+        reply: `📘 Facebook: facebook.com/speedyship.vn
+📱 Zalo: zalo.me/speedyship
 
-### Facebook
-🔗 **facebook.com/speedyship.vn**
-
-### Zalo
-🔗 **zalo.me/speedyship**
-
----
-
-💬 Nhắn tin trực tiếp để được hỗ trợ nhanh chóng!
-
-📢 Theo dõi để cập nhật **khuyến mãi** và **tin tức** mới nhất!`,
+Theo dõi để cập nhật khuyến mãi và tin tức mới nhất từ SpeedyShip!`,
       });
     }
 
     // Địa chỉ
     if (/địa chỉ|văn phòng|ở đâu|tới đâu|headquarter/.test(msg)) {
       return res.json({
-        reply: `## 🏢 Trụ Sở SpeedyShip
+        reply: `🏢 **Trụ sở SpeedyShip**
 
-### 📍 **55 Nguyễn Văn Linh**
-Phường Hải Châu 1, Quận Hải Châu
-Thành phố Đà Nẵng, Việt Nam
+📍 55 Nguyễn Văn Linh, Hải Châu, Đà Nẵng
 
----
+• Thứ 2 - Thứ 6: 7:00 - 22:00
+• Thứ 7: 8:00 - 20:00
+• Chủ nhật: 9:00 - 18:00
 
-### ⏰ Giờ Làm Việc
-
-| Ngày | Giờ |
-|---|---|
-| Thứ 2 - Thứ 6 | 7:00 - 22:00 |
-| Thứ 7 | 8:00 - 20:00 |
-| Chủ nhật | 9:00 - 18:00 |
-
----
-
-🗺️ [Xem trên Google Maps](https://maps.google.com/?q=55+Nguyen+Van+Linh+Da+Nang)
-
----
-
-*Ghé thăm văn phòng hoặc liên hệ hotline 1900 888 999 để được hỗ trợ!*`,
+📞 Hotline: 1900 888 999`,
       });
     }
 
     // Giờ làm việc
     if (/giờ mở cửa|giờ làm việc|làm lúc nào|open.*hour/.test(msg)) {
       return res.json({
-        reply: `## ⏰ Giờ Làm Việc SpeedyShip
+        reply: `⏰ **Giờ làm việc SpeedyShip**
 
-### 🏢 Văn Phòng
-| Ngày | Giờ |
-|---|---|
-| Thứ 2 - Thứ 6 | **7:00 - 22:00** |
-| Thứ 7 | **8:00 - 20:00** |
-| Chủ nhật | **9:00 - 18:00** |
+• Thứ 2 - Thứ 6: **7:00 - 22:00**
+• Thứ 7: **8:00 - 20:00**
+• Chủ nhật: **9:00 - 18:00**
 
----
-
-### 📞 Hotline
-**1900 888 999**: 7:00 - 22:00 mỗi ngày
-
----
-
-### 🚚 Dịch Vụ Giao Hàng
-Giao hàng **24/7** - Không giới hạn thời gian!
-
-| Dịch vụ | Thời gian |
-|---|---|
-| Nhanh | 1-2 giờ |
-| Tiết kiệm | 1-2 ngày |
-| Hỏa tốc | 30-60 phút |
-
----
-
-*Chúng tôi luôn sẵn sàng phục vụ bạn!*`,
+📞 Hotline hỗ trợ 24/7: **1900 888 999**`,
       });
     }
-
     // Bảng giá
     if (/bảng giá|giá cước|phí ship|chi phí|price|fee/.test(msg)) {
       return res.json({
-        reply: `## 💰 Bảng Giá SpeedyShip
+        reply: `💰 **Bảng Giá SpeedyShip**
 
-### 📦 Phí Vận Chuyển
+**Phí vận chuyển:**
+• Giao nhanh: 15.000đ (nội thành) / 25.000đ - 35.000đ (liên tỉnh)
+• Giao tiết kiệm: 10.000đ (nội thành) / 18.000đ - 25.000đ (liên tỉnh)
+• Hỏa tốc: 30.000đ (nội thành) / 50.000đ - 70.000đ (liên tỉnh)
 
-| Dịch vụ | Nội thành | Liên tỉnh |
-|---|---|---|
-| 🚀 **Giao nhanh** | 15.000đ | 25.000đ - 35.000đ |
-| 💚 **Giao tiết kiệm** | 10.000đ | 18.000đ - 25.000đ |
-| ⚡ **Hỏa tốc** | 30.000đ | 50.000đ - 70.000đ |
+**Thời gian giao:**
+• Giao nhanh: 1-2h (nội thành) / 1-2 ngày (liên tỉnh)
+• Giao tiết kiệm: 2-4h (nội thành) / 2-3 ngày (liên tỉnh)
+• Hỏa tốc: 30-60 phút (nội thành) / 1-2h (liên tỉnh)
 
----
+**Phí thu COD:** Miễn phí (dưới 5 triệu) / 5.000đ (5-20 triệu) / 10.000đ (trên 20 triệu)
 
-### ⏱️ Thời Gian Giao
-
-| Dịch vụ | Nội thành | Liên tỉnh |
-|---|---|---|
-| Giao nhanh | 1-2 giờ | 1-2 ngày |
-| Giao tiết kiệm | 2-4 giờ | 2-3 ngày |
-| Hỏa tốc | 30-60 phút | 1-2 giờ |
-
----
-
-### 💰 Thu Hộ COD
-
-| Mức COD | Phí thu hộ |
-|---|---|
-| Dưới 5 triệu | Miễn phí |
-| 5-20 triệu | 5.000đ |
-| Trên 20 triệu | 10.000đ |
-
----
-
-📊 [Xem chi tiết đầy đủ](https://speedyship.vn/pricing)`,
+📊 Xem chi tiết: https://speedyship.vn/pricing`,
       });
     }
 
     // Tạo đơn hàng
     if (/tạo đơn|đặt hàng|ship hàng|gửi hàng|create.*order|order.*new/.test(msg)) {
       return res.json({
-        reply: `## 📦 Cách Tạo Đơn Hàng Trên SpeedyShip
+        reply: `📦 **Tạo Đơn Hàng Trên SpeedyShip**
 
-### 📱 **Hướng Dẫn 5 Bước:**
+**5 bước đơn giản:**
 
-**Bước 1:** Đăng nhập/Đăng ký tài khoản
-→ Truy cập https://speedyship.vn hoặc ứng dụng
+1️⃣ Đăng nhập tài khoản tại https://speedyship.vn
+2️⃣ Chọn dịch vụ: Nhanh / Tiết kiệm / Hỏa tốc
+3️⃣ Nhập địa chỉ gửi & nhận, thông tin liên hệ
+4️⃣ Xác nhận & thanh toán phí ship
+5️⃣ Nhận mã vận đơn và theo dõi trực tiếp
 
-**Bước 2:** Chọn dịch vụ vận chuyển
-→ Nhanh / Tiết kiệm / Hỏa tốc
+💡 **Mẹo:** Chụp ảnh hàng hóa trước khi gửi và đóng gói cẩn thận để tránh hư hỏng.
 
-**Bước 3:** Nhập thông tin gửi & nhận
-→ Địa chỉ, tên, số điện thoại
-
-**Bước 4:** Xác nhận đơn hàng
-→ Kiểm tra thông tin, thanh toán phí
-
-**Bước 5:** Nhận mã vận đơn
-→ Theo dõi trực tiếp trên website
-
----
-
-### 💡 Mẹo:
-- 📸 Chụp ảnh hàng hóa trước khi gửi
-- 📝 Ghi chú rõ yêu cầu đặc biệt
-- 📦 Đóng gói cẩn thận để tránh hư hỏng
-
----
-
-👉 [Tạo đơn ngay](https://speedyship.vn/create-order)`,
+👉 Tạo đơn ngay: https://speedyship.vn/create-order`,
       });
     }
 
     // Giao thất bại
     if (/giao thất bại|failed.*delivery|không.*giao.*được/.test(msg)) {
       return res.json({
-        reply: `## ❌ Xử Lý Khi Giao Thất Bại
+        reply: `❌ **Xử Lý Giao Thất Bại**
 
-### 🔄 Quy Trình Xử Lý:
+**Quy trình:**
+1. Tài xế liên hệ người nhận (gọi điện, nhắn tin)
+2. Chờ phản hồi 15-30 phút
+3. Thử giao lại tối đa 3 lần trong 24 giờ
+4. Nếu vẫn thất bại → hoàn hàng về người gửi
 
-**1️⃣ Tài xế liên hệ người nhận**
-→ Gọi điện, nhắn tin thông báo
+**Phí phát sinh:**
+• Giao lại lần 2: Miễn phí
+• Giao lại lần 3: 5.000đ
+• Hoàn hàng: 50% phí vận chuyển
 
-**2️⃣ Chờ người nhận phản hồi**
-→ Thời gian chờ: 15-30 phút
-
-**3️⃣ Thử giao lại**
-→ Tối đa 3 lần trong 24 giờ
-
-**4️⃣ Nếu vẫn thất bại:**
-| Tình trạng | Xử lý |
-|---|---|
-| Người nhận không có | Hoàn hàng về người gửi |
-| Địa chỉ sai | Cập nhật, giao lại (phí phát sinh) |
-| Từ chối nhận | Hoàn hàng, phí không hoàn |
-| Không liên lạc được | Lưu kho 3 ngày, sau đó hoàn |
-
----
-
-### 💰 Phí Phát Sinh:
-
-| Trường hợp | Phí |
-|---|---|
-| Giao lại lần 2 | Miễn phí |
-| Giao lại lần 3 | 5.000đ |
-| Hoàn hàng | 50% phí vận chuyển |
-
----
-
-📞 Liên hệ **1900 888 999** để được hỗ trợ nhanh nhất!`,
+📞 Cần hỗ trợ? Gọi **1900 888 999** ngay!`,
       });
     }
 
     // COD
     if (/cod|thu hộ|tiền thu|thu tiền/.test(msg)) {
       return res.json({
-        reply: `## 💰 Dịch Vụ Thu Hộ COD
+        reply: `💰 **Dịch Vụ Thu Hộ COD**
 
-### ✨ Ưu Điểm:
+**Ưu điểm:**
+• Thu hộ tối đa 50 triệu đồng/đơn
+• Miễn phí phí thu hộ (dưới 5 triệu)
+• Chuyển khoản trong 24 giờ
 
-- ✅ Thu hộ tối đa **50 triệu đồng/đơn**
-- ✅ Miễn phí phí thu hộ (dưới 5 triệu)
-- ✅ Chuyển khoản trong **24 giờ**
-- ✅ Xác nhận qua ảnh giao hàng
+**Phí thu hộ:**
+• Dưới 5 triệu: Miễn phí
+• 5 - 20 triệu: 5.000đ
+• Trên 20 triệu: 10.000đ
 
----
-
-### 📋 Phí Thu Hộ:
-
-| Mức COD | Phí |
-|---|---|
-| Dưới 5 triệu | **Miễn phí** |
-| 5 - 20 triệu | 5.000đ |
-| Trên 20 triệu | 10.000đ |
-
----
-
-### 💳 Nhận Tiền COD:
-
-**Cách 1:** Chuyển vào ví SpeedyShip
-→ Nhận ngay trong 24 giờ
-
-**Cách 2:** Chuyển khoản ngân hàng
-→ Phí 3.000đ / giao dịch
-
-**Cách 3:** Rút tiền mặt tại văn phòng
-→ Miễn phí, cần CMND/CCCD
-
----
-
-📞 Hotline: **1900 888 999**`,
+**Nhận tiền COD:**
+• Chuyển vào ví SpeedyShip (nhận trong 24h)
+• Chuyển khoản ngân hàng (phí 3.000đ)
+• Rút tiền mặt tại văn phòng (miễn phí)`,
       });
     }
 
     // Bảo hiểm
     if (/bảo hiểm|đền bù|bồi thường|compensation|insurance/.test(msg)) {
       return res.json({
-        reply: `## 🛡️ Chính Sách Bảo Hiểm & Đền Bù
+        reply: `🛡️ **Chính Sách Bảo Hiểm & Đền Bù**
 
-### ✅ Cam Kết SpeedyShip:
+**Mức đền bù:**
+• Hàng mất: 100% giá trị (tối đa 10 triệu)
+• Hàng hư hỏng: 50-100% tùy mức độ
+• Giao trễ: Hoàn 50% phí vận chuyển
+• Sai địa chỉ: Giao lại miễn phí
 
-| Tình Trạng | Mức Đền Bù |
-|---|---|
-| 🔴 Hàng mất | 100% giá trị (tối đa 10 triệu) |
-| 🟡 Hàng hư hỏng | 50-100% tùy mức độ |
-| 🟠 Giao trễ | Hoàn 50% phí vận chuyển |
-| 🔵 Sai địa chỉ | Giao lại miễn phí |
+**Điều kiện đền bù:**
+✅ Hàng hóa đã khai báo đầy đủ
+✅ Đóng gói đạt chuẩn
+✅ Có hình ảnh trước khi gửi
+✅ Yêu cầu trong 24 giờ sau khi nhận
 
----
-
-### 📝 Điều Kiện Đền Bù:
-
-1. ✅ Hàng hóa đã khai báo đầy đủ
-2. ✅ Đóng gói đạt chuẩn
-3. ✅ Có hình ảnh trước khi gửi
-4. ✅ Yêu cầu trong 24 giờ sau khi nhận
-
----
-
-### ⚠️ Lưu Ý:
-
-- 📦 Đóng gói cẩn thận, chống sốc
-- 📸 Chụp ảnh hàng hóa rõ ràng
-- 💰 Khai báo giá trị chính xác
-
----
-
-📞 **Khiếu nại:** 1900 888 999 (7:00 - 22:00)`,
+📞 Khiếu nại: **1900 888 999** (7:00 - 22:00)`,
       });
     }
 
     // Ví điện tử
     if (/ví|wallet|nạp tiền|rút tiền|deposit|withdraw/.test(msg)) {
       return res.json({
-        reply: `## 💳 Ví SpeedyShip
+        reply: `💳 **Ví SpeedyShip**
 
-### ✨ Tính Năng:
+**Nạp tiền:**
+• Ví Momo: Miễn phí, nhận ngay
 
-- 💰 **Nạp tiền**: Chuyển khoản, thẻ cào, ví điện tử
-- 💸 **Rút tiền**: Ngân hàng, ví điện tử
-- 🛒 **Thanh toán**: Phí ship, COD
-- 📥 **Nhận tiền**: COD từ đơn hàng
+**Rút tiền:**
+• Ngân hàng: Phí 1% (min 3.000đ), 24 giờ 
+• Ví Momo: Miễn phí, 1-2 giờ
+• Tiền mặt (văn phòng): Miễn phí, nhận ngay
 
----
+**Bảo mật:** Mã PIN + Xác thực SMS
 
-### 💵 Nạp Tiền:
-
-| Phương thức | Phí | Thời gian |
-|---|---|---|
-| Chuyển khoản | Miễn phí | 1-5 phút |
-| Thẻ cào | 10-20% | Ngay |
-| Ví Momo/ZaloPay | Miễn phí | Ngay |
-
----
-
-### 💸 Rút Tiền:
-
-| Phương thức | Phí | Thời gian |
-|---|---|---|
-| Ngân hàng | 1% (min 3.000đ) | 24 giờ |
-| Ví Momo | Miễn phí | 1-2 giờ |
-| Tiền mặt (văn phòng) | Miễn phí | Ngay |
-
----
-
-### 🔒 Bảo Mật:
-- Mã PIN bảo vệ
-- Xác thực SMS
-- Giới hạn giao dịch
-
----
-
-💳 Truy cập: **https://speedyship.vn/wallet**`,
+💳 Truy cập: https://speedyship.vn/wallet
+**Hiện tại chức năng rút tiền đang được bảo trì để tránh rủi ro ảnh hưởng đến khách hàng.**
+**Xin lỗi quý khách hàng vì sự bất tiện này!.**`,
       });
     }
 
     // Đổi địa chỉ
     if (/đổi địa chỉ|thay đổi địa chỉ|change.*address|sửa địa chỉ/.test(msg)) {
       return res.json({
-        reply: `## ✏️ Thay Đổi Địa Chỉ Nhận Hàng
+        reply: `✏️ **Thay Đổi Địa Chỉ Nhận Hàng**
 
-### ⚠️ Lưu Ý Quan Trọng:
+**Tùy trạng thái đơn hàng:**
+• ⏳ Chờ lấy hàng: ✅ Miễn phí
+• 📦 Đang lấy hàng: ✅ Phí 5.000đ
+• 🚚 Đang giao: ⚠️ Tùy trường hợp
+• ✅ Đã giao: ❌ Không thể thay đổi
 
-Bạn **có thể** thay đổi địa chỉ nhận trong các trường hợp:
+**Cách sửa:**
+1. Vào "Theo dõi đơn hàng" trên website/app
+2. Chọn đơn cần sửa → nhấn "Sửa thông tin"
+3. Cập nhật địa chỉ mới
 
-| Trạng thái đơn | Đổi địa chỉ |
-|---|---|
-| ⏳ Chờ lấy hàng | ✅ Miễn phí |
-| 📦 Đang lấy hàng | ✅ Phí 5.000đ |
-| 🚚 Đang giao | ⚠️ Tùy trường hợp |
-| ✅ Đã giao | ❌ Không thể |
-
----
-
-### 📋 Cách Thay Đổi:
-
-**Qua App/Web:**
-1. Vào "Theo dõi đơn hàng"
-2. Chọn đơn cần sửa
-3. Nhấn "Sửa thông tin"
-4. Cập nhật địa chỉ mới
-
-**Qua Hotline:**
-📞 Gọi **1900 888 999** với mã vận đơn
-
----
-
-### 💰 Phí Phát Sinh:
-
-| Thay đổi | Phí |
-|---|---|
-| Cùng khu vực | Miễn phí |
-| Khác khu vực nội thành | 5.000đ |
-| Khác tỉnh/thành | Phí vận chuyển mới |
-
----
-
-*Liên hệ ngay để được hỗ trợ kịp thời!*`,
+📞 Hoặc gọi **1900 888 999** kèm mã vận đơn để được hỗ trợ nhanh.`,
       });
     }
 
@@ -702,59 +489,31 @@ Bạn **có thể** thay đổi địa chỉ nhận trong các trường hợp:
     // Câu chào
     if (/xin chào|chào|hello|hi|hey|namaste/.test(msg)) {
       return res.json({
-        reply: `## 👋 Chào Bạn!
+        reply: `👋 **Chào bạn!**
 
-Rất vui được gặp bạn tại **SpeedyShip**! 🚀
+Mình là **SpeedyAI** - trợ lý ảo của SpeedyShip, luôn sẵn sàng hỗ trợ bạn 24/7.
 
-Tôi là **SpeedyAI** - trợ lý ảo luôn sẵn sàng hỗ trợ bạn 24/7.
+**Mình có thể giúp bạn:**
+• 📦 Tra cứu đơn hàng (cần mã vận đơn)
+• 💰 Tư vấn bảng giá dịch vụ
+• ❓ Giải đáp thắc mắc về chính sách
+• 📋 Hướng dẫn sử dụng dịch vụ
 
-### 🎯 Tôi Có Thể Giúp Bạn:
-
-| | |
-|---|---|
-| 📦 | Tra cứu đơn hàng |
-| 💰 | Tư vấn bảng giá |
-| ❓ | Giải đáp thắc mắc |
-| 📋 | Hướng dẫn sử dụng |
-| 🛡️ | Chính sách bảo hiểm |
-
----
-
-### 🚀 Bắt Đầu Ngay:
-
-1️⃣ Tra cứu đơn hàng với mã vận đơn
-2️⃣ Xem bảng giá dịch vụ
-3️⃣ Tạo đơn hàng mới
-
----
-
-💬 **Bạn cần hỗ trợ gì hôm nay?**`,
+Bạn cần hỗ trợ gì hôm nay?`,
       });
     }
 
     // Câu cảm ơn
     if (/cảm ơn|thank|cám ơn|thanks/.test(msg)) {
       return res.json({
-        reply: `## 💙 Cảm Ơn Bạn!
+        reply: `💙 **Cảm ơn bạn đã tin dùng SpeedyShip!**
 
-Cảm ơn bạn đã tin dùng **SpeedyShip**! 🙏
+✈️ Vận chuyển nhanh chóng, an tâm trọn vẹn!
 
-### 🔗 Liên Kết Nhanh:
+📞 Hotline: **1900 888 999**
+🌐 Website: https://speedyship.vn
 
-| | |
-|---|---|
-| 🌐 | [speedyship.vn](https://speedyship.vn) |
-| 📞 | **1900 888 999** |
-| 📧 | support@speedyship.vn |
-| 📘 | facebook.com/speedyship.vn |
-
----
-
-✈️ **SpeedyShip** - Vận chuyển nhanh chóng, an tâm trọn vẹn!
-
----
-
-💬 Nếu cần thêm hỗ trợ, đừng ngần ngại hỏi tôi nhé!`,
+Nếu cần thêm hỗ trợ, đừng ngần ngại hỏi mình nhé!`,
       });
     }
 
@@ -763,20 +522,12 @@ Cảm ơn bạn đã tin dùng **SpeedyShip**! 🙏
 
     if (!GROQ_API_KEY) {
       return res.json({
-        reply: `## 🤔 Tôi Chưa Hiểu Câu Hỏi Của Bạn
+        reply: `🤔 **Mình chưa hiểu câu hỏi này.**
 
-Xin lỗi, tôi chưa thể trả lời câu hỏi này ngay lúc này.
-
-### 💡 Gợi Ý:
-
-| Câu hỏi phổ biến | |
-|---|---|
-| Tra cứu đơn hàng | Cần mã vận đơn |
-| Bảng giá | 15.000đ - 35.000đ |
-| Hotline | **1900 888 999** |
-| Tạo đơn hàng | Website/App |
-
----
+Bạn có thể thử:
+• Tra cứu đơn hàng (cần mã vận đơn SPxxxx)
+• Hỏi về bảng giá, COD, bảo hiểm
+• Hỏi cách tạo đơn hoặc xử lý sự cố
 
 📞 Gọi hotline **1900 888 999** (7:00 - 22:00) để được hỗ trợ trực tiếp!`,
       });
@@ -803,11 +554,11 @@ Xin lỗi, tôi chưa thể trả lời câu hỏi này ngay lúc này.
 - Hỗ trợ thu COD tối đa 50 triệu
 
 **Phong cách trả lời:**
-- Thân thiện, chuyên nghiệp
-- Sử dụng emoji phù hợp
+- Ngắn gọn, dễ hiểu (tối đa 5-7 dòng cho mỗi câu hỏi đơn giản)
+- Thân thiện, chuyên nghiệp, dùng emoji vừa phải
 - Trả lời bằng tiếng Việt
-- Markdown format đẹp mắt
-- Cung cấp thông tin đầy đủ, có ví dụ`,
+- Markdown format đơn giản, tránh bảng phức tạp
+- Cung cấp thông tin cốt lõi, không lan man`,
           },
           { role: "user", content: message },
         ],
