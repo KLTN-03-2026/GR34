@@ -14,7 +14,15 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter>
       <App />
-      <Toaster position="top-right" reverseOrder={false} />
+      <Toaster
+        position="top-right"
+        reverseOrder={false}
+        toastOptions={{
+          style: {
+            zIndex: 99999,
+          },
+        }}
+      />
     </BrowserRouter>
   </React.StrictMode>
 );

@@ -292,7 +292,7 @@ export default function Claims() {
 
                 <div className="text-sm text-gray-400 mt-12 pt-6 border-t border-gray-100 flex items-center gap-2">
                   <FaCheckCircle className="text-green-500" /> Chính sách có
-                  hiệu lực từ ngày 01/01/2024.
+                  hiệu lực từ ngày 01/01/2026.
                 </div>
               </div>
             </div>

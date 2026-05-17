@@ -145,8 +145,8 @@ export const askBot = async (req, res) => {
 
 Để tra cứu đơn hàng, bạn cần cung cấp **mã vận đơn**.
 
-📝 **Ví dụ:** 
-- *Tra cứu đơn DN-897658*
+📝 **Ví dụ:**
+- *Tra cứu đơn DN-123456*
 - *Tra cứu SP123456*
 
 💡 **Mẹo:** Mã vận đơn được gửi qua SMS/Email sau khi tạo đơn thành công.
@@ -234,7 +234,13 @@ Bạn có muốn tôi tra cứu thông tin đơn hàng này?
 ---
 
 ### 🗺️ Theo Dõi GPS
-[Xem hành trình trực tiếp](http://localhost:5173/tracking?code=${trackingCode})
+${(() => {
+  const receiverLast4 = data.receiver_phone?.slice(-4) || null;
+  const gpsLink = receiverLast4
+    ? `[Xem hành trình trực tiếp](http://localhost:5173/tracking?code=${trackingCode}&last4=${receiverLast4})`
+    : `[Xem hành trình trực tiếp](http://localhost:5173/tracking?code=${trackingCode})`;
+  return gpsLink;
+})()}
 
 ---
 

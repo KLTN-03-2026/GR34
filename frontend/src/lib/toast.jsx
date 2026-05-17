@@ -92,6 +92,8 @@ const baseStyle = {
   boxShadow: "0 8px 24px -4px rgba(0,0,0,0.12), 0 2px 8px -2px rgba(0,0,0,0.06)",
   border: "1px solid",
   lineHeight: "1.5",
+  position: "relative",
+  zIndex: 9999,
 };
 
 const styles = {
